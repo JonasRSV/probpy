@@ -5,3 +5,4 @@ from .uniform import Uniform as uniform
 from .bernoulli import Bernoulli as bernoulli
 from .categorical import Categorical as categorical
 from .dirichlet import Dirichlet as dirichlet
+from .beta import Beta as beta

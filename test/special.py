@@ -38,15 +38,15 @@ class TestSpecial(unittest.TestCase):
         i_beta = i_beta.reshape(points, points)
         scipy_beta = scipy_beta.reshape(points, points)
 
-        print("Err", np.abs(i_beta - scipy_beta))
+        print("Err", np.abs(i_beta - scipy_beta).mean())
 
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
         plt.title("Local")
-        plt.contourf(X, Y, i_beta, label="Local")
+        plt.contourf(X, Y, i_beta)
         plt.subplot(2, 1, 2)
         plt.title("Scipy")
-        plt.contourf(X, Y, scipy_beta, label="Scipy")
+        plt.contourf(X, Y, scipy_beta)
         plt.show()
 
 

@@ -7,6 +7,7 @@ from probpy.distributions import uniform, multivariate_uniform
 from probpy.distributions import bernoulli
 from probpy.distributions import categorical
 from probpy.distributions import dirichlet
+from probpy.distributions import beta
 
 
 class TestDistributions(unittest.TestCase):
@@ -151,8 +152,19 @@ class TestDistributions(unittest.TestCase):
         sb.lineplot(x, p)
         plt.show()
 
+    def test_beta(self):
+        a, b = np.array(30.0), np.array(30.0)
+        n = beta.sample(a, b, 1000)
 
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        sb.distplot(n)
 
+        plt.subplot(2, 1, 2)
+        x = np.linspace(0.01, 0.99, 100)
+        y = beta.p(a, b, x)
+        sb.lineplot(x, y)
+        plt.show()
 
 
 if __name__ == '__main__':
