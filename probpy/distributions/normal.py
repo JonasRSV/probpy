@@ -19,7 +19,7 @@ class Normal(Distribution):
 
     @staticmethod
     def sample(mu: np.ndarray, sigma: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
-        return np.random.normal(mu, sigma, size=shape)
+        return np.random.normal(mu, np.sqrt(sigma), size=shape)
 
     @staticmethod
     def p(mu: np.ndarray, sigma: np.ndarray, x: np.ndarray) -> np.ndarray:

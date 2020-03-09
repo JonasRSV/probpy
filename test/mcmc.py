@@ -35,12 +35,12 @@ class TestMCMC(unittest.TestCase):
         a, b = np.array(-10), np.array(10)
 
         plt.subplot(2, 1, 2)
-        proposal = lambda x: uniform.p(a, b, x)
-        sampler = lambda: uniform.sample(a, b)
-        #proposal = lambda x: normal.p(0, 5, x)
-        #sampler = lambda: normal.sample(0, 5)
+        #proposal = lambda x: uniform.p(a, b, x)
+        #sampler = lambda: uniform.sample(a, b)
+        proposal = lambda x: normal.p(0, 10, x)
+        sampler = lambda: normal.sample(0, 10)
 
-        samples = metropolis(pdf, proposal, sampler, M=20.0, shape=(10000, 1))[1000:]
+        samples = metropolis(pdf, proposal, sampler, M=30.0, shape=(10000, 1))[1000:]
 
         sb.distplot(samples)
         plt.show()
