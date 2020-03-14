@@ -119,12 +119,12 @@ class TestDistributions(unittest.TestCase):
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
         plt.title(f"Multivariate normal: mu {mu} - sigma {sigma} -- samples: {samples}", fontsize=20)
-        sb.kdeplot(n[:, 0], n[:, 1])
+        sb.kdeplot(n[:, 0], n[:, 1], shade=True)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
 
         points = 100
-        x = np.linspace(-4, 4, points)
+        x = np.linspace(-1, 3, points)
         y = np.linspace(-4, 4, points)
 
         X, Y = np.meshgrid(x, y)
@@ -181,13 +181,13 @@ class TestDistributions(unittest.TestCase):
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
         plt.title(f"Multivariate uniform: a {a} - b {b} -- samples: {samples}", fontsize=20)
-        sb.kdeplot(n[:, 0], n[:, 1])
+        sb.kdeplot(n[:, 0], n[:, 1], shade=True)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
 
         points = 1000
-        x = np.linspace(-4, 4, points)
-        y = np.linspace(-4, 4, points)
+        x = np.linspace(-2.5, 2.5, points)
+        y = np.linspace(-1.5, 3.5, points)
 
         X, Y = np.meshgrid(x, y)
 

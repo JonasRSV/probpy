@@ -15,9 +15,9 @@ class MultiVariateNormal(Distribution):
 
     @staticmethod
     def p(mu: np.ndarray, sigma: np.ndarray, X: np.ndarray) -> np.ndarray:
-        normalizing_constant = np.float_power(np.sqrt(2 * np.pi * np.linalg.det(sigma)), -mu.ndim)
+        normalizing_constant = np.float_power(2 * np.pi, -mu.size / 2) * np.float_power(np.linalg.det(sigma), -0.5)
         return np.array(
-            [np.exp(-1 / 2 * (x - mu).T @ np.linalg.inv(sigma) @ (x - mu)) / normalizing_constant for x in X])
+            [np.exp((-1 / 2) * (x - mu).T @ np.linalg.inv(sigma) @ (x - mu)) * normalizing_constant for x in X])
 
 
 class Normal(Distribution):

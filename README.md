@@ -11,6 +11,8 @@ Documentation
 - [Core](#core)
   - [MCMC](#MCMC)
     - [Metropolis](#metropolis)
+  - [Integration](#integration)
+    - [Uniform Importance Sampling](#uniform-importance-sampling)
   - [Distributions](#distributions)
     - [Normal](#normal)
     - [Multivariate Normal](#multivariate-normal)
@@ -52,6 +54,53 @@ samples = metropolis(size=10000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10)
 <p align="center">
   <img width=600px heigth=300px src="images/metropolis.png" />
 </p>
+
+### Integration
+
+Statistical integration algorithms 
+
+#### Uniform Importance Sampling
+
+```python3
+from probpy.distributions import normal
+from probpy.integration import uniform_importance_sampling
+
+f = lambda x: -np.square(x) + 3
+
+result = uniform_importance_sampling(size=10000, 
+                                     function=f, 
+                                     domain=(-2, 2), 
+                                     proposal=normal.freeze(mu=0, sigma=2))
+
+```
+> Wolfram alpha gives 6.66666..
+
+<p align="center">
+  <img width=600px heigth=300px src="images/uniform_importance_sampling.png" />
+</p>
+
+Multivariate example
+
+```python3
+from probpy.distributions import normal
+from probpy.integration import uniform_importance_sampling
+
+f = lambda x: -np.square(x[:, 0]) + np.square(x[:, 1])
+
+lower_bound = np.array([0, 0])
+upper_bound = np.array([4, 2])
+
+results = uniform_importance_sampling(size=100000,
+                                      function=f,
+                                      domain=(lower_bound, upper_bound),
+                                      proposal=multivariate_normal.freeze(mu=np.zeros(2), sigma=np.eye(2) * 2)))
+```
+> Wolfram alpha gives -32
+
+<p align="center">
+  <img width=600px heigth=300px src="images/uniform_importance_sampling_multivariate.png" />
+</p>
+
 
 ### Distributions
 
