@@ -1,16 +1,20 @@
 import numpy as np
 
-from probpy.core import Distribution
+from probpy.core import Distribution, FrozenDistribution
 
 
 class Categorical(Distribution):
 
+    @classmethod
+    def freeze(cls, p: np.ndarray) -> FrozenDistribution:
+        return FrozenDistribution(cls, p)
+
     @staticmethod
-    def sample(p: np.float32, shape=()) -> np.ndarray:
+    def sample(p: np.ndarray, shape=()) -> np.ndarray:
         return np.random.choice(np.arange(p.size), p=p, size=shape)
 
     @staticmethod
-    def p(p: np.float32, x: np.ndarray) -> np.ndarray:
+    def p(p: np.ndarray, x: np.ndarray) -> np.ndarray:
         return p[x]
 
     @staticmethod

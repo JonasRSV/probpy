@@ -9,6 +9,8 @@ Documentation
 ---
 
 - [Core](#core)
+  - [MCMC](#MCMC)
+    - [Metropolis](#metropolis)
   - [Distributions](#distributions)
     - [Normal](#normal)
     - [Multivariate Normal](#multivariate-normal)
@@ -19,6 +21,8 @@ Documentation
     - [Dirichlet](#dirichlet)
     - [Beta](#beta)
     - [Exponential](#exponential)
+    - [Binomial](#binomial)
+    - [Multinomial](#multinomial)
 
 
 
@@ -28,10 +32,30 @@ Documentation
 
 Central functionality
 
+### MCMC
+
+Sampling algorithms
+
+#### Metropolis
+
+As long as: p(x) * Z < q(x) * M, this will work, although it might be slow. 
+
+```python3
+from probpy.distributions import normal
+from progpy.mcmc import metropolis
+
+pdf = lambda x: normal.p(0, 1, x) + normal.p(6, 3, x) + normal.p(-6, 0.5, x)
+
+samples = metropolis(size=10000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10), M=30.0)
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/metropolis.png" />
+</p>
 
 ### Distributions
 
-PDFs / PMFs and sampling functions
+PDFs / PMFs and sampling functions (the sampling mostly just uses numpy.random.xx)
 
 
 #### Normal
@@ -223,4 +247,45 @@ y = exponential.p(lam, x)
 
 <p align="center">
   <img width=600px heigth=300px src="images/exponential.png" />
+</p>
+
+#### Binomial
+
+```python3
+from probpy.distributions import binomial
+
+#Sampling
+n, p = 20, 0.2
+samples = 10000
+_n = binomial.sample(n, p, samples)
+
+
+# PDF
+x = np.arange(0, 20)
+y = binomial.p(n, p, x)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/binomial.png" />
+</p>
+
+#### Multinomial
+
+```python3
+from probpy.distributions import multinomial
+
+#Sampling
+n, p = 20, np.array([0.3, 0.5, 0.2])
+samples = 10000
+_n = multinomial.sample(n, p, samples)
+
+# PDF
+x = np.array([[i, j, k] for i in range(n + 1) for j in range(n + 1) for k in range(n + 1) if i + j + k == n])
+y = multinomial.p(n, p, x)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/multinomial.png" />
 </p>

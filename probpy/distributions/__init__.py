@@ -7,3 +7,5 @@ from .categorical import Categorical as categorical
 from .dirichlet import Dirichlet as dirichlet
 from .beta import Beta as beta
 from .exponential import Exponential as exponential
+from .binomial import Binomial as binomial
+from .multinomial import Multinomial as multinomial

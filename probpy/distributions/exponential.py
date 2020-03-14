@@ -1,9 +1,13 @@
 import numpy as np
 
-from probpy.core import Distribution
+from probpy.core import Distribution, FrozenDistribution
 
 
 class Exponential(Distribution):
+
+    @classmethod
+    def freeze(cls, lam: np.float32) -> FrozenDistribution:
+        return FrozenDistribution(cls, lam)
 
     @staticmethod
     def sample(lam: np.float32, shape=()) -> np.ndarray:

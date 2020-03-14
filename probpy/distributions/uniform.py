@@ -1,9 +1,13 @@
 import numpy as np
 
-from probpy.core import Distribution
+from probpy.core import Distribution, FrozenDistribution
 
 
 class Uniform(Distribution):
+
+    @classmethod
+    def freeze(cls, a: np.ndarray, b: np.ndarray) -> FrozenDistribution:
+        return FrozenDistribution(cls, a, b)
 
     @staticmethod
     def sample(a: np.ndarray, b: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
@@ -18,6 +22,10 @@ class Uniform(Distribution):
 
 
 class MultiVariateUniform(Distribution):
+    @classmethod
+    def freeze(cls, a: np.ndarray, b: np.ndarray) -> FrozenDistribution:
+        return FrozenDistribution(cls, a, b)
+
     @staticmethod
     def sample(a: np.ndarray, b: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
         if type(shape) == int:
@@ -25,7 +33,8 @@ class MultiVariateUniform(Distribution):
 
         if shape != ():
             if a.shape != shape[1:]:
-                raise Exception(f"shape of a needs to match provided shape a: {a.shape} -- provided: {shape} -- {a.shape} != {shape[1:]}")
+                raise Exception(
+                    f"shape of a needs to match provided shape a: {a.shape} -- provided: {shape} -- {a.shape} != {shape[1:]}")
 
             return a + np.random.rand(*shape) * (b - a)
 
@@ -34,5 +43,3 @@ class MultiVariateUniform(Distribution):
     @staticmethod
     def p(a: np.ndarray, b: np.ndarray, x: np.ndarray) -> np.ndarray:
         return ((a < x) & (x < b)).all(axis=1).astype(np.float32) / np.product(b - a)
-
-

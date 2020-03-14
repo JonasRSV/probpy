@@ -1,6 +1,7 @@
 from typing import Callable as F
 from typing import List
 import numpy as np
+from .core import FrozenDistribution
 
 
 def metropolis_hastings(pdf: F[[np.ndarray], np.ndarray],
@@ -24,18 +25,16 @@ def metropolis_hastings(pdf: F[[np.ndarray], np.ndarray],
     return samples
 
 
-def metropolis(pdf: F[[np.ndarray], np.ndarray],
-               proposal: F[[np.ndarray], np.ndarray],
-               sampler: F[[None], np.ndarray],
-               M: float,
-               shape: np.ndarray) -> List[np.ndarray]:
-    size, dim = shape[0], shape[1:]
+def metropolis(size: int,
+               pdf: F[[np.ndarray], np.ndarray],
+               proposal: FrozenDistribution,
+               M: float) -> List[np.ndarray]:
 
     samples = []
     while len(samples) < size:
-        sample = sampler()
+        sample = proposal.sample()
 
-        accept_rate = pdf(sample) / (M * proposal(sample))
+        accept_rate = pdf(sample) / (M * proposal.p(sample))
         if accept_rate > 1.0: raise Exception(f"M to small, accept rate {accept_rate} > 1.0. m: {M} ")
         if np.random.rand() < accept_rate:
             samples.append(sample)

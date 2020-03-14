@@ -1,10 +1,14 @@
 import numpy as np
 
-from probpy.core import Distribution
+from probpy.core import Distribution, FrozenDistribution
 from probpy.special import gamma
 
 
 class Dirichlet(Distribution):
+
+    @classmethod
+    def freeze(cls, alpha: np.ndarray) -> FrozenDistribution:
+        return FrozenDistribution(cls, alpha)
 
     @staticmethod
     def sample(alpha: np.ndarray, shape=()) -> np.ndarray:

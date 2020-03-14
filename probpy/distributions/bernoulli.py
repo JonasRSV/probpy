@@ -1,9 +1,13 @@
 import numpy as np
 
-from probpy.core import Distribution
+from probpy.core import Distribution, FrozenDistribution
 
 
 class Bernoulli(Distribution):
+
+    @classmethod
+    def freeze(cls, p: np.float32) -> FrozenDistribution:
+        return FrozenDistribution(cls, p)
 
     @staticmethod
     def sample(p: np.float32, shape = ()) -> np.ndarray:
