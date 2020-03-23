@@ -15,13 +15,6 @@ from probpy.distributions import multinomial
 
 class TestDistributions(unittest.TestCase):
 
-    def test_freezing(self):
-        frozen = normal.freeze(mu=0.6, sigma=0.9)
-
-        plt.figure(figsize=(10, 6))
-        sb.distplot(frozen.sample(shape=100))
-        plt.show()
-
     def test_first_two_moments(self):
         # Error should be variance / sqrt(n)
         mu, sigma = 0, 2.0
@@ -94,8 +87,8 @@ class TestDistributions(unittest.TestCase):
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
 
-        x = np.linspace(-4, 4, 100)
-        n = normal.p(mu, sigma, x)
+        x = np.linspace(-1.2, 1.2, 100)
+        n = normal.p(x, mu, sigma)
         plt.subplot(2, 1, 2)
         plt.title("True", fontsize=20)
         sb.lineplot(x, n)
@@ -133,7 +126,7 @@ class TestDistributions(unittest.TestCase):
         Y = Y.reshape(-1, 1)
 
         I = np.concatenate([X, Y], axis=1)
-        P = multivariate_normal.p(mu, sigma, I)
+        P = multivariate_normal.p(I, mu, sigma)
 
         P = P.reshape(points, points)
         X = X.reshape(points, points)
@@ -160,8 +153,8 @@ class TestDistributions(unittest.TestCase):
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
 
-        x = np.linspace(-4, 4, 100)
-        n = uniform.p(a, b, x)
+        x = np.linspace(-3, 4, 100)
+        n = uniform.p(x, a, b)
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
         sb.lineplot(x, n)
@@ -195,7 +188,7 @@ class TestDistributions(unittest.TestCase):
         Y = Y.reshape(-1, 1)
 
         I = np.concatenate([X, Y], axis=1)
-        P = multivariate_uniform.p(a, b, I)
+        P = multivariate_uniform.p(I, a, b)
 
         P = P.reshape(points, points)
         X = X.reshape(points, points)
@@ -224,7 +217,7 @@ class TestDistributions(unittest.TestCase):
 
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
-        sb.barplot([0, 1], [bernoulli.p(p, 0.0), bernoulli.p(p, 1.0)])
+        sb.barplot([0, 1], [bernoulli.p(0.0, p), bernoulli.p(1.0, p)])
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         plt.tight_layout()
@@ -245,7 +238,7 @@ class TestDistributions(unittest.TestCase):
 
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
-        sb.barplot(np.arange(p.size), [categorical.p(p, c) for c in np.arange(p.size)])
+        sb.barplot(np.arange(p.size), [categorical.p(c, p) for c in np.arange(p.size)])
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         plt.tight_layout()
@@ -272,7 +265,7 @@ class TestDistributions(unittest.TestCase):
         x = np.linspace(0, 1, 100).reshape(-1, 1)
         x = np.concatenate([x, x[::-1]], axis=1)
 
-        p = dirichlet.p(alpha, x)
+        p = dirichlet.p(x, alpha)
         x = x @ projection
         plt.subplot(2, 1, 2)
         plt.title(f"True projection", fontsize=20)
@@ -297,8 +290,8 @@ class TestDistributions(unittest.TestCase):
 
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
-        x = np.linspace(0.01, 0.99, 100)
-        y = beta.p(a, b, x)
+        x = np.linspace(0.01, 0.6, 100)
+        y = beta.p(x, a, b)
         sb.lineplot(x, y)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
@@ -320,7 +313,7 @@ class TestDistributions(unittest.TestCase):
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
         x = np.linspace(0.0, 5, 100)
-        y = exponential.p(lam, x)
+        y = exponential.p(x, lam)
         sb.lineplot(x, y)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
@@ -343,7 +336,7 @@ class TestDistributions(unittest.TestCase):
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
         x = np.arange(0, 20, dtype=np.int)
-        y = binomial.p(n, p, x)
+        y = binomial.p(x, n, p)
         sb.lineplot(x, y)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
@@ -365,11 +358,12 @@ class TestDistributions(unittest.TestCase):
         plt.yticks(fontsize=16)
         sb.distplot(_n)
 
-        combinations = np.array([[i, j, k] for i in range(n + 1) for j in range(n + 1) for k in range(n + 1) if i + j + k == n])
+        combinations = np.array(
+            [[i, j, k] for i in range(n + 1) for j in range(n + 1) for k in range(n + 1) if i + j + k == n])
         plt.subplot(2, 1, 2)
         plt.title(f"True", fontsize=20)
         x = combinations
-        y = multinomial.p(n, p, x)
+        y = multinomial.p(x, n, p)
         x = (x @ projection).reshape(-1)
         sb.lineplot(x, y)
         plt.xticks(fontsize=16)
@@ -379,6 +373,178 @@ class TestDistributions(unittest.TestCase):
         plt.show()
 
         plt.show()
+
+    def test_freezing(self):
+        frozen = normal.freeze(mu=0.6, sigma=0.9)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = normal.freeze(mu=0.6)
+        s2 = frozen.sample(0.9, shape=100000)
+        p2 = frozen.p(s2, 0.9)
+
+        frozen = normal.freeze(sigma=0.9)
+        s3 = frozen.sample(0.6, shape=100000)
+        p3 = frozen.p(s3, 0.6)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = multivariate_normal.freeze(mu=np.zeros(2), sigma=np.eye(2))
+        s1 = frozen.sample(shape=10000)
+        p1 = frozen.p(s1)
+
+        frozen = multivariate_normal.freeze(mu=np.zeros(2))
+        s2 = frozen.sample(np.eye(2), shape=10000)
+        p2 = frozen.p(s2, np.eye(2))
+
+        frozen = multivariate_normal.freeze(sigma=np.eye(2))
+        s3 = frozen.sample(np.zeros(2), shape=10000)
+        p3 = frozen.p(s3, np.zeros(2))
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-1)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-1)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-1)
+
+        frozen = uniform.freeze(a=0.0, b=1.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = uniform.freeze(a=0.0)
+        s2 = frozen.sample(1.0, shape=100000)
+        p2 = frozen.p(s2, 1.0)
+
+        frozen = uniform.freeze(b=1.0)
+        s3 = frozen.sample(0.0, shape=100000)
+        p3 = frozen.p(s3, 0.0)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = multivariate_uniform.freeze(a=np.zeros(2), b=np.ones(2))
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = multivariate_uniform.freeze(a=np.zeros(2))
+        s2 = frozen.sample(np.ones(2), shape=100000)
+        p2 = frozen.p(s2, np.ones(2))
+
+        frozen = multivariate_uniform.freeze(b=np.ones(2))
+        s3 = frozen.sample(np.zeros(2), shape=100000)
+        p3 = frozen.p(s3, np.zeros(2))
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = bernoulli.freeze(p=0.5)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = bernoulli.freeze()
+        s2 = frozen.sample(0.5, shape=100000)
+        p2 = frozen.p(s2, 0.5)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+
+        frozen = beta.freeze(a=2.0, b=1.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = beta.freeze(a=2.0)
+        s2 = frozen.sample(1.0, shape=100000)
+        p2 = frozen.p(s2, 1.0)
+
+        frozen = beta.freeze(b=1.0)
+        s3 = frozen.sample(2.0, shape=100000)
+        p3 = frozen.p(s3, 2.0)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = binomial.freeze(n=3, p=0.5)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = binomial.freeze(n=3)
+        s2 = frozen.sample(0.5, shape=100000)
+        p2 = frozen.p(s2, 0.5)
+
+        frozen = binomial.freeze(p=0.5)
+        s3 = frozen.sample(3, shape=100000)
+        p3 = frozen.p(s3, 3)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = categorical.freeze(p=np.ones(2) * 0.5)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = categorical.freeze()
+        s2 = frozen.sample(np.ones(2) * 0.5, shape=100000)
+        p2 = frozen.p(s2, np.ones(2) * 0.5)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+
+        frozen = dirichlet.freeze(alpha=np.ones(2) * 2.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = dirichlet.freeze()
+        s2 = frozen.sample(np.ones(2) * 2.0, shape=100000)
+        p2 = frozen.p(s2, np.ones(2) * 2.0)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+
+        frozen = exponential.freeze(lam=1.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = exponential.freeze()
+        s2 = frozen.sample(1.0, shape=100000)
+        p2 = frozen.p(s2, 1.0)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+
+        p = np.ones(4) * 0.25
+        frozen = multinomial.freeze(n=3, p=p)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = multinomial.freeze(n=3)
+        s2 = frozen.sample(p, shape=100000)
+        p2 = frozen.p(s2, p)
+
+        frozen = multinomial.freeze(p=p)
+        s3 = frozen.sample(3, shape=100000)
+        p3 = frozen.p(s3, 3)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
 
 if __name__ == '__main__':

@@ -2,24 +2,25 @@ from abc import abstractmethod, ABC
 import numpy as np
 
 
-class FrozenDistribution():
-    def __init__(self, distribution: "Distribution", *args):
-        self.distribution = distribution
-        self.args = args
+class RandomVariable:
+    def __init__(self, _sample, _p, shape=None):
+        self._sample = _sample
+        self._p = _p
+        self.shape = shape
 
-    def sample(self, shape: np.ndarray = ()):
-        return self.distribution.sample(*self.args, shape=shape)
+    def sample(self, *args, shape: np.ndarray = ()):
+        return self._sample(*args, shape=shape)
 
-    def p(self, x: np.ndarray):
-        return self.distribution.p(*self.args, x)
+    def p(self, x, *args):
+        return self._p(x, *args)
 
 
 class Distribution(ABC):
 
     @classmethod
     @abstractmethod
-    def freeze(cls, *args) -> FrozenDistribution:
-        return FrozenDistribution(cls, *args)
+    def freeze(cls, **kwargs) -> RandomVariable:
+        raise NotImplementedError(f"Freeze is not implemented for {cls.__name__}")
 
     @staticmethod
     @abstractmethod
@@ -28,10 +29,5 @@ class Distribution(ABC):
 
     @staticmethod
     @abstractmethod
-    def p(*args, x: np.ndarray) -> np.ndarray:
+    def p(x: np.ndarray, *args) -> np.ndarray:
         raise NotImplementedError(f"pmf / pdf is not implemented")
-
-
-class BBN(ABC):
-    pass
-    # network.add_edge(

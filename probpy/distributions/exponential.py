@@ -1,19 +1,26 @@
 import numpy as np
 
-from probpy.core import Distribution, FrozenDistribution
+from probpy.core import Distribution, RandomVariable
 
 
 class Exponential(Distribution):
 
     @classmethod
-    def freeze(cls, lam: np.float32) -> FrozenDistribution:
-        return FrozenDistribution(cls, lam)
+    def freeze(cls, lam: np.float32 = None) -> RandomVariable:
+        if lam is None:
+            _sample = Exponential.sample
+            _p = Exponential.p
+        else:
+            def _sample(shape=()): return Exponential.sample(lam, shape)
+            def _p(x): return Exponential.p(x, lam)
+
+        return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
     def sample(lam: np.float32, shape=()) -> np.ndarray:
         return np.random.exponential(1 / lam, size=shape)
 
     @staticmethod
-    def p(lam: np.float32, x: np.ndarray) -> np.ndarray:
+    def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
         return lam * np.exp(-lam * x)
 

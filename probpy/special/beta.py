@@ -16,6 +16,7 @@ class Beta:
 
     @staticmethod
     def beta(x, y):
+        x = np.array(x)
         if x.shape != ():
             return np.array([Beta._beta_from_gamma(x_, y_) for x_, y_ in zip(x, y)])
         return Beta._beta_from_gamma(x, y)

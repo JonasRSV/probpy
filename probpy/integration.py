@@ -1,12 +1,12 @@
 from typing import Callable, Tuple
-from .core import FrozenDistribution
+from .core import RandomVariable
 import numpy as np
 
 
 def uniform_importance_sampling(size: int,
                                 function: Callable[[np.ndarray], np.ndarray],
                                 domain: Tuple[np.ndarray, np.ndarray],
-                                proposal: FrozenDistribution):
+                                proposal: RandomVariable):
     lower_bounds, upper_bounds = domain
 
     samples = proposal.sample(shape=size)

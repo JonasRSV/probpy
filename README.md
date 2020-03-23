@@ -11,6 +11,7 @@ Documentation
 - [Core](#core)
   - [MCMC](#MCMC)
     - [Metropolis](#metropolis)
+    - [Metropolis-Hastings](#metropolis-hastings)
   - [Integration](#integration)
     - [Uniform Importance Sampling](#uniform-importance-sampling)
   - [Distributions](#distributions)
@@ -46,14 +47,29 @@ As long as: p(x) * Z < q(x) * M, this will work, although it might be slow.
 from probpy.distributions import normal
 from progpy.mcmc import metropolis
 
-pdf = lambda x: normal.p(0, 1, x) + normal.p(6, 3, x) + normal.p(-6, 0.5, x)
-
-samples = metropolis(size=10000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10), M=30.0)
+pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
+samples = metropolis(size=100000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10), M=30.0)
 ```
 
 <p align="center">
   <img width=600px heigth=300px src="images/metropolis.png" />
 </p>
+
+
+#### Metropolis-Hastings
+
+```python3
+from probpy.distributions import normal
+from progpy.mcmc import metropolis_hastings
+
+pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
+samples = metropolis_hastings(size=50000, pdf=pdf, proposal=normal.freeze(sigma=0.5), initial=-5)
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/metropolis-hastings.png" />
+</p>
+
 
 ### Integration
 
@@ -66,7 +82,6 @@ from probpy.distributions import normal
 from probpy.integration import uniform_importance_sampling
 
 f = lambda x: -np.square(x) + 3
-
 result = uniform_importance_sampling(size=10000, 
                                      function=f, 
                                      domain=(-2, 2), 
@@ -82,7 +97,7 @@ result = uniform_importance_sampling(size=10000,
 Multivariate example
 
 ```python3
-from probpy.distributions import normal
+from probpy.distributions import multivariate_normal
 from probpy.integration import uniform_importance_sampling
 
 f = lambda x: -np.square(x[:, 0]) + np.square(x[:, 1])
@@ -120,7 +135,7 @@ n = normal.sample(mu, sigma, samples)
 
 # PDF
 x = np.linspace(-4, 4, 100)
-n = normal.p(mu, sigma, x)
+n = normal.p(x, mu, sigma)
 ```
 
 <p align="center">
@@ -146,7 +161,7 @@ n = multivariate_normal.sample(mu, sigma, samples)
 
 # PDF
 X = ...
-P = multivariate_normal.p(mu, sigma, X)
+P = multivariate_normal.p(X, mu, sigma)
 ```
 
 <p align="center">
@@ -165,7 +180,7 @@ n = uniform.sample(a, b, samples)
 
 # PDF
 x = np.linspace(-4, 4, 100)
-n = uniform.p(a, b, x)
+n = uniform.p(x, a, b)
 ```
 
 <p align="center">
@@ -186,7 +201,7 @@ n = multivariate_uniform.sample(a, b, samples)
 
 # PDF
 X = ...
-P = multivariate_uniform.p(a, b, X)
+P = multivariate_uniform.p(X, a, b)
 ```
 
 <p align="center">
@@ -226,7 +241,7 @@ categorical.one_hot(n, 3)
 
 # PDF
 c = 2
-categorical.p(p, c)
+categorical.p(c, p)
 
 ```
 
@@ -246,7 +261,7 @@ n = dirichlet.sample(alpha, samples)
 
 
 x = ...
-p = dirichlet.p(alpha, x)
+p = dirichlet.p(x, alpha)
 
 ```
 
@@ -268,7 +283,7 @@ n = beta.sample(a, b, samples)
 
 
 x = np.linspace(0.01, 0.99, 100)
-y = beta.p(a, b, x)
+y = beta.p(x, a, b)
 
 ```
 
@@ -290,7 +305,7 @@ n = exponential.sample(lam, samples)
 
 # PDF
 x = np.linspace(0.0, 5, 100)
-y = exponential.p(lam, x)
+y = exponential.p(x, lam)
 
 ```
 
@@ -311,7 +326,7 @@ _n = binomial.sample(n, p, samples)
 
 # PDF
 x = np.arange(0, 20)
-y = binomial.p(n, p, x)
+y = binomial.p(x, n, p)
 
 ```
 
@@ -331,7 +346,7 @@ _n = multinomial.sample(n, p, samples)
 
 # PDF
 x = np.array([[i, j, k] for i in range(n + 1) for j in range(n + 1) for k in range(n + 1) if i + j + k == n])
-y = multinomial.p(n, p, x)
+y = multinomial.p(x, n, p)
 
 ```
 

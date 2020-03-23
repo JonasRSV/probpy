@@ -23,6 +23,7 @@ class Gamma:
 
     @staticmethod
     def gamma(z):
+        z = np.array(z)
         if z.shape != ():
             return np.array([Gamma._gamma(z_).real for z_ in z])
         return Gamma._gamma(z).real
