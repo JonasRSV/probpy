@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 
 # Taken from https://sv.wikipedia.org/wiki/Gammafunktionen

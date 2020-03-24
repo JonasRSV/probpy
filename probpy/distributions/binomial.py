@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -23,6 +24,7 @@ class Binomial(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def _combinations_high_n(n, x):
         # Not broadcastable but deals well with large n
         # Might suffer some precision problems though
@@ -33,10 +35,12 @@ class Binomial(Distribution):
         return res
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(n: int, p: np.float32, shape=()) -> np.ndarray:
         return np.random.binomial(n, p, size=shape)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, n: int, p: np.float32) -> np.ndarray:
         constants = np.array([Binomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.float_power(p, x) * np.float_power(1 - p, n - x)

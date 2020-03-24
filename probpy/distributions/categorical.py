@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -17,13 +18,16 @@ class Categorical(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(p: np.ndarray, shape=()) -> np.ndarray:
         return np.random.choice(np.arange(p.size), p=p, size=shape)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, p: np.ndarray) -> np.ndarray:
         return p[x]
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def one_hot(samples: np.ndarray, size: int) -> np.ndarray:
         return np.eye(size)[samples]

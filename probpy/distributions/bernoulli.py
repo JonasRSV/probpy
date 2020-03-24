@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -17,12 +18,14 @@ class Bernoulli(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(p: np.float32, shape = ()) -> np.ndarray:
         if type(shape) == int:
             return (np.random.rand(shape) < p).astype(np.float32)
         return (np.random.rand(*shape) < p).astype(np.float32)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, p: np.float32) -> np.ndarray:
         res = np.zeros_like(x)
         res[x != 1.0] = 1 - p

@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -17,10 +18,12 @@ class Exponential(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(lam: np.float32, shape=()) -> np.ndarray:
         return np.random.exponential(1 / lam, size=shape)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
         return lam * np.exp(-lam * x)
 

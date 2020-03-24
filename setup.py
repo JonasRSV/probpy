@@ -8,7 +8,7 @@ setuptools.setup(
     description="Probabilistic utilities for numpy",
     url="https://github.com/JonasRSV/probpy",
     packages=setuptools.find_packages(),
-    install_requires=["numpy=1.18.1"],
+    install_requires=["numpy=1.18.1", "numba==0.48"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

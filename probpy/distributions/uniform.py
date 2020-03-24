@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -23,6 +24,7 @@ class Uniform(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(a: np.ndarray, b: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
         if type(shape) == int:
             return a + np.random.rand(shape) * (b - a)
@@ -30,6 +32,7 @@ class Uniform(Distribution):
         return a + np.random.rand(*shape) * (b - a)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return ((a < x) & (x < b)).astype(np.float32) / (b - a)
 

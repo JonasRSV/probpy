@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -27,10 +28,12 @@ class MultiVariateNormal(Distribution):
         return RandomVariable(_sample, _p, shape=shape)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(mu: np.ndarray, sigma: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
         return np.random.multivariate_normal(mu, sigma, size=shape)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def p(X: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
         normalizing_constant = np.float_power(2 * np.pi, -mu.size / 2) * np.float_power(np.linalg.det(sigma), -0.5)
         return np.array(
@@ -57,10 +60,12 @@ class Normal(Distribution):
         return RandomVariable(_sample, _p, shape=())
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(mu: np.ndarray, sigma: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
         return np.random.normal(mu, np.sqrt(sigma), size=shape)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
         normalizing_constant = np.sqrt(2 * np.pi * sigma)
         return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant

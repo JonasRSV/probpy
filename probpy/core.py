@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 import numpy as np
-
+import numba
 
 class RandomVariable:
     def __init__(self, _sample, _p, shape=None):

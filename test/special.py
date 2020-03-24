@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
+import time
 from scipy.special import gamma as gamma_
 from scipy.special import beta as beta_
 from probpy.special import gamma

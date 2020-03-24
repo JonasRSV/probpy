@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 from probpy.special import gamma
@@ -20,6 +21,7 @@ class Dirichlet(Distribution):
         return RandomVariable(_sample, _p, shape)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(alpha: np.ndarray, shape=()) -> np.ndarray:
         return np.random.dirichlet(alpha, size=shape)
 

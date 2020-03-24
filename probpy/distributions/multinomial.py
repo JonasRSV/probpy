@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable
 
@@ -27,6 +28,7 @@ class Multinomial(Distribution):
         return RandomVariable(_sample, _p, shape=shape)
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
     def _combinations_high_n(_, x):
         # Not broadcastable but deals well with large n
         # Might suffer some precision problems though
@@ -41,10 +43,12 @@ class Multinomial(Distribution):
         return res
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def sample(n: int, p: np.ndarray, shape=()) -> np.ndarray:
         return np.random.multinomial(n, p, size=shape)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, n: int, p: np.float32) -> np.ndarray:
         constants = np.array([Multinomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.prod(np.float_power(p, x), axis=1)

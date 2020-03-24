@@ -60,10 +60,11 @@ samples = metropolis(size=100000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10
 
 ```python3
 from probpy.distributions import normal
-from progpy.mcmc import metropolis_hastings
+from progpy.mcmc import metropolis_hastings, fast_metropolis_hastings
 
 pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
-samples = metropolis_hastings(size=50000, pdf=pdf, proposal=normal.freeze(sigma=0.5), initial=-5)
+samples = metropolis_hastings(size=50000, pdf=pdf, proposal=normal.freeze(sigma=0.5), initial=-5) # This one takes generic proposal
+samples = fast_metropolis_hastings(size=50000, pdf=pdf, initial=-5.0, energy=1.0) # This one is much faster
 ```
 
 <p align="center">
