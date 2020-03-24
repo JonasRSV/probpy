@@ -14,6 +14,9 @@ Documentation
     - [Metropolis-Hastings](#metropolis-hastings)
   - [Integration](#integration)
     - [Uniform Importance Sampling](#uniform-importance-sampling)
+  - [Density Estimation](#density-estimation)
+    - [Non-parametric UCKD](#uckd)
+    - [Non-parametric RCKD](#rckd)
   - [Distributions](#distributions)
     - [Normal](#normal)
     - [Multivariate Normal](#multivariate-normal)
@@ -116,6 +119,70 @@ results = uniform_importance_sampling(size=100000,
 <p align="center">
   <img width=600px heigth=300px src="images/uniform_importance_sampling_multivariate.png" />
 </p>
+
+### Density Estimation
+
+
+#### UCKD
+
+> Un-normalised Convolution Kernel Density
+
+```python3
+from probpy.distributions import normal
+from probpy.density import UCKD
+from probpy.mcmc import fast_metropolis_hastings
+
+def distribution(x):
+    return 0.3333 * normal.p(x, -2, 1) + 0.3333 * normal.p(x, 2, 0.2) + 0.3333 * normal.p(x, 4, 0.2)
+
+
+samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0) # Create some sample to fit
+
+density = UCKD(variance=5.0)
+density.fit(samples)
+
+lb, ub = -6, 6
+n = 2000
+
+x = np.linspace(lb, ub, n)
+y = density.p(x)
+y = y / (y.sum() / (n / (ub - lb))) # To make nice plot we renormalize
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/uckd.png" />
+</p>
+
+#### RCKD
+
+> Renormalized Convolution Kernel Density (Much slower than UCKD)
+
+```python3
+from probpy.distributions import normal
+from probpy.density import RCKD
+from probpy.mcmc import fast_metropolis_hastings
+
+def distribution(x):
+    return 0.3333 * normal.p(x, -2, 1) + 0.3333 * normal.p(x, 2, 0.2) + 0.3333 * normal.p(x, 4, 0.2)
+
+
+samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0) # Create some sample to fit
+
+density = RCKD(variance=5.0, error=1)
+density.fit(samples)
+
+lb, ub = -6, 6
+n = 2000
+
+x = np.linspace(lb, ub, n)
+y = density.p(x) # No need to renormalize here
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/rckd.png" />
+</p>
+
 
 
 ### Distributions

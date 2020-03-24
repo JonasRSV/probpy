@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 import numpy as np
-import numba
+
 
 class RandomVariable:
     def __init__(self, _sample, _p, shape=None):
@@ -31,3 +31,13 @@ class Distribution(ABC):
     @abstractmethod
     def p(x: np.ndarray, *args) -> np.ndarray:
         raise NotImplementedError(f"pmf / pdf is not implemented")
+
+
+class Density(ABC):
+
+    @abstractmethod
+    def fit(self, particles: np.ndarray):
+        raise NotImplementedError()
+
+    def p(self, particles: np.ndarray):
+        raise NotImplementedError()

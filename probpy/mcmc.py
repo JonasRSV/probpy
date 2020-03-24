@@ -34,8 +34,10 @@ def fast_metropolis_hastings(size: int,
                              energy: float = 1.0):
     initial = np.array(initial)
     dim = initial.size
-    if dim == 1: jumps = np.random.normal(0, energy, size=size)
-    else: jumps = np.random.multivariate_normal(np.zeros(dim), np.eye(dim) * energy, size=size)
+    if dim == 1:
+        jumps = np.random.normal(0, energy, size=size)
+    else:
+        jumps = np.random.multivariate_normal(np.zeros(dim), np.eye(dim) * energy, size=size)
 
     barriers = np.random.rand(size)
     p = initial
@@ -69,7 +71,6 @@ def metropolis(size: int,
 
         rejection_probability = np.random.rand(remainder)
         accept_mask = accept_rate > rejection_probability
-
 
         samples.extend(sample[accept_mask])
 
