@@ -9,3 +9,4 @@ from .beta import Beta as beta
 from .exponential import Exponential as exponential
 from .binomial import Binomial as binomial
 from .multinomial import Multinomial as multinomial
+from .gamma import Gamma as gamma

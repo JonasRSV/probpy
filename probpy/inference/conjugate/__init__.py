@@ -1,0 +1,4 @@
+from .normal import NormalNormal_MuPrior1D, MultivariateNormalNormal_MuPrior
+from .bernoulli import BernoulliBeta_PPrior
+from .categorical import CategoricalDirichlet_PPrior
+from .exponential import ExponentialGamma_LambdaPrior

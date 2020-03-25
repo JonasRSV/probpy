@@ -11,9 +11,15 @@ Documentation
 - [Core](#core)
   - [Inference](#inference)
     - [Posterior](#posterior)
-      - [Normal Normal](#normal-normal)
-        - [univariate unknown mean](#univariate-unknown-mean)
-        - [multivariate unknown mean](#multivariate-unknown-mean)
+      - [Normal Likelihood](#normal-likelihood)
+        - [Normal prior mean](#normal-prior-mean)
+        - [Multivariate normal prior mean](#multivariate-normal-prior-mean)
+      - [Bernoulli Likelihood](#bernoulli-likelihood)
+        - [Beta Prior](#beta-prior)
+      - [Categorical Likelihood](#categorical-likelihood)
+        - [Dirichlet Prior](#dirichlet-prior)
+      - [Exponential Likelihood](#exponential-likelihood)
+        - [Gamma Prior](#gamma-prior)
   - [MCMC](#MCMC)
     - [Metropolis](#metropolis)
     - [Metropolis-Hastings](#metropolis-hastings)
@@ -34,6 +40,7 @@ Documentation
     - [Exponential](#exponential)
     - [Binomial](#binomial)
     - [Multinomial](#multinomial)
+    - [Gamma](#gamma)
 
 
 
@@ -49,9 +56,9 @@ Central functionality
 
 The posteriors will initially try to use conjugate priors, if they exist, because it is much more efficient. If no prior is implemented it will use numerical methods (or throw an error at the moment)
 
-##### Normal Normal
+##### Normal Likelihood
 
-###### univariate unknown mean
+###### Normal prior mean
 
 ```python
 from probpy.distributions import normal
@@ -69,7 +76,7 @@ result = posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/normal_1d_mean_conjugate.png" />
 </p>
 
-###### multivariate unknown mean
+###### Multivariate normal prior mean
 
 ```python
 from probpy.distributions import multivariate_normal
@@ -91,6 +98,67 @@ result = posterior(data, likelihood=likelihood, priors=prior)
 
 <p align="center">
   <img width=600px heigth=300px src="images/multinormal_mean_conjugate.png" />
+</p>
+
+##### Bernoulli Likelihood
+
+###### Beta Prior
+
+```python
+from probpy.distributions import bernoulli, beta
+from probpy.inference import posterior
+
+prior = beta.freeze(a=1.0, b=3.0)
+likelihood = bernoulli.freeze()
+
+data = np.array([1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0])
+result = posterior(data, likelihood=likelihood, priors=prior)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/bernoulli_beta_conjugate.png" />
+</p>
+
+##### Categorical Likelihood
+
+###### Dirichlet Prior
+
+```python
+from probpy.distributions import categorical, dirichlet
+from probpy.inference import posterior
+
+prior = dirichlet.freeze(alpha=np.ones(5))
+likelihood = categorical.freeze(dim=5)
+
+data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
+result = posterior(data, likelihood=likelihood, priors=prior)
+
+prior_samples = prior.sample(shape=10000).sum(axis=0)
+posterior_samples = result.sample(shape=10000).sum(axis=0)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/categorical_dirichlet_conjugate.png" />
+</p>
+
+
+##### Exponential Likelihood
+
+###### Gamma Prior
+
+```python
+prior = gamma.freeze(a=9, b=2)
+likelihood = exponential.freeze()
+
+data = exponential.sample(lam=1, shape=100)
+result = posterior(data, likelihood=likelihood, priors=prior)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/exponential_gamma_conjugate.png" />
 </p>
 
 ### MCMC
@@ -475,4 +543,20 @@ y = multinomial.p(x, n, p)
 
 <p align="center">
   <img width=600px heigth=300px src="images/multinomial.png" />
+</p>
+
+#### Gamma
+
+```python3
+from probpy.distributions import gamma
+
+n = gamma.sample(9, 2, 10000)
+
+x = np.linspace(0, 14, 1000)
+true = gamma.p(x, a, b)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/gamma.png" />
 </p>

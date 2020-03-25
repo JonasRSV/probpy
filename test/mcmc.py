@@ -53,11 +53,11 @@ class TestMCMC(unittest.TestCase):
 
         samples = samples[1000:]
 
-        # sb.distplot(samples)
-        # plt.tight_layout()
-        # plt.xlim([-10, 10])
-        # plt.savefig("../images/metropolis.png", bbox_inches="tight")
-        # plt.show()
+        sb.distplot(samples)
+        plt.tight_layout()
+        plt.xlim([-10, 10])
+        plt.savefig("../images/metropolis.png", bbox_inches="tight")
+        plt.show()
 
 
 if __name__ == '__main__':

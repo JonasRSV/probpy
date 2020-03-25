@@ -5,31 +5,31 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Categorical(Distribution):
-    probabilities = "p"
+    probabilities = "probabilities"
 
     @classmethod
-    def freeze(cls, p: np.ndarray = None, dim: int = None) -> RandomVariable:
-        if p is None:
+    def freeze(cls, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
+        if probabilities is None:
             _sample = Categorical.sample
             _p = Categorical.p
             shape = dim
         else:
-            def _sample(shape=()): return Categorical.sample(p, shape)
-            def _p(x): return Categorical.p(x, p)
-            shape = p.size
+            def _sample(shape=()): return Categorical.sample(probabilities, shape)
+            def _p(x): return Categorical.p(x, probabilities)
+            shape = probabilities.size
 
-        parameters = { Categorical.probabilities: Parameter(shape=shape, value=p) }
+        parameters = { Categorical.probabilities: Parameter(shape=shape, value=probabilities) }
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(p: np.ndarray, shape=()) -> np.ndarray:
-        return np.random.choice(np.arange(p.size), p=p, size=shape)
+    def sample(probabilities: np.ndarray, shape=()) -> np.ndarray:
+        return np.random.choice(np.arange(probabilities.size), p=probabilities, size=shape)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)
-    def p(x: np.ndarray, p: np.ndarray) -> np.ndarray:
-        return p[x]
+    def p(x: np.ndarray, probabilities: np.ndarray) -> np.ndarray:
+        return probabilities[x]
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

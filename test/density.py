@@ -41,7 +41,7 @@ class DensityTest(unittest.TestCase):
 
     def test_rckd_by_inspection(self):
         timestamp = time.time()
-        samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0).reshape(-1, 1)
+        samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0)
         print("making samples", time.time() - timestamp)
 
         density = RCKD(variance=5.0, error=1, verbose=True)

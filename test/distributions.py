@@ -11,6 +11,7 @@ from probpy.distributions import beta
 from probpy.distributions import exponential
 from probpy.distributions import binomial
 from probpy.distributions import multinomial
+from probpy.distributions import gamma
 
 
 class TestDistributions(unittest.TestCase):
@@ -74,6 +75,10 @@ class TestDistributions(unittest.TestCase):
         p, n = np.array([0.3, 0.4, 0.3]), 20
         _n = multinomial.sample(n, p, 10000)
         np.testing.assert_almost_equal((_n / n).mean(axis=0), p, decimal=1)
+
+        a, b = 9.0, 2.0
+        n = gamma.sample(a, b, 10000)
+        self.assertAlmostEqual(n.mean(), a / b, delta=1e-1)
 
     def test_normal_by_inspection(self):
         samples = 10000
@@ -374,6 +379,28 @@ class TestDistributions(unittest.TestCase):
 
         plt.show()
 
+    def test_gamma_by_inspection(self):
+        a, b = 9, 2
+        samples = 10000
+        n = gamma.sample(a, b, samples)
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"a: {a} b: {b}-- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.distplot(n)
+
+        plt.subplot(2, 1, 2)
+        plt.title(f"True", fontsize=20)
+        x = np.linspace(0.0, 14, 100)
+        y = gamma.p(x, a, b)
+        sb.lineplot(x, y)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../images/gamma.png", bbox_inches="tight")
+        plt.show()
+
     def test_freezing(self):
         frozen = normal.freeze(mu=0.6, sigma=0.9)
         s1 = frozen.sample(shape=100000)
@@ -447,7 +474,7 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = bernoulli.freeze(p=0.5)
+        frozen = bernoulli.freeze(probability=0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
@@ -476,7 +503,7 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = binomial.freeze(n=3, p=0.5)
+        frozen = binomial.freeze(n=3, probability=0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
@@ -484,7 +511,7 @@ class TestDistributions(unittest.TestCase):
         s2 = frozen.sample(0.5, shape=100000)
         p2 = frozen.p(s2, 0.5)
 
-        frozen = binomial.freeze(p=0.5)
+        frozen = binomial.freeze(probability=0.5)
         s3 = frozen.sample(3, shape=100000)
         p3 = frozen.p(s3, 3)
 
@@ -494,7 +521,7 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = categorical.freeze(p=np.ones(2) * 0.5)
+        frozen = categorical.freeze(probabilities=np.ones(2) * 0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
@@ -528,7 +555,7 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
         p = np.ones(4) * 0.25
-        frozen = multinomial.freeze(n=3, p=p)
+        frozen = multinomial.freeze(n=3, probabilities=p)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
@@ -536,9 +563,27 @@ class TestDistributions(unittest.TestCase):
         s2 = frozen.sample(p, shape=100000)
         p2 = frozen.p(s2, p)
 
-        frozen = multinomial.freeze(p=p)
+        frozen = multinomial.freeze(probabilities=p)
         s3 = frozen.sample(3, shape=100000)
         p3 = frozen.p(s3, 3)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = gamma.freeze(a=2.0, b=1.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = gamma.freeze(a=2.0)
+        s2 = frozen.sample(1.0, shape=100000)
+        p2 = frozen.p(s2, 1.0)
+
+        frozen = gamma.freeze(b=1.0)
+        s3 = frozen.sample(2.0, shape=100000)
+        p3 = frozen.p(s3, 2.0)
 
         self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)

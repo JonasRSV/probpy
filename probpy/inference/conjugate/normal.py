@@ -1,32 +1,18 @@
 from probpy.core import RandomVariable
 from typing import Tuple
 from probpy.distributions import normal, multivariate_normal
+from .identification import _check_no_none_parameters, _check_only_none_is
 import numpy as np
 
 
-def _check_no_none_parameters(rv: RandomVariable):
-    for parameter in rv.parameters.values():
-        if parameter.value is None:
-            return False
-    return True
-
-
-def _check_only_none_is(rv: RandomVariable, none_name: str):
-    for name, parameter in rv.parameters.items():
-        if name == none_name:
-            if parameter.value is not None:
-                return False
-        else:
-            if parameter.value is None:
-                return False
-    return True
-
-
 class NormalNormal_MuPrior1D:
+    """Conjugate prior for univariate normal likelihood with unknown mean"""
 
     @staticmethod
     def check(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
-        if _check_no_none_parameters(priors[0]) and _check_only_none_is(likelihood, normal.mu):
+        if priors[0].cls is normal \
+                and _check_no_none_parameters(priors[0]) \
+                and _check_only_none_is(likelihood, normal.mu):
             return True
         return False
 
@@ -51,10 +37,13 @@ class NormalNormal_MuPrior1D:
 
 
 class MultivariateNormalNormal_MuPrior:
+    """Conjugate prior for multivariate normal likelihood with unknown mean"""
 
     @staticmethod
     def check(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
-        if _check_no_none_parameters(priors[0]) and _check_only_none_is(likelihood, multivariate_normal.mu):
+        if priors[0].cls is multivariate_normal \
+                and _check_no_none_parameters(priors[0]) \
+                and _check_only_none_is(likelihood, multivariate_normal.mu):
             return True
         return False
 
