@@ -1,21 +1,25 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Categorical(Distribution):
+    probabilities = "p"
 
     @classmethod
-    def freeze(cls, p: np.ndarray = None) -> RandomVariable:
+    def freeze(cls, p: np.ndarray = None, dim: int = None) -> RandomVariable:
         if p is None:
             _sample = Categorical.sample
             _p = Categorical.p
+            shape = dim
         else:
             def _sample(shape=()): return Categorical.sample(p, shape)
             def _p(x): return Categorical.p(x, p)
+            shape = p.size
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = { Categorical.probabilities: Parameter(shape=shape, value=p) }
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)

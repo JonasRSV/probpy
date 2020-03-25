@@ -1,10 +1,11 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Bernoulli(Distribution):
+    probability = "p"
 
     @classmethod
     def freeze(cls, p: np.float32 = None) -> RandomVariable:
@@ -15,7 +16,8 @@ class Bernoulli(Distribution):
             def _sample(shape=()): return Bernoulli.sample(p, shape)
             def _p(x): return Bernoulli.p(x, p)
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = { Bernoulli.probability: Parameter(shape=(), value=p) }
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)

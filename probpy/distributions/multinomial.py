@@ -1,17 +1,19 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Multinomial(Distribution):
+    n = "n"
+    probabilities = "p"
 
     @classmethod
-    def freeze(cls, n: int = None, p: np.ndarray = None) -> RandomVariable:
+    def freeze(cls, n: int = None, p: np.ndarray = None, dim: int = None) -> RandomVariable:
         if n is None and p is None:
             _sample = Multinomial.sample
             _p = Multinomial.p
-            shape = None
+            shape = dim
         elif n is None:
             def _sample(n: np.ndarray, shape: np.ndarray = ()): return Multinomial.sample(n, p, shape)
             def _p(x: np.ndarray, n: np.ndarray): return Multinomial.p(x, n, p)
@@ -25,7 +27,12 @@ class Multinomial(Distribution):
             def _p(x: np.ndarray): return Multinomial.p(x, n, p)
             shape = p.size
 
-        return RandomVariable(_sample, _p, shape=shape)
+        parameters = {
+            Multinomial.n: Parameter(shape=(), value=n),
+            Multinomial.probabilities: Parameter(shape=shape, value=p)
+        }
+
+        return RandomVariable(_sample, _p, shape=shape, parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

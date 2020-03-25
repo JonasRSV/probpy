@@ -1,21 +1,23 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class MultiVariateNormal(Distribution):
+    mu = "mu"
+    sigma = "sigma"
 
     @classmethod
-    def freeze(cls, mu: np.ndarray = None, sigma: np.ndarray = None) -> RandomVariable:
+    def freeze(cls, mu: np.ndarray = None, sigma: np.ndarray = None, k=None) -> RandomVariable:
         if mu is None and sigma is None:
             _sample = Normal.sample
             _p = Normal.p
-            shape = None
+            shape = k
         elif mu is None:
             def _sample(mu: np.ndarray, shape: np.ndarray = ()): return MultiVariateNormal.sample(mu, sigma, shape)
             def _p(x: np.ndarray, mu: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
-            shape = sigma.ndim
+            shape = sigma.shape[0]
         elif sigma is None:
             def _sample(sigma: np.ndarray, shape: np.ndarray = ()): return MultiVariateNormal.sample(mu, sigma, shape)
             def _p(x: np.ndarray, sigma: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
@@ -25,7 +27,12 @@ class MultiVariateNormal(Distribution):
             def _p(x: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
             shape = mu.size
 
-        return RandomVariable(_sample, _p, shape=shape)
+        parameters = {
+            MultiVariateNormal.mu: Parameter(shape=shape, value=mu),
+            MultiVariateNormal.sigma: Parameter(shape=(shape, shape), value=sigma)
+        }
+
+        return RandomVariable(_sample, _p, shape=shape, parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
@@ -41,6 +48,8 @@ class MultiVariateNormal(Distribution):
 
 
 class Normal(Distribution):
+    mu = "mu"
+    sigma = "sigma"
 
     @classmethod
     def freeze(cls, mu: np.ndarray = None, sigma: np.ndarray = None) -> RandomVariable:
@@ -57,7 +66,12 @@ class Normal(Distribution):
             def _sample(shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
             def _p(x: np.ndarray): return Normal.p(x, mu, sigma)
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = {
+            Normal.mu: Parameter((), mu),
+            Normal.sigma: Parameter((), sigma)
+        }
+
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)

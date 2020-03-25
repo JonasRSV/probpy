@@ -9,6 +9,11 @@ Documentation
 ---
 
 - [Core](#core)
+  - [Inference](#inference)
+    - [Posterior](#posterior)
+      - [Normal Normal](#normal-normal)
+        - [univariate unknown mean](#univariate-unknown-mean)
+        - [multivariate unknown mean](#multivariate-unknown-mean)
   - [MCMC](#MCMC)
     - [Metropolis](#metropolis)
     - [Metropolis-Hastings](#metropolis-hastings)
@@ -37,6 +42,56 @@ Documentation
 ## Core 
 
 Central functionality
+
+### Inference
+
+#### Posterior
+
+The posteriors will initially try to use conjugate priors, if they exist, because it is much more efficient. If no prior is implemented it will use numerical methods (or throw an error at the moment)
+
+##### Normal Normal
+
+###### univariate unknown mean
+
+```python
+from probpy.distributions import normal
+from probpy.inference import posterior
+
+prior = normal.freeze(mu=1.0, sigma=1.0)
+likelihood = normal.freeze(sigma=2.0)
+
+data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
+result = posterior(data, likelihood=likelihood, priors=prior) 
+# result is also a r.v with functions sample & p
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/normal_1d_mean_conjugate.png" />
+</p>
+
+###### multivariate unknown mean
+
+```python
+from probpy.distributions import multivariate_normal
+from probpy.inference import posterior
+import numpy as np
+
+prior = multivariate_normal.freeze(mu=np.ones(2), sigma=np.eye(2))
+likelihood = multivariate_normal.freeze(sigma=np.eye(2) * 10)
+
+# make some data 
+data_mean = np.ones(2) * -2
+data_sigma = np.random.rand(1, 2) * 0.7
+data_sigma = data_sigma.T @ data_sigma + np.eye(2) * 1
+data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, shape=200)
+
+result = posterior(data, likelihood=likelihood, priors=prior) 
+# result is also a r.v with functions sample & p
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/multinormal_mean_conjugate.png" />
+</p>
 
 ### MCMC
 

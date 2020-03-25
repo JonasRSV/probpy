@@ -1,10 +1,12 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Binomial(Distribution):
+    n = "n"
+    probability = "p"
 
     @classmethod
     def freeze(cls, n: int = None, p: np.float32 = None) -> RandomVariable:
@@ -21,7 +23,12 @@ class Binomial(Distribution):
             def _sample(shape: np.ndarray = ()): return Binomial.sample(n, p, shape)
             def _p(x: np.ndarray): return Binomial.p(x, n, p)
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = {
+            Binomial.n: Parameter(shape=(), value=n),
+            Binomial.probability: Parameter(shape=(), value=p)
+        }
+
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

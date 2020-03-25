@@ -1,10 +1,11 @@
 import numpy as np
 import numba
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Exponential(Distribution):
+    lam = "lam"
 
     @classmethod
     def freeze(cls, lam: np.float32 = None) -> RandomVariable:
@@ -15,7 +16,8 @@ class Exponential(Distribution):
             def _sample(shape=()): return Exponential.sample(lam, shape)
             def _p(x): return Exponential.p(x, lam)
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = { Exponential.lam: Parameter(shape=(), value=lam) }
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)

@@ -1,10 +1,12 @@
 import numpy as np
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Parameter
 from probpy.special import beta
 
 
 class Beta(Distribution):
+    a = "a"
+    b = "b"
 
     @classmethod
     def freeze(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
@@ -21,7 +23,12 @@ class Beta(Distribution):
             def _sample(shape: np.ndarray = ()): return Beta.sample(a, b, shape)
             def _p(x: np.ndarray): return Beta.p(x, a, b)
 
-        return RandomVariable(_sample, _p, shape=())
+        parameters = {
+            Beta.a: Parameter(shape=(), value=a),
+            Beta.b: Parameter(shape=(), value=b)
+        }
+
+        return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     def sample(a: np.float32, b: np.float32, shape=()) -> np.ndarray:

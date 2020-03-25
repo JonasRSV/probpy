@@ -1,18 +1,48 @@
+from typing import Tuple, Dict, Union
 from abc import abstractmethod, ABC
 import numpy as np
 
 
+class Parameter:
+    def __init__(self, shape: Union[Tuple, int], value: np.ndarray):
+        self.shape = shape
+        self.value = value
+
+
 class RandomVariable:
-    def __init__(self, _sample, _p, shape=None):
+    def __init__(self, _sample, _p,
+                 shape=None,
+                 parameters: Dict[str, Parameter] = {},
+                 cls: object = None):
         self._sample = _sample
         self._p = _p
         self.shape = shape
+        self.parameters = parameters
+        self.cls = cls
+
+        for name, parameter in parameters.items():
+            self.__setattr__(name, parameter.value)
 
     def sample(self, *args, shape: np.ndarray = ()):
         return self._sample(*args, shape=shape)
 
     def p(self, x, *args):
         return self._p(x, *args)
+
+    def __str__(self):
+        title = f"{self.cls.__name__} -- output: {self.shape}\n"
+        body = '\n'.join(
+            [f'{name}: {parameter.shape} - {parameter.value}' for name, parameter in self.parameters.items()])
+        return title + body
+
+    def __setattr__(self, parameter, value):
+        if hasattr(self, "parameters") and parameter in self.parameters:
+            if value is not None:
+                value = np.array(value)
+                self.parameters[parameter].shape = value.shape
+            self.parameters[parameter].value = value
+
+        super().__setattr__(parameter, value)
 
 
 class Distribution(ABC):
