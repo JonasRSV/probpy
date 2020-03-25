@@ -1,16 +1,16 @@
 WIP
 ---
 
-End result is hopefully a PGM module built with numpy
+End result is a probability library built in numpy
 
 
 
 Documentation
 ---
 
-- [Core](#core)
-  - [Inference](#inference)
-    - [Posterior](#posterior)
+- [Inference](#inference)
+  - [Posterior](#posterior)
+    - [Conjugate priors](#conjugate-priors)
       - [Normal Likelihood](#normal-likelihood)
         - [Normal prior mean](#normal-prior-mean)
         - [Multivariate normal prior mean](#multivariate-normal-prior-mean)
@@ -20,45 +20,44 @@ Documentation
         - [Dirichlet Prior](#dirichlet-prior)
       - [Exponential Likelihood](#exponential-likelihood)
         - [Gamma Prior](#gamma-prior)
-  - [MCMC](#MCMC)
-    - [Metropolis](#metropolis)
-    - [Metropolis-Hastings](#metropolis-hastings)
-  - [Integration](#integration)
-    - [Uniform Importance Sampling](#uniform-importance-sampling)
-  - [Density Estimation](#density-estimation)
-    - [Non-parametric UCKD](#uckd)
-    - [Non-parametric RCKD](#rckd)
-  - [Distributions](#distributions)
-    - [Normal](#normal)
-    - [Multivariate Normal](#multivariate-normal)
-    - [Uniform](#uniform)
-    - [Multivariate Uniform](#multivariate-uniform)
-    - [Bernoulli](#bernoulli)
-    - [Categorical](#categorical)
-    - [Dirichlet](#dirichlet)
-    - [Beta](#beta)
-    - [Exponential](#exponential)
-    - [Binomial](#binomial)
-    - [Multinomial](#multinomial)
-    - [Gamma](#gamma)
+- [MCMC](#MCMC)
+  - [Metropolis](#metropolis)
+  - [Metropolis-Hastings](#metropolis-hastings)
+- [Integration](#integration)
+  - [Uniform Importance Sampling](#uniform-importance-sampling)
+- [Density Estimation](#density-estimation)
+  - [Non-parametric UCKD](#uckd)
+  - [Non-parametric RCKD](#rckd)
+- [Distributions](#distributions)
+  - [Normal](#normal)
+  - [Multivariate Normal](#multivariate-normal)
+  - [Uniform](#uniform)
+  - [Multivariate Uniform](#multivariate-uniform)
+  - [Bernoulli](#bernoulli)
+  - [Categorical](#categorical)
+  - [Dirichlet](#dirichlet)
+  - [Beta](#beta)
+  - [Exponential](#exponential)
+  - [Binomial](#binomial)
+  - [Multinomial](#multinomial)
+  - [Gamma](#gamma)
 
 
 
 
 
-## Core 
 
-Central functionality
+# Inference
 
-### Inference
-
-#### Posterior
+## Posterior
 
 The posteriors will initially try to use conjugate priors, if they exist, because it is much more efficient. If no prior is implemented it will use numerical methods (or throw an error at the moment)
 
-##### Normal Likelihood
+### Conjugate priors
 
-###### Normal prior mean
+#### Normal Likelihood
+
+##### Normal prior mean
 
 ```python
 from probpy.distributions import normal
@@ -76,7 +75,7 @@ result = posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/normal_1d_mean_conjugate.png" />
 </p>
 
-###### Multivariate normal prior mean
+##### Multivariate normal prior mean
 
 ```python
 from probpy.distributions import multivariate_normal
@@ -100,9 +99,9 @@ result = posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/multinormal_mean_conjugate.png" />
 </p>
 
-##### Bernoulli Likelihood
+#### Bernoulli Likelihood
 
-###### Beta Prior
+##### Beta Prior
 
 ```python
 from probpy.distributions import bernoulli, beta
@@ -120,9 +119,9 @@ result = posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/bernoulli_beta_conjugate.png" />
 </p>
 
-##### Categorical Likelihood
+#### Categorical Likelihood
 
-###### Dirichlet Prior
+##### Dirichlet Prior
 
 ```python
 from probpy.distributions import categorical, dirichlet
@@ -144,11 +143,13 @@ posterior_samples = result.sample(shape=10000).sum(axis=0)
 </p>
 
 
-##### Exponential Likelihood
+#### Exponential Likelihood
 
-###### Gamma Prior
+##### Gamma Prior
 
 ```python
+from probpy.distributions import gamma, exponential
+from probpy.inference import posterior
 prior = gamma.freeze(a=9, b=2)
 likelihood = exponential.freeze()
 
@@ -161,11 +162,11 @@ result = posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/exponential_gamma_conjugate.png" />
 </p>
 
-### MCMC
+# MCMC
 
 Sampling algorithms
 
-#### Metropolis
+## Metropolis
 
 As long as: p(x) * Z < q(x) * M, this will work, although it might be slow. 
 
@@ -182,7 +183,7 @@ samples = metropolis(size=100000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10
 </p>
 
 
-#### Metropolis-Hastings
+## Metropolis-Hastings
 
 ```python3
 from probpy.distributions import normal
@@ -198,11 +199,11 @@ samples = fast_metropolis_hastings(size=50000, pdf=pdf, initial=-5.0, energy=1.0
 </p>
 
 
-### Integration
+# Integration
 
 Statistical integration algorithms 
 
-#### Uniform Importance Sampling
+## Uniform Importance Sampling
 
 ```python3
 from probpy.distributions import normal
@@ -243,10 +244,10 @@ results = uniform_importance_sampling(size=100000,
   <img width=600px heigth=300px src="images/uniform_importance_sampling_multivariate.png" />
 </p>
 
-### Density Estimation
+# Density Estimation
 
 
-#### UCKD
+## UCKD
 
 > Un-normalised Convolution Kernel Density
 
@@ -277,7 +278,7 @@ y = y / (y.sum() / (n / (ub - lb))) # To make nice plot we renormalize
   <img width=600px heigth=300px src="images/uckd.png" />
 </p>
 
-#### RCKD
+## RCKD
 
 > Renormalized Convolution Kernel Density (Much slower than UCKD)
 
@@ -308,12 +309,12 @@ y = density.p(x) # No need to renormalize here
 
 
 
-### Distributions
+# Distributions
 
 PDFs / PMFs and sampling functions (the sampling mostly just uses numpy.random.xx)
 
 
-#### Normal
+## Normal
 
 ```python3
 from probpy.distributions import normal
@@ -334,7 +335,7 @@ n = normal.p(x, mu, sigma)
 </p>
 
 
-#### Multivariate normal
+## Multivariate normal
 
 
 ```python3
@@ -359,7 +360,7 @@ P = multivariate_normal.p(X, mu, sigma)
   <img width=600px heigth=300px src="images/multi_normal.png" />
 </p>
 
-#### Uniform
+## Uniform
 
 ```python3
 from probpy.distributions import uniform
@@ -378,7 +379,7 @@ n = uniform.p(x, a, b)
   <img width=600px heigth=300px src="images/uniform.png" />
 </p>
 
-#### Multivariate uniform
+## Multivariate uniform
 
 ```python3
 from probpy.distributions import multivariate_uniform
@@ -399,7 +400,7 @@ P = multivariate_uniform.p(X, a, b)
   <img width=600px heigth=300px src="images/multi_uniform.png" />
 </p>
 
-#### Bernoulli
+## Bernoulli
 
 ```python3
 from probpy.distributions import bernoulli
@@ -417,7 +418,7 @@ bernoulli.p(p, 0.0)
   <img width=600px heigth=300px src="images/bernoulli.png" />
 </p>
 
-#### Categorical
+## Categorical
 
 ```python3
 from probpy.distributions import categorical
@@ -440,7 +441,7 @@ categorical.p(c, p)
   <img width=600px heigth=300px src="images/categorical.png" />
 </p>
 
-#### Dirichlet
+## Dirichlet
 
 ```python3
 from probpy.distributions import dirichlet
@@ -462,7 +463,7 @@ p = dirichlet.p(x, alpha)
   <img width=600px heigth=300px src="images/dirichlet.png" />
 </p>
 
-#### Beta
+## Beta
 
 ```python3
 from probpy.distributions import beta
@@ -483,7 +484,7 @@ y = beta.p(x, a, b)
 </p>
 
 
-#### Exponential
+## Exponential
 
 ```python3
 from probpy.distributions import exponential
@@ -504,7 +505,7 @@ y = exponential.p(x, lam)
   <img width=600px heigth=300px src="images/exponential.png" />
 </p>
 
-#### Binomial
+## Binomial
 
 ```python3
 from probpy.distributions import binomial
@@ -525,7 +526,7 @@ y = binomial.p(x, n, p)
   <img width=600px heigth=300px src="images/binomial.png" />
 </p>
 
-#### Multinomial
+## Multinomial
 
 ```python3
 from probpy.distributions import multinomial
@@ -545,7 +546,7 @@ y = multinomial.p(x, n, p)
   <img width=600px heigth=300px src="images/multinomial.png" />
 </p>
 
-#### Gamma
+## Gamma
 
 ```python3
 from probpy.distributions import gamma
