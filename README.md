@@ -13,6 +13,7 @@ Documentation
     - [Conjugate priors](#conjugate-priors)
       - [Normal Likelihood](#normal-likelihood)
         - [Normal prior mean](#normal-prior-mean)
+        - [Normal prior mean and variance](#normal-prior-mean-and-variance)
         - [Multivariate normal prior mean](#multivariate-normal-prior-mean)
       - [Bernoulli Likelihood](#bernoulli-likelihood)
         - [Beta Prior](#beta-prior)
@@ -20,6 +21,10 @@ Documentation
         - [Dirichlet Prior](#dirichlet-prior)
       - [Exponential Likelihood](#exponential-likelihood)
         - [Gamma Prior](#gamma-prior)
+      - [Binomial Likelihood](#binomial-likelihood)
+        - [Beta Prior](#beta-prior)
+      - [Multinomial Likelihood](#multinomial-likelihood)
+        - [Dirichlet Prior](#dirichlet-prior)
 - [MCMC](#MCMC)
   - [Metropolis](#metropolis)
   - [Metropolis-Hastings](#metropolis-hastings)
@@ -41,6 +46,10 @@ Documentation
   - [Binomial](#binomial)
   - [Multinomial](#multinomial)
   - [Gamma](#gamma)
+  - [Normal Inverse Gamma](#normal-inverse-gamma)
+  - [Geometric](#geometric)
+  - [Poisson](#poisson)
+  - [Hypergeometric](#hypergeometric)
 
 
 
@@ -73,6 +82,26 @@ result = posterior(data, likelihood=likelihood, priors=prior)
 
 <p align="center">
   <img width=600px heigth=300px src="images/normal_1d_mean_conjugate.png" />
+</p>
+
+##### Normal prior mean and variance
+
+
+```python
+from probpy.distributions import normal, normal_inverse_gamma
+from probpy.inference import posterior
+
+
+prior = normal_inverse_gamma.freeze(mu=1.0, lam=2.0, a=3.0, b=3.0)
+likelihood = normal.freeze()
+
+data = normal.sample(mu=-2.0, sigma=2.0, shape=100)
+result = posterior(data, likelihood=likelihood, priors=prior)
+# result is also a r.v with functions sample & p
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/normal_1d_normal_inverse_gamma_conjugate.png" />
 </p>
 
 ##### Multivariate normal prior mean
@@ -161,6 +190,50 @@ result = posterior(data, likelihood=likelihood, priors=prior)
 <p align="center">
   <img width=600px heigth=300px src="images/exponential_gamma_conjugate.png" />
 </p>
+
+#### Binomial Likelihood
+
+##### Beta Prior
+
+```python
+from probpy.distributions import binomial, beta
+from probpy.inference import posterior
+
+prior = beta.freeze(a=1.0, b=3.0)
+likelihood = binomial.freeze(n=5)
+
+data = np.array([0, 2, 4, 1, 1, 0])
+result = posterior(data, likelihood=likelihood, priors=prior)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/binomial_beta_conjugate.png" />
+</p>
+
+#### Multinomial Likelihood
+
+##### Dirichlet Prior
+
+```python
+from probpy.distributions import multinomial, dirichlet
+from probpy.inference import posterior
+
+prior = dirichlet.freeze(alpha=np.ones(3))
+likelihood = multinomial.freeze(n=3)
+
+data = np.array([[1, 1, 1], [0, 2, 1], [0, 0, 3], [0, 0, 3]])
+result = posterior(data, likelihood=likelihood, priors=prior)
+
+prior_samples = prior.sample(shape=10000).sum(axis=0)
+posterior_samples = result.sample(shape=10000).sum(axis=0)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/multinomial_dirichlet_conjugate.png" />
+</p>
+
 
 # MCMC
 
@@ -561,3 +634,83 @@ true = gamma.p(x, a, b)
 <p align="center">
   <img width=600px heigth=300px src="images/gamma.png" />
 </p>
+
+## Normal Inverse Gamma
+
+```python3
+import numpy as np
+from probpy.distributions import normal_inverse_gamma
+
+n = normal_inverse_gamma.sample(2, 1, 2, 2, shape=10000)
+
+points = 100
+x = np.linspace(-2, 6, points)
+y = np.linspace(0.1, 6, points)
+
+X, Y = np.meshgrid(x, y)
+mesh = np.concatenate([X[:, :, None], Y[:, :, None]], axis=2).reshape(-1, 2)
+
+Z = normal_inverse_gamma.p(mesh, mu, lam, a, b).reshape(points, points)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/normal_inverse_gamma.png" />
+</p>
+
+## Geometric
+
+
+```python3
+import numpy as np
+from probpy.distributions import geometric
+
+n = geometric.sample(0.7, 10000)
+
+data = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+p = geometric.p(data, 0.7)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/geometric.png" />
+</p>
+
+## Poisson
+
+
+```python3
+import numpy as np
+from probpy.distributions import poisson
+
+n = poisson.sample(4, 10000)
+
+data = np.arange(0, 15)
+p = poisson.p(x, lam)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/poisson.png" />
+</p>
+
+## Hypergeometric
+
+
+```python3
+import numpy as np
+from probpy.distributions import hypergeometric
+
+n = hypergeometric.sample(N=20, K=13, n=12, shape=samples)
+
+data = np.arange(0, 13)
+p = hypergeometric.p(x, N=N, K=K, n=12)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/hypergeometric.png" />
+</p>
+
+> Sample is just a wrapper for numpy.random.hypergeometric and it seems to struggle with low probability scenarios (fails to sample 2, 3, 4 etc..)
+

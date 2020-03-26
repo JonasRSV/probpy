@@ -5,13 +5,18 @@ from probpy.distributions import (normal,
                                   multivariate_normal,
                                   bernoulli,
                                   categorical,
-                                  exponential)
+                                  exponential,
+                                  binomial,
+                                  multinomial)
 
 from .conjugate import (NormalNormal_MuPrior1D,
+                        NormalNormal_NormalInverseGammaPrior1D,
                         MultivariateNormalNormal_MuPrior,
                         BernoulliBeta_PPrior,
                         CategoricalDirichlet_PPrior,
-                        ExponentialGamma_LambdaPrior)
+                        ExponentialGamma_LambdaPrior,
+                        BinomialBeta_PPrior,
+                        MultinomialDirichlet_PPrior)
 from typing import Union, Tuple
 
 # (1) Likelihood distribution
@@ -21,7 +26,8 @@ from typing import Union, Tuple
 conjugates = {
     normal: {
         1: [
-            NormalNormal_MuPrior1D
+            NormalNormal_MuPrior1D,
+            NormalNormal_NormalInverseGammaPrior1D
         ]
     },
     multivariate_normal: {
@@ -43,9 +49,17 @@ conjugates = {
         1: [
            ExponentialGamma_LambdaPrior
         ]
+    },
+    binomial: {
+        1: [
+            BinomialBeta_PPrior
+        ]
+    },
+    multinomial: {
+        1: [
+            MultinomialDirichlet_PPrior
+        ]
     }
-
-
 }
 
 
@@ -59,7 +73,7 @@ def posterior(data: np.ndarray,
         candidates = conjugates[likelihood.cls][len(priors)]
 
     for conjugate in candidates:
-        if conjugate.check(likelihood, priors):
+        if conjugate.is_conjugate(likelihood, priors):
             return conjugate.posterior(data, likelihood, priors)
 
     raise NotImplementedError("Non conjugate posteriors not implemented yet")

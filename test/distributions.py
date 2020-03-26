@@ -12,9 +12,20 @@ from probpy.distributions import exponential
 from probpy.distributions import binomial
 from probpy.distributions import multinomial
 from probpy.distributions import gamma
+from probpy.distributions import normal_inverse_gamma
+from probpy.distributions import geometric
+from probpy.distributions import poisson
+from probpy.distributions import hypergeometric
+from collections import Counter
+import itertools
 
 
 class TestDistributions(unittest.TestCase):
+
+    def test_r(self):
+        samples = hypergeometric.sample(N=10, K=5, n=3, shape=5)
+
+        print(samples)
 
     def test_first_two_moments(self):
         # Error should be variance / sqrt(n)
@@ -79,6 +90,26 @@ class TestDistributions(unittest.TestCase):
         a, b = 9.0, 2.0
         n = gamma.sample(a, b, 10000)
         self.assertAlmostEqual(n.mean(), a / b, delta=1e-1)
+
+        mu, lam, a, b = 2.0, 1.0, 2.0, 2.0
+        n = normal_inverse_gamma.sample(mu, lam, a, b, shape=10000)
+        self.assertAlmostEqual(n[:, 0].mean(), mu, delta=1e-1)
+        self.assertAlmostEqual(n[:, 1].mean(), b / (a - 1), delta=1e-1)
+
+        p = 0.7
+        n = geometric.sample(probability=p, shape=10000)
+        self.assertAlmostEqual(n.mean(), 1 / p, delta=1e-1)
+        self.assertAlmostEqual(n.var(), (1 - p) / (p * p), delta=1e-1)
+
+        lam = 4.0
+        n = poisson.sample(lam=lam, shape=100000)
+        self.assertAlmostEqual(n.mean(), lam, delta=1e-1)
+        self.assertAlmostEqual(n.var(), lam, delta=1e-1)
+
+        N, K, n = 10, 5, 3
+        _n = hypergeometric.sample(N=N, K=K, n=n, shape=100000)
+        self.assertAlmostEqual(_n.mean(), n * K / N, delta=1e-1)
+        self.assertAlmostEqual(_n.var(), n * (K / N) * ((N - K) / N) * (N - n) / (N - 1), delta=1e-1)
 
     def test_normal_by_inspection(self):
         samples = 10000
@@ -401,6 +432,107 @@ class TestDistributions(unittest.TestCase):
         plt.savefig("../images/gamma.png", bbox_inches="tight")
         plt.show()
 
+    def test_normal_inverse_gamma_by_inspection(self):
+        samples = 10000
+        mu, lam, a, b = 2.0, 1.0, 2.0, 2.0
+        n = normal_inverse_gamma.sample(mu, lam, a, b, shape=samples)
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"mu: {mu} lam: {lam} a: {a} b: {b}-- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.kdeplot(n[:, 0], n[:, 1], shade=True)
+        plt.ylim([0, 6])
+        plt.xlim([-2, 6])
+
+        plt.subplot(2, 1, 2)
+        plt.title(f"True", fontsize=20)
+
+        points = 100
+        x = np.linspace(-2, 6, points)
+        y = np.linspace(0.1, 6, points)
+
+        X, Y = np.meshgrid(x, y)
+        mesh = np.concatenate([X[:, :, None], Y[:, :, None]], axis=2).reshape(-1, 2)
+
+        Z = normal_inverse_gamma.p(mesh, mu, lam, a, b).reshape(points, points)
+        plt.contourf(X, Y, Z, levels=20)
+
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../images/normal_inverse_gamma.png", bbox_inches="tight")
+        plt.show()
+
+    def test_geometric_by_inspection(self):
+        samples = 10000
+        p = 0.7
+        n = geometric.sample(p, samples)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"Geometric: p {p} -- samples: {samples}", fontsize=20)
+        sb.distplot(n)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+
+        plt.subplot(2, 1, 2)
+        plt.title(f"True", fontsize=20)
+        sb.barplot([1, 2, 3, 4, 5, 6, 7, 8], geometric.p(np.arange(1, 9), p))
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../images/geometric.png", bbox_inches="tight")
+        plt.show()
+
+    def test_poisson_by_inspection(self):
+        lam = 4.0
+        samples = 10000
+        n = poisson.sample(lam, samples)
+
+        k, counts = zip(*sorted(list(Counter(n).items()), key=lambda x: x[0]))
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"lambda: {lam} -- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.barplot(list(k), list(counts))
+
+        plt.subplot(2, 1, 2)
+        plt.title(f"True", fontsize=20)
+        x = np.arange(0, 15)
+        y = poisson.p(x, lam)
+        sb.barplot(x, y)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../images/poisson.png", bbox_inches="tight")
+        plt.show()
+
+    def test_hypergeometric_by_inspection(self):
+        samples = 100000
+        N, K, n = 20, 13, 12
+        _n = hypergeometric.sample(N=N, K=K, n=n, shape=samples)
+
+        k, counts = zip(*sorted(list(Counter(_n).items()), key=lambda x: x[0]))
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"N: {N} K: {K} n: {n}-- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.barplot(list(k), list(counts))
+
+        plt.subplot(2, 1, 2)
+        plt.title(f"True", fontsize=20)
+        x = np.arange(0, 13)
+        y = hypergeometric.p(x, N, K, n)
+        sb.barplot(x, y)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../images/hypergeometric.png", bbox_inches="tight")
+        plt.show()
+
     def test_freezing(self):
         frozen = normal.freeze(mu=0.6, sigma=0.9)
         s1 = frozen.sample(shape=100000)
@@ -414,11 +546,11 @@ class TestDistributions(unittest.TestCase):
         s3 = frozen.sample(0.6, shape=100000)
         p3 = frozen.p(s3, 0.6)
 
-        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
-        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-1)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-1)
 
-        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
-        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-1)
 
         frozen = multivariate_normal.freeze(mu=np.zeros(2), sigma=np.eye(2))
         s1 = frozen.sample(shape=10000)
@@ -585,11 +717,92 @@ class TestDistributions(unittest.TestCase):
         s3 = frozen.sample(2.0, shape=100000)
         p3 = frozen.p(s3, 2.0)
 
-        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
-        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-2)
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-1)
+        self.assertAlmostEqual(s2.mean(), s3.mean(), delta=1e-1)
 
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
+        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-1)
+
+        parameters = [2, 1, 2, 2]
+        name = [normal_inverse_gamma.mu,
+                normal_inverse_gamma.lam,
+                normal_inverse_gamma.a,
+                normal_inverse_gamma.b]
+
+        s_results = []
+        p_results = []
+        for test_case in itertools.product([0, 1], repeat=4):
+            kwargs = {}
+            args = []
+            for i, pick in enumerate(test_case):
+                if pick == 1:
+                    kwargs[name[i]] = parameters[i]
+                else:
+                    args.append(parameters[i])
+
+            frozen = normal_inverse_gamma.freeze(**kwargs)
+            s = frozen.sample(*args, shape=100000)
+            p = frozen.p(s, *args)
+
+            s_results.append(s.mean())
+            p_results.append(p.mean())
+
+        s_results = np.array(s_results)
+        p_results = np.array(p_results)
+
+        np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
+        np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
+
+        frozen = geometric.freeze(probability=0.5)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = geometric.freeze()
+        s2 = frozen.sample(0.5, shape=100000)
+        p2 = frozen.p(s2, 0.5)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
-        self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
+
+        frozen = poisson.freeze(lam=2.0)
+        s1 = frozen.sample(shape=100000)
+        p1 = frozen.p(s1)
+
+        frozen = poisson.freeze()
+        s2 = frozen.sample(2.0, shape=100000)
+        p2 = frozen.p(s2, 2.0)
+
+        self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-1)
+        self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
+
+        parameters = [10, 5, 3]
+        name = [hypergeometric.N,
+                hypergeometric.K,
+                hypergeometric.n]
+
+        s_results = []
+        p_results = []
+        for test_case in itertools.product([0, 1], repeat=3):
+            kwargs = {}
+            args = []
+            for i, pick in enumerate(test_case):
+                if pick == 1:
+                    kwargs[name[i]] = parameters[i]
+                else:
+                    args.append(parameters[i])
+
+            frozen = hypergeometric.freeze(**kwargs)
+            s = frozen.sample(*args, shape=100000)
+            p = frozen.p(s, *args)
+
+            s_results.append(s.mean())
+            p_results.append(p.mean())
+
+        s_results = np.array(s_results)
+        p_results = np.array(p_results)
+
+        np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
+        np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
 
 
 if __name__ == '__main__':

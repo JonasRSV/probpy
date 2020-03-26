@@ -52,16 +52,16 @@ class Normal(Distribution):
     sigma = "sigma"
 
     @classmethod
-    def freeze(cls, mu: np.ndarray = None, sigma: np.ndarray = None) -> RandomVariable:
+    def freeze(cls, mu: np.float = None, sigma: np.float = None) -> RandomVariable:
         if mu is None and sigma is None:
             _sample = Normal.sample
             _p = Normal.p
         elif mu is None:
-            def _sample(mu: np.ndarray, shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
-            def _p(x: np.ndarray, mu: np.ndarray): return Normal.p(x, mu, sigma)
+            def _sample(mu: np.float, shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
+            def _p(x: np.ndarray, mu: np.float): return Normal.p(x, mu, sigma)
         elif sigma is None:
-            def _sample(sigma: np.ndarray, shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
-            def _p(x: np.ndarray, sigma: np.ndarray): return Normal.p(x, mu, sigma)
+            def _sample(sigma: np.float, shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
+            def _p(x: np.ndarray, sigma: np.float): return Normal.p(x, mu, sigma)
         else:
             def _sample(shape: np.ndarray = ()): return Normal.sample(mu, sigma, shape)
             def _p(x: np.ndarray): return Normal.p(x, mu, sigma)
@@ -75,11 +75,11 @@ class Normal(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(mu: np.ndarray, sigma: np.ndarray, shape: np.ndarray = ()) -> np.ndarray:
+    def sample(mu: np.float, sigma: np.float, shape: np.ndarray = ()) -> np.ndarray:
         return np.random.normal(mu, np.sqrt(sigma), size=shape)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)
-    def p(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
+    def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
         normalizing_constant = np.sqrt(2 * np.pi * sigma)
         return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant

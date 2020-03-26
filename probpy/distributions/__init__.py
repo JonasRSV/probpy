@@ -10,3 +10,8 @@ from .exponential import Exponential as exponential
 from .binomial import Binomial as binomial
 from .multinomial import Multinomial as multinomial
 from .gamma import Gamma as gamma
+from .normal_inverse_gamma import NormalInverseGamma as normal_inverse_gamma
+from .geometric import Geometric as geometric
+from .poisson import Poisson as poisson
+from .hypergeometric import Hypergeometric as hypergeometric
+

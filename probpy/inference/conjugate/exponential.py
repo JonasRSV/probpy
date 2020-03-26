@@ -9,10 +9,10 @@ class ExponentialGamma_LambdaPrior:
     """Conjugate prior for exponential likelihood with unknown rate"""
 
     @staticmethod
-    def check(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
+    def is_conjugate(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
         if priors[0].cls is gamma \
                 and _check_no_none_parameters(priors[0]) \
-                and _check_only_none_is(likelihood, exponential.lam):
+                and _check_only_none_is(likelihood, [exponential.lam]):
             return True
         return False
 
