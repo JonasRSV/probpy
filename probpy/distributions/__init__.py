@@ -14,4 +14,7 @@ from .normal_inverse_gamma import NormalInverseGamma as normal_inverse_gamma
 from .geometric import Geometric as geometric
 from .poisson import Poisson as poisson
 from .hypergeometric import Hypergeometric as hypergeometric
+from .gaussian_process import GaussianProcess as gaussian_process
+from .unknown import Unknown as unknown
+from .unilinear import UniLinear as unilinear
 

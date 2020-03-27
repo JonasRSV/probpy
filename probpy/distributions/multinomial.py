@@ -9,7 +9,7 @@ class Multinomial(Distribution):
     probabilities = "probabilities"
 
     @classmethod
-    def freeze(cls, n: int = None, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
+    def med(cls, n: int = None, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
         if n is None and probabilities is None:
             _sample = Multinomial.sample
             _p = Multinomial.p

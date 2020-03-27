@@ -9,7 +9,7 @@ class Dirichlet(Distribution):
     alpha = "alpha"
 
     @classmethod
-    def freeze(cls, alpha: np.ndarray = None, dim: int = None) -> RandomVariable:
+    def med(cls, alpha: np.ndarray = None, dim: int = None) -> RandomVariable:
         if alpha is None:
             _sample = Dirichlet.sample
             _p = Dirichlet.p

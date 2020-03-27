@@ -11,7 +11,7 @@ class Hypergeometric(Distribution):
     n = "n"
 
     @classmethod
-    def freeze(cls, N: np.int = None, K: np.int = None, n: np.int = None) -> RandomVariable:
+    def med(cls, N: np.int = None, K: np.int = None, n: np.int = None) -> RandomVariable:
         params = [N, K, n]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]

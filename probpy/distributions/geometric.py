@@ -8,7 +8,7 @@ class Geometric(Distribution):
     probability = "probability"
 
     @classmethod
-    def freeze(cls, probability: np.float32 = None) -> RandomVariable:
+    def med(cls, probability: np.float32 = None) -> RandomVariable:
         if probability is None:
             _sample = Geometric.sample
             _p = Geometric.p

@@ -9,8 +9,13 @@ from probpy.distributions import (normal,
                                   gamma,
                                   normal_inverse_gamma,
                                   binomial,
-                                  multinomial)
-from probpy.inference import posterior
+                                  multinomial,
+                                  poisson,
+                                  geometric,
+                                  gaussian_process,
+                                  unknown,
+                                  unilinear)
+from probpy.learn import parameter_posterior
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sb
@@ -18,11 +23,11 @@ import seaborn as sb
 
 class PosteriorTest(unittest.TestCase):
     def test_normal_1d_mean_conjugate(self):
-        prior = normal.freeze(mu=1.0, sigma=1.0)
-        likelihood = normal.freeze(sigma=2.0)
+        prior = normal.med(mu=1.0, sigma=1.0)
+        likelihood = normal.med(sigma=2.0)
 
         data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(-4, 4, 1000)
         y_prior = prior.p(x)
@@ -40,11 +45,11 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_normal_1d_normal_inverse_gamma_conjugate(self):
-        prior = normal_inverse_gamma.freeze(mu=1.0, lam=2.0, a=3.0, b=3.0)
-        likelihood = normal.freeze()
+        prior = normal_inverse_gamma.med(mu=1.0, lam=2.0, a=3.0, b=3.0)
+        likelihood = normal.med()
 
         data = normal.sample(mu=-2.0, sigma=2.0, shape=100)
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         points = 100
         x = np.linspace(-3, 3, points)
@@ -75,15 +80,15 @@ class PosteriorTest(unittest.TestCase):
         mu_prior = np.ones(2)
         sigma_prior = np.eye(2)
 
-        prior = multivariate_normal.freeze(mu=mu_prior, sigma=sigma_prior)
-        likelihood = multivariate_normal.freeze(sigma=np.eye(2) * 10)
+        prior = multivariate_normal.med(mu=mu_prior, sigma=sigma_prior)
+        likelihood = multivariate_normal.med(sigma=np.eye(2) * 10)
 
         data_mean = np.ones(2) * -2
         data_sigma = np.random.rand(1, 2) * 0.7
         data_sigma = data_sigma.T @ data_sigma + np.eye(2) * 1
 
         data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, shape=200)
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         points = 100
         x = np.linspace(-7, 6, points)
@@ -107,11 +112,11 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_bernoulli_beta_conjugate(self):
-        prior = beta.freeze(a=1.0, b=3.0)
-        likelihood = bernoulli.freeze()
+        prior = beta.med(a=1.0, b=3.0)
+        likelihood = bernoulli.med()
 
         data = np.array([1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0])
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(0, 1, 100)
         y_prior = prior.p(x)
@@ -129,11 +134,11 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_categorical_dirichlet_conjugate(self):
-        prior = dirichlet.freeze(alpha=np.ones(5))
-        likelihood = categorical.freeze(dim=5)
+        prior = dirichlet.med(alpha=np.ones(5))
+        likelihood = categorical.med(dim=5)
 
         data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.arange(5)
         y_prior = prior.sample(shape=10000).sum(axis=0)
@@ -154,11 +159,11 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_exponential_gamma_conjugate(self):
-        prior = gamma.freeze(a=9, b=2)
-        likelihood = exponential.freeze()
+        prior = gamma.med(a=9, b=2)
+        likelihood = exponential.med()
 
         data = exponential.sample(lam=1, shape=100)
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(0, 14, 1000)
         y_prior = prior.p(x)
@@ -178,11 +183,11 @@ class PosteriorTest(unittest.TestCase):
 
     def test_binomial_beta_conjugate(self):
 
-        prior = beta.freeze(a=6.0, b=3.0)
-        likelihood = binomial.freeze(n=5)
+        prior = beta.med(a=6.0, b=3.0)
+        likelihood = binomial.med(n=5)
 
         data = np.array([0, 2, 4, 1, 1, 0])
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(0, 1, 100)
         y_prior = prior.p(x)
@@ -200,11 +205,11 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_multinomial_dirichlet_conjugate(self):
-        prior = dirichlet.freeze(alpha=np.ones(3))
-        likelihood = multinomial.freeze(n=3)
+        prior = dirichlet.med(alpha=np.ones(3))
+        likelihood = multinomial.med(n=3)
 
         data = np.array([[1, 1, 1], [0, 2, 1], [0, 0, 3], [0, 0, 3]])
-        result = posterior(data, likelihood=likelihood, priors=prior)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.arange(3)
         y_prior = prior.sample(shape=10000).sum(axis=0)
@@ -224,13 +229,151 @@ class PosteriorTest(unittest.TestCase):
         plt.savefig("../images/multinomial_dirichlet_conjugate.png", bbox_inches="tight")
         plt.show()
 
+    def test_poisson_gamma_conjugate(self):
+        prior = gamma.med(a=9, b=2)
+        likelihood = poisson.med()
+
+        data = poisson.sample(lam=2.0, shape=40)
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
+
+        x = np.linspace(0, 14, 1000)
+        y_prior = prior.p(x)
+        y_posterior = result.p(x)
+
+        plt.figure(figsize=(20, 10))
+        plt.title("Estimating Posterior", fontsize=20)
+        sb.distplot(data, label="Data")
+        sb.lineplot(x, y_prior, label="Prior")
+        sb.lineplot(x, y_posterior, label="posterior")
+        plt.tight_layout()
+        plt.xticks(fontsize=18)
+        plt.legend(fontsize=20)
+        plt.ylim([0, 2])
+        plt.savefig("../images/poisson_gamma_conjugate.png", bbox_inches="tight")
+        plt.show()
+
+    def test_binomial_beta_conjugate(self):
+
+        prior = beta.med(a=6.0, b=3.0)
+        likelihood = geometric.med()
+
+        data = np.array([0, 2, 4, 1, 1, 0, 8, 8, 9, 8, 10, 10, 10, 10])
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
+
+        x = np.linspace(0, 1, 100)
+        y_prior = prior.p(x)
+        y_posterior = result.p(x)
+
+        plt.figure(figsize=(20, 10))
+        plt.title("Estimating Posterior", fontsize=20)
+        sb.lineplot(x, y_prior, label="Prior")
+        sb.lineplot(x, y_posterior, label="posterior")
+        plt.legend(fontsize=20)
+        plt.tight_layout()
+        plt.yticks(fontsize=18)
+        plt.xticks(fontsize=18)
+        plt.savefig("../images/geometric_beta_conjugate.png", bbox_inches="tight")
+        plt.show()
+
+    def test_unknown_gaussian_process_conjugate(self):
+
+        def mu(x):
+            return 0
+
+        def sigma(x, y):
+            return np.exp(-3.0 * np.square(x - y))
+
+        domain = np.array([0.5, 3.0])
+        codomain = np.random.rand(2)
+
+        prior = gaussian_process.med(mu=mu, sigma=sigma, domain=domain, codomain=codomain)
+        likelihood = unknown.med()
+
+        data = (np.array([1.0, 2.0, 6.0, -2.0, 1.5, -1.2]), np.random.rand(6))
+        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
+
+        n_prior = prior.sample(shape=10)
+        n_posterior = result.sample(shape=10)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"Prior", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        for _n in n_prior:
+            sb.lineplot(prior.domain, _n)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Posterior", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        for _n in n_posterior:
+            sb.lineplot(result.domain, _n)
+        plt.tight_layout()
+        plt.savefig("../images/unknown_gaussian_process_conjugate.png", bbox_inches="tight")
+        plt.show()
+
+    def test_unilinear_multivariate_normal_conjugate(self):
+        prior = multivariate_normal.med(mu=np.ones(2) * -1, sigma=np.eye(2) * 1e-1)
+        likelihood = unilinear.med(sigma=1)
+
+        data = np.array([2, 1])
+        x, y = unilinear.sample(data, sigma=1e-1, shape=100, bounds=(-5.0, 5.0))
+        result = parameter_posterior((x, y), likelihood=likelihood, priors=prior)
+
+        x = x.flatten()
+
+        prior_samples = prior.sample(shape=10000)
+        posterior_samples = result.sample(shape=10000)
+
+        prior_mean = prior_samples.mean(axis=0)
+        posterior_mean = posterior_samples.mean(axis=0)
+
+        prior_x, prior_y = unilinear.sample(variables=prior_mean, sigma=1e-1, shape=200, bounds=(-5.0, 5.0))
+        posterior_x, posterior_y = unilinear.sample(variables=posterior_mean, sigma=1e-1, shape=200, bounds=(-5.0, 5.0))
+
+        prior_x = prior_x.flatten()
+        posterior_x = posterior_x.flatten()
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"Samples", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.lineplot(x, y, label="data")
+        sb.lineplot(prior_x, prior_y, label="Prior")
+        sb.lineplot(posterior_x, posterior_y, label="Posterior")
+        plt.legend(fontsize=18)
+
+        plt.subplot(2, 1, 2)
+        points = 100
+        x = np.linspace(-7, 6, points)
+        y = np.linspace(-7, 6, points)
+
+        X, Y = np.meshgrid(x, y)
+
+        mesh = np.concatenate([X[:, :, None], Y[:, :, None]], axis=2).reshape(-1, 2)
+
+        y_prior = prior.p(mesh).reshape(points, points)
+        y_posterior = result.p(mesh).reshape(points, points)
+
+        plt.title("Parameter distributions", fontsize=20)
+        plt.contourf(X, Y, y_posterior, levels=10)
+        plt.contour(X, Y, y_prior, levels=10)
+        plt.tight_layout()
+        plt.xlim([-2, 3])
+        plt.ylim([-2, 3])
+        plt.savefig("../images/unilinear_multivariate_gaussian_conjugate.png", bbox_inches="tight")
+        plt.show()
+
+
     def test_should_fail(self):
-        prior = exponential.freeze(lam=1.0)
-        likelihood = normal.freeze(sigma=2.0)
+        prior = exponential.med(lam=1.0)
+        likelihood = normal.med(sigma=2.0)
 
         data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
-        posterior(data, likelihood=likelihood,
-                  priors=prior)  # Should fail because exponential is not conjugate to normal
+        parameter_posterior(data, likelihood=likelihood,
+                            priors=prior)  # Should fail because exponential is not conjugate to normal
 
 
 if __name__ == '__main__':

@@ -1,12 +1,11 @@
 from probpy.core import RandomVariable
 from typing import Tuple
 from probpy.distributions import beta, bernoulli
-from .identification import _check_no_none_parameters, _check_only_none_is
-import numpy as np
+from probpy.learn.conjugate.identification import _check_no_none_parameters, _check_only_none_is
 
 
 class BernoulliBeta_PPrior:
-    """Conjugate prior for bernoulli likelihood with unknown probability"""
+    """predictive conjugate for bernoulli likelihood with beta parameter prior"""
 
     @staticmethod
     def is_conjugate(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
@@ -17,15 +16,10 @@ class BernoulliBeta_PPrior:
         return False
 
     @staticmethod
-    def posterior(data: np.ndarray, _: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
+    def posterior(_: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
         prior = priors[0]
 
-        n = data.size
+        a = prior.parameters[beta.a].value
+        b = prior.parameters[beta.b].value
 
-        prior_alpha = prior.parameters[beta.a].value
-        prior_beta = prior.parameters[beta.b].value
-
-        posterior_alpha = prior_alpha + data.sum()
-        posterior_beta = prior_beta + n - data.sum()
-
-        return beta.freeze(a=posterior_alpha, b=posterior_beta)
+        return bernoulli.med(probability=(a / (a + b)))

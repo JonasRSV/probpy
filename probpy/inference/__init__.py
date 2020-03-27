@@ -1,1 +1,1 @@
-from .inference import posterior
+from .posterior import predictive_posterior

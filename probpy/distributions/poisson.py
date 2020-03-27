@@ -8,7 +8,7 @@ class Poisson(Distribution):
     lam = "lam"
 
     @classmethod
-    def freeze(cls, lam: np.float32 = None) -> RandomVariable:
+    def med(cls, lam: np.float32 = None) -> RandomVariable:
         if lam is None:
             _sample = Poisson.sample
             _p = Poisson.p

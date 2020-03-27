@@ -13,11 +13,11 @@ class NormalInverseGamma(Distribution):
     b = "b"
 
     @classmethod
-    def freeze(cls,
-               mu: np.float = None,
-               lam: np.float = None,
-               a: np.float = None,
-               b: np.float = None) -> RandomVariable:
+    def med(cls,
+            mu: np.float = None,
+            lam: np.float = None,
+            a: np.float = None,
+            b: np.float = None) -> RandomVariable:
         params = [mu, lam, a, b]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]

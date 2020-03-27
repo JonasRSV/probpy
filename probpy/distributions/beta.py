@@ -9,7 +9,7 @@ class Beta(Distribution):
     b = "b"
 
     @classmethod
-    def freeze(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
+    def med(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
         if a is None and b is None:
             _sample = Beta.sample
             _p = Beta.p

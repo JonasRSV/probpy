@@ -38,4 +38,4 @@ class CategoricalDirichlet_PPrior:
 
         posterior_alpha += prior_alpha
 
-        return dirichlet.freeze(alpha=posterior_alpha)
+        return dirichlet.med(alpha=posterior_alpha)

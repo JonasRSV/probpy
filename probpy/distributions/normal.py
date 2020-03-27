@@ -9,7 +9,7 @@ class MultiVariateNormal(Distribution):
     sigma = "sigma"
 
     @classmethod
-    def freeze(cls, mu: np.ndarray = None, sigma: np.ndarray = None, k=None) -> RandomVariable:
+    def med(cls, mu: np.ndarray = None, sigma: np.ndarray = None, k=None) -> RandomVariable:
         if mu is None and sigma is None:
             _sample = Normal.sample
             _p = Normal.p
@@ -52,7 +52,7 @@ class Normal(Distribution):
     sigma = "sigma"
 
     @classmethod
-    def freeze(cls, mu: np.float = None, sigma: np.float = None) -> RandomVariable:
+    def med(cls, mu: np.float = None, sigma: np.float = None) -> RandomVariable:
         if mu is None and sigma is None:
             _sample = Normal.sample
             _p = Normal.p

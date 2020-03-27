@@ -8,7 +8,7 @@ class Bernoulli(Distribution):
     probability = "probability"
 
     @classmethod
-    def freeze(cls, probability: np.float32 = None) -> RandomVariable:
+    def med(cls, probability: np.float32 = None) -> RandomVariable:
         if probability is None:
             _sample = Bernoulli.sample
             _p = Bernoulli.p

@@ -48,7 +48,7 @@ class TestMCMC(unittest.TestCase):
         plt.subplot(2, 1, 2)
         plt.title("Estimated with 100000 samples", fontsize=18)
         timestamp = time.time()
-        samples = metropolis(size=1000000, pdf=pdf, proposal=normal.freeze(mu=0, sigma=10), M=30.0)
+        samples = metropolis(size=1000000, pdf=pdf, proposal=normal.med(mu=0, sigma=10), M=30.0)
         print(time.time() - timestamp)
 
         samples = samples[1000:]

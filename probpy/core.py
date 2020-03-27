@@ -35,26 +35,17 @@ class RandomVariable:
             [f'{name}: {parameter.shape} - {parameter.value}' for name, parameter in self.parameters.items()])
         return title + body
 
-    def __setattr__(self, parameter, value):
-        if hasattr(self, "parameters") and parameter in self.parameters:
-            if value is not None:
-                value = np.array(value)
-                self.parameters[parameter].shape = value.shape
-            self.parameters[parameter].value = value
-
-        super().__setattr__(parameter, value)
-
 
 class Distribution(ABC):
 
     @classmethod
     @abstractmethod
-    def freeze(cls, **kwargs) -> RandomVariable:
+    def med(cls, **kwargs) -> RandomVariable:
         raise NotImplementedError(f"Freeze is not implemented for {cls.__name__}")
 
     @staticmethod
     @abstractmethod
-    def sample(*args, shape: np.ndarray = ()) -> np.ndarray:
+    def sample(*args, shape: np.ndarray = ()) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         raise NotImplementedError(f"sample is not implemented")
 
     @staticmethod

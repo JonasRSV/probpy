@@ -17,7 +17,7 @@ class TestIntegration(unittest.TestCase):
         uniform_importance_sampling(size=10000000,
                                     function=f,
                                     domain=(-2, 2),
-                                    proposal=normal.freeze(mu=0, sigma=2))
+                                    proposal=normal.med(mu=0, sigma=2))
 
         print(time.time() - timestamp)
 
@@ -30,8 +30,8 @@ class TestIntegration(unittest.TestCase):
         uniform_importance_sampling(size=100000,
                                     function=f,
                                     domain=(lower_bound, upper_bound),
-                                    proposal=multivariate_normal.freeze(mu=np.zeros(2),
-                                                                       sigma=np.eye(2) * 2))
+                                    proposal=multivariate_normal.med(mu=np.zeros(2),
+                                                                     sigma=np.eye(2) * 2))
         print(time.time() - timestamp)
 
     def test_uniform_importance_sampling(self):
@@ -45,7 +45,7 @@ class TestIntegration(unittest.TestCase):
                 results.append(uniform_importance_sampling(size=sz,
                                                            function=f,
                                                            domain=(-2, 2),
-                                                           proposal=normal.freeze(mu=0, sigma=2)))
+                                                           proposal=normal.med(mu=0, sigma=2)))
 
             sb.distplot(results, label=f"size {sz}")
         plt.legend(fontsize=16)
@@ -68,7 +68,7 @@ class TestIntegration(unittest.TestCase):
                 results.append(uniform_importance_sampling(size=sz,
                                                            function=f,
                                                            domain=(lower_bound, upper_bound),
-                                                           proposal=multivariate_normal.freeze(mu=np.zeros(2), sigma=np.eye(2) * 2)))
+                                                           proposal=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2) * 2)))
 
             sb.distplot(results, label=f"size {sz}")
         plt.legend(fontsize=16)

@@ -10,7 +10,7 @@ class Uniform(Distribution):
     b = "b"
 
     @classmethod
-    def freeze(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
+    def med(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
         if a is None and b is None:
             _sample = Uniform.sample
             _p = Uniform.p
@@ -50,7 +50,7 @@ class MultiVariateUniform(Distribution):
     b = "b"
 
     @classmethod
-    def freeze(cls, a: np.ndarray = None, b: np.ndarray = None, parameter_shape: Tuple = None) -> RandomVariable:
+    def med(cls, a: np.ndarray = None, b: np.ndarray = None, parameter_shape: Tuple = None) -> RandomVariable:
         if a is None and b is None:
             _sample = MultiVariateUniform.sample
             _p = MultiVariateUniform.p

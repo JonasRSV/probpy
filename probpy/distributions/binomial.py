@@ -9,7 +9,7 @@ class Binomial(Distribution):
     probability = "probability"
 
     @classmethod
-    def freeze(cls, n: int = None, probability: np.float32 = None) -> RandomVariable:
+    def med(cls, n: int = None, probability: np.float32 = None) -> RandomVariable:
         if n is None and probability is None:
             _sample = Binomial.sample
             _p = Binomial.p

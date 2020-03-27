@@ -25,4 +25,4 @@ class MultinomialDirichlet_PPrior:
 
         posterior_alpha = prior_alpha + data.sum(axis=0)
 
-        return dirichlet.freeze(alpha=posterior_alpha)
+        return dirichlet.med(alpha=posterior_alpha)

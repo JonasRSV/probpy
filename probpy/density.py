@@ -55,7 +55,7 @@ class RCKD(Density):
         partition, previous, samples = 0.0, -9999, 1
         while np.abs(partition - previous) > self.error:
             integral = uniform_importance_sampling(self.sampling_sz, function, (lb, ub),
-                                                   multivariate_uniform.freeze(a=lb, b=ub))
+                                                   multivariate_uniform.med(a=lb, b=ub))
             partition, samples, previous = (partition * samples + integral) / (samples + 1), samples + 1, partition
 
             if self.verbose:

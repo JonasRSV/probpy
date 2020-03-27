@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
+import probpy as pp
 from probpy.distributions import normal, multivariate_normal
 from probpy.distributions import uniform, multivariate_uniform
 from probpy.distributions import bernoulli
@@ -16,6 +17,8 @@ from probpy.distributions import normal_inverse_gamma
 from probpy.distributions import geometric
 from probpy.distributions import poisson
 from probpy.distributions import hypergeometric
+from probpy.distributions import gaussian_process
+from probpy.distributions import unilinear
 from collections import Counter
 import itertools
 
@@ -23,9 +26,12 @@ import itertools
 class TestDistributions(unittest.TestCase):
 
     def test_r(self):
-        samples = hypergeometric.sample(N=10, K=5, n=3, shape=5)
+        rv = pp.normal.med(mu=0.0)
+        print(rv.sample(1.0, shape=5))
 
-        print(samples)
+        rv.mu = rv.mu + 5
+        print(rv.sample(1.0, shape=5))
+
 
     def test_first_two_moments(self):
         # Error should be variance / sqrt(n)
@@ -533,16 +539,143 @@ class TestDistributions(unittest.TestCase):
         plt.savefig("../images/hypergeometric.png", bbox_inches="tight")
         plt.show()
 
-    def test_freezing(self):
-        frozen = normal.freeze(mu=0.6, sigma=0.9)
+    def test_gaussian_process_by_inspection(self):
+
+        def mu(x): return 0
+        def sigma(x, y): return np.exp(-3.0 * np.square(x - y))
+
+        domain = np.linspace(0, 5, 50)
+        codomain = np.random.rand(50)
+        samples = 20
+        n = gaussian_process.sample(mu=mu, sigma=sigma, domain=domain, codomain=codomain, shape=samples)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"mu: 0 sigma: RBF (3) domain: [0, 5] codomain: rand(0, 1) -- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        for _n in n:
+            sb.lineplot(domain, _n)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Probabilities of functions above (with additional diagonal variance)", fontsize=20)
+        probabilities = gaussian_process.p(n, mu=mu, sigma=sigma, domain=domain, codomain=codomain)
+        sb.distplot(probabilities)
+        plt.tight_layout()
+        plt.savefig("../images/gaussian_process.png", bbox_inches="tight")
+        plt.show()
+
+    def test_unilinear_by_inspection(self):
+
+        variables = np.ones(2)
+        sigma = 0.01
+        samples = 100
+        x, y = unilinear.sample(variables=variables, sigma=sigma, shape=samples)
+
+        x = x.flatten()
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"variables: {variables} sigma: {sigma} -- samples: {samples}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.lineplot(x, y)
+
+        plt.subplot(2, 1, 2)
+        plt.title("P(Y - (1 * 0 + 1))", fontsize=20)
+        x = np.zeros(100)
+        y = np.linspace(-0.5, 0.5, 100) + 1
+        p = unilinear.p((x, y), variables=variables, sigma=sigma)
+        sb.lineplot(y, p)
+        plt.xlabel("Y", fontsize=20)
+        plt.tight_layout()
+        plt.savefig("../images/unilinear.png", bbox_inches="tight")
+        plt.show()
+
+    def test_med_unilinear(self):
+
+        variables = np.ones(2)
+        sigma = 0.01
+
+        parameters = [variables, sigma]
+        name = [unilinear.variables,
+                unilinear.sigma]
+
+        s_results = []
+        p_results = []
+        for test_case in itertools.product([0, 1], repeat=2):
+            kwargs = {}
+            args = []
+            for i, pick in enumerate(test_case):
+                if pick == 1:
+                    kwargs[name[i]] = parameters[i]
+                else:
+                    args.append(parameters[i])
+
+            frozen = unilinear.med(**kwargs)
+            x, y = frozen.sample(*args, shape=1000)
+            p = frozen.p((x, y), *args)
+
+            s_results.append(y.mean())
+            p_results.append(p.mean())
+
+        s_results = np.array(s_results)
+        p_results = np.array(p_results)
+
+        np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
+        np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
+
+    def test_med_gaussian_process(self):
+        def mu(x):
+            return 0
+
+        def sigma(x, y):
+            return np.exp(-3.0 * np.square(x - y))
+
+        domain = np.linspace(0, 5, 50)
+        codomain = np.random.rand(50)
+
+        parameters = [mu, sigma, domain, codomain]
+        name = [gaussian_process.mu,
+                gaussian_process.sigma,
+                gaussian_process.domain,
+                gaussian_process.codomain]
+
+        s_results = []
+        p_results = []
+        for test_case in itertools.product([0, 1], repeat=4):
+            kwargs = {}
+            args = []
+            for i, pick in enumerate(test_case):
+                if pick == 1:
+                    kwargs[name[i]] = parameters[i]
+                else:
+                    args.append(parameters[i])
+
+            frozen = gaussian_process.med(**kwargs)
+            s = frozen.sample(*args, shape=100)
+            p = frozen.p(s, *args)
+
+            s_results.append(s.mean())
+            p_results.append(p.mean())
+
+        s_results = np.array(s_results)
+        p_results = np.array(p_results)
+
+        np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
+        np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
+
+
+    def test_med(self):
+        frozen = normal.med(mu=0.6, sigma=0.9)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = normal.freeze(mu=0.6)
+        frozen = normal.med(mu=0.6)
         s2 = frozen.sample(0.9, shape=100000)
         p2 = frozen.p(s2, 0.9)
 
-        frozen = normal.freeze(sigma=0.9)
+        frozen = normal.med(sigma=0.9)
         s3 = frozen.sample(0.6, shape=100000)
         p3 = frozen.p(s3, 0.6)
 
@@ -552,15 +685,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-1)
 
-        frozen = multivariate_normal.freeze(mu=np.zeros(2), sigma=np.eye(2))
+        frozen = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
         s1 = frozen.sample(shape=10000)
         p1 = frozen.p(s1)
 
-        frozen = multivariate_normal.freeze(mu=np.zeros(2))
+        frozen = multivariate_normal.med(mu=np.zeros(2))
         s2 = frozen.sample(np.eye(2), shape=10000)
         p2 = frozen.p(s2, np.eye(2))
 
-        frozen = multivariate_normal.freeze(sigma=np.eye(2))
+        frozen = multivariate_normal.med(sigma=np.eye(2))
         s3 = frozen.sample(np.zeros(2), shape=10000)
         p3 = frozen.p(s3, np.zeros(2))
 
@@ -570,15 +703,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-1)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-1)
 
-        frozen = uniform.freeze(a=0.0, b=1.0)
+        frozen = uniform.med(a=0.0, b=1.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = uniform.freeze(a=0.0)
+        frozen = uniform.med(a=0.0)
         s2 = frozen.sample(1.0, shape=100000)
         p2 = frozen.p(s2, 1.0)
 
-        frozen = uniform.freeze(b=1.0)
+        frozen = uniform.med(b=1.0)
         s3 = frozen.sample(0.0, shape=100000)
         p3 = frozen.p(s3, 0.0)
 
@@ -588,15 +721,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = multivariate_uniform.freeze(a=np.zeros(2), b=np.ones(2))
+        frozen = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2))
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = multivariate_uniform.freeze(a=np.zeros(2))
+        frozen = multivariate_uniform.med(a=np.zeros(2))
         s2 = frozen.sample(np.ones(2), shape=100000)
         p2 = frozen.p(s2, np.ones(2))
 
-        frozen = multivariate_uniform.freeze(b=np.ones(2))
+        frozen = multivariate_uniform.med(b=np.ones(2))
         s3 = frozen.sample(np.zeros(2), shape=100000)
         p3 = frozen.p(s3, np.zeros(2))
 
@@ -606,26 +739,26 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = bernoulli.freeze(probability=0.5)
+        frozen = bernoulli.med(probability=0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = bernoulli.freeze()
+        frozen = bernoulli.med()
         s2 = frozen.sample(0.5, shape=100000)
         p2 = frozen.p(s2, 0.5)
 
         self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
-        frozen = beta.freeze(a=2.0, b=1.0)
+        frozen = beta.med(a=2.0, b=1.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = beta.freeze(a=2.0)
+        frozen = beta.med(a=2.0)
         s2 = frozen.sample(1.0, shape=100000)
         p2 = frozen.p(s2, 1.0)
 
-        frozen = beta.freeze(b=1.0)
+        frozen = beta.med(b=1.0)
         s3 = frozen.sample(2.0, shape=100000)
         p3 = frozen.p(s3, 2.0)
 
@@ -635,15 +768,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = binomial.freeze(n=3, probability=0.5)
+        frozen = binomial.med(n=3, probability=0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = binomial.freeze(n=3)
+        frozen = binomial.med(n=3)
         s2 = frozen.sample(0.5, shape=100000)
         p2 = frozen.p(s2, 0.5)
 
-        frozen = binomial.freeze(probability=0.5)
+        frozen = binomial.med(probability=0.5)
         s3 = frozen.sample(3, shape=100000)
         p3 = frozen.p(s3, 3)
 
@@ -653,33 +786,33 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = categorical.freeze(probabilities=np.ones(2) * 0.5)
+        frozen = categorical.med(probabilities=np.ones(2) * 0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = categorical.freeze()
+        frozen = categorical.med()
         s2 = frozen.sample(np.ones(2) * 0.5, shape=100000)
         p2 = frozen.p(s2, np.ones(2) * 0.5)
 
         self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
-        frozen = dirichlet.freeze(alpha=np.ones(2) * 2.0)
+        frozen = dirichlet.med(alpha=np.ones(2) * 2.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = dirichlet.freeze()
+        frozen = dirichlet.med()
         s2 = frozen.sample(np.ones(2) * 2.0, shape=100000)
         p2 = frozen.p(s2, np.ones(2) * 2.0)
 
         self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
-        frozen = exponential.freeze(lam=1.0)
+        frozen = exponential.med(lam=1.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = exponential.freeze()
+        frozen = exponential.med()
         s2 = frozen.sample(1.0, shape=100000)
         p2 = frozen.p(s2, 1.0)
 
@@ -687,15 +820,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
         p = np.ones(4) * 0.25
-        frozen = multinomial.freeze(n=3, probabilities=p)
+        frozen = multinomial.med(n=3, probabilities=p)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = multinomial.freeze(n=3)
+        frozen = multinomial.med(n=3)
         s2 = frozen.sample(p, shape=100000)
         p2 = frozen.p(s2, p)
 
-        frozen = multinomial.freeze(probabilities=p)
+        frozen = multinomial.med(probabilities=p)
         s3 = frozen.sample(3, shape=100000)
         p3 = frozen.p(s3, 3)
 
@@ -705,15 +838,15 @@ class TestDistributions(unittest.TestCase):
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
         self.assertAlmostEqual(p2.mean(), p3.mean(), delta=1e-2)
 
-        frozen = gamma.freeze(a=2.0, b=1.0)
+        frozen = gamma.med(a=2.0, b=1.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = gamma.freeze(a=2.0)
+        frozen = gamma.med(a=2.0)
         s2 = frozen.sample(1.0, shape=100000)
         p2 = frozen.p(s2, 1.0)
 
-        frozen = gamma.freeze(b=1.0)
+        frozen = gamma.med(b=1.0)
         s3 = frozen.sample(2.0, shape=100000)
         p3 = frozen.p(s3, 2.0)
 
@@ -740,7 +873,7 @@ class TestDistributions(unittest.TestCase):
                 else:
                     args.append(parameters[i])
 
-            frozen = normal_inverse_gamma.freeze(**kwargs)
+            frozen = normal_inverse_gamma.med(**kwargs)
             s = frozen.sample(*args, shape=100000)
             p = frozen.p(s, *args)
 
@@ -753,22 +886,22 @@ class TestDistributions(unittest.TestCase):
         np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
         np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
 
-        frozen = geometric.freeze(probability=0.5)
+        frozen = geometric.med(probability=0.5)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = geometric.freeze()
+        frozen = geometric.med()
         s2 = frozen.sample(0.5, shape=100000)
         p2 = frozen.p(s2, 0.5)
 
         self.assertAlmostEqual(s1.mean(), s2.mean(), delta=1e-2)
         self.assertAlmostEqual(p1.mean(), p2.mean(), delta=1e-2)
 
-        frozen = poisson.freeze(lam=2.0)
+        frozen = poisson.med(lam=2.0)
         s1 = frozen.sample(shape=100000)
         p1 = frozen.p(s1)
 
-        frozen = poisson.freeze()
+        frozen = poisson.med()
         s2 = frozen.sample(2.0, shape=100000)
         p2 = frozen.p(s2, 2.0)
 
@@ -791,7 +924,7 @@ class TestDistributions(unittest.TestCase):
                 else:
                     args.append(parameters[i])
 
-            frozen = hypergeometric.freeze(**kwargs)
+            frozen = hypergeometric.med(**kwargs)
             s = frozen.sample(*args, shape=100000)
             p = frozen.p(s, *args)
 

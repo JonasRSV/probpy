@@ -8,7 +8,7 @@ class Categorical(Distribution):
     probabilities = "probabilities"
 
     @classmethod
-    def freeze(cls, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
+    def med(cls, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
         if probabilities is None:
             _sample = Categorical.sample
             _p = Categorical.p
