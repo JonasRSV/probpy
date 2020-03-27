@@ -13,7 +13,6 @@ from probpy.distributions import (normal,
                                   poisson,
                                   geometric,
                                   gaussian_process,
-                                  unknown,
                                   unilinear)
 from probpy.learn import parameter_posterior
 import matplotlib.pyplot as plt
@@ -182,7 +181,6 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_binomial_beta_conjugate(self):
-
         prior = beta.med(a=6.0, b=3.0)
         likelihood = binomial.med(n=5)
 
@@ -253,7 +251,6 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_binomial_beta_conjugate(self):
-
         prior = beta.med(a=6.0, b=3.0)
         likelihood = geometric.med()
 
@@ -275,65 +272,23 @@ class PosteriorTest(unittest.TestCase):
         plt.savefig("../images/geometric_beta_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_unknown_gaussian_process_conjugate(self):
-
-        def mu(x):
-            return 0
-
-        def sigma(x, y):
-            return np.exp(-3.0 * np.square(x - y))
-
-        domain = np.array([0.5, 3.0])
-        codomain = np.random.rand(2)
-
-        prior = gaussian_process.med(mu=mu, sigma=sigma, domain=domain, codomain=codomain)
-        likelihood = unknown.med()
-
-        data = (np.array([1.0, 2.0, 6.0, -2.0, 1.5, -1.2]), np.random.rand(6))
-        result = parameter_posterior(data, likelihood=likelihood, priors=prior)
-
-        n_prior = prior.sample(shape=10)
-        n_posterior = result.sample(shape=10)
-
-        plt.figure(figsize=(10, 6))
-        plt.subplot(2, 1, 1)
-        plt.title(f"Prior", fontsize=20)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        for _n in n_prior:
-            sb.lineplot(prior.domain, _n)
-
-        plt.subplot(2, 1, 2)
-        plt.title("Posterior", fontsize=20)
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        for _n in n_posterior:
-            sb.lineplot(result.domain, _n)
-        plt.tight_layout()
-        plt.savefig("../images/unknown_gaussian_process_conjugate.png", bbox_inches="tight")
-        plt.show()
-
     def test_unilinear_multivariate_normal_conjugate(self):
         prior = multivariate_normal.med(mu=np.ones(2) * -1, sigma=np.eye(2) * 1e-1)
-        likelihood = unilinear.med(sigma=1)
+        likelihood = unilinear.med(sigma=1e-1)
 
-        data = np.array([2, 1])
-        x, y = unilinear.sample(data, sigma=1e-1, shape=100, bounds=(-5.0, 5.0))
-        result = parameter_posterior((x, y), likelihood=likelihood, priors=prior)
-
-        x = x.flatten()
+        variables = np.array([2, 1])
+        x = np.linspace(-1, 1, 300)
+        y = unilinear.sample(x=x, variables=variables, sigma=1e-1)
+        posterior = parameter_posterior((y, x), likelihood=likelihood, priors=prior)
 
         prior_samples = prior.sample(shape=10000)
-        posterior_samples = result.sample(shape=10000)
+        posterior_samples = posterior.sample(shape=10000)
 
         prior_mean = prior_samples.mean(axis=0)
         posterior_mean = posterior_samples.mean(axis=0)
 
-        prior_x, prior_y = unilinear.sample(variables=prior_mean, sigma=1e-1, shape=200, bounds=(-5.0, 5.0))
-        posterior_x, posterior_y = unilinear.sample(variables=posterior_mean, sigma=1e-1, shape=200, bounds=(-5.0, 5.0))
-
-        prior_x = prior_x.flatten()
-        posterior_x = posterior_x.flatten()
+        prior_y = unilinear.sample(x=x, variables=prior_mean, sigma=1e-1)
+        posterior_y = unilinear.sample(x=x, variables=posterior_mean, sigma=1e-1)
 
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
@@ -341,8 +296,8 @@ class PosteriorTest(unittest.TestCase):
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         sb.lineplot(x, y, label="data")
-        sb.lineplot(prior_x, prior_y, label="Prior")
-        sb.lineplot(posterior_x, posterior_y, label="Posterior")
+        sb.lineplot(x, prior_y, label="Prior")
+        sb.lineplot(x, posterior_y, label="Posterior")
         plt.legend(fontsize=18)
 
         plt.subplot(2, 1, 2)
@@ -355,7 +310,7 @@ class PosteriorTest(unittest.TestCase):
         mesh = np.concatenate([X[:, :, None], Y[:, :, None]], axis=2).reshape(-1, 2)
 
         y_prior = prior.p(mesh).reshape(points, points)
-        y_posterior = result.p(mesh).reshape(points, points)
+        y_posterior = posterior.p(mesh).reshape(points, points)
 
         plt.title("Parameter distributions", fontsize=20)
         plt.contourf(X, Y, y_posterior, levels=10)
@@ -365,7 +320,6 @@ class PosteriorTest(unittest.TestCase):
         plt.ylim([-2, 3])
         plt.savefig("../images/unilinear_multivariate_gaussian_conjugate.png", bbox_inches="tight")
         plt.show()
-
 
     def test_should_fail(self):
         prior = exponential.med(lam=1.0)

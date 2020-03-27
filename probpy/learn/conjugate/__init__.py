@@ -6,5 +6,4 @@ from .binomial import BinomialBeta_PPrior
 from .multinomial import MultinomialDirichlet_PPrior
 from .poisson import PoissonGamma_LambdaPrior
 from .geometric import GeometricBeta_PPrior
-from .gaussian_process import UnknownGaussianProcess_FunctionPrior
 from .unilinear import UniLinearMultivariateNormal_VariablePrior

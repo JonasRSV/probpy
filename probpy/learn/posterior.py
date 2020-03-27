@@ -9,7 +9,6 @@ from probpy.distributions import (normal,
                                   multinomial,
                                   poisson,
                                   geometric,
-                                  unknown,
                                   unilinear)
 
 from .conjugate import (NormalNormal_MuPrior1D,
@@ -22,7 +21,6 @@ from .conjugate import (NormalNormal_MuPrior1D,
                         MultinomialDirichlet_PPrior,
                         PoissonGamma_LambdaPrior,
                         GeometricBeta_PPrior,
-                        UnknownGaussianProcess_FunctionPrior,
                         UniLinearMultivariateNormal_VariablePrior)
 from typing import Union, Tuple
 
@@ -54,9 +52,6 @@ conjugates = {
     ],
     geometric: [
         GeometricBeta_PPrior
-    ],
-    unknown: [
-        UnknownGaussianProcess_FunctionPrior
     ],
     unilinear: [
         UniLinearMultivariateNormal_VariablePrior

@@ -82,8 +82,6 @@ Documentation
         - [Gamma Prior](#gamma-prior)
       - [Geometric Likelihood](#geometric-likelihood)
         - [Beta Prior](#beta-prior)
-      - [Unknown Likelihood](#unknown-likelihood)
-        - [Gaussian Process Prior](#gaussian-process-prior)
       - [Unilinear Likelihood](#unilinear-likelihood)
         - [Multivariate normal parameter prior](#multivariate-normal-parameter-prior)
 - [MCMC](#MCMC)
@@ -118,7 +116,7 @@ Documentation
 
 # Inference
 
-Learn contains functions for predicting future samples
+Inference contains functions for predicting future samples
 
 ## Predictive Posterior
 
@@ -426,35 +424,6 @@ result = parameter_posterior(data, likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/geometric_beta_conjugate.png" />
 </p>
 
-#### Unknown Likelihood
-
-##### Gaussian Process Prior
-
-```python
-import numpy as np
-from probpy.distributions import unknown, gaussian_process
-from probpy.learn import parameter_posterior
-def mu(x): return 0
-def sigma(x, y): return np.exp(-3.0 * np.square(x - y))
-
-domain = np.array([0.5, 3.0])
-codomain = np.random.rand(2)
-
-prior = gaussian_process.med(mu=mu, sigma=sigma, domain=domain, codomain=codomain)
-likelihood = unknown.med()
-
-data = (np.array([1.0, 2.0, 6.0, -2.0, 1.5, -1.2]), np.random.rand(6))
-result = parameter_posterior(data, likelihood=likelihood, priors=prior)
-
-prior_functions = prior.sample(shape=10)
-posterior_functions = result.sample(shape=10)
-
-```
-
-<p align="center">
-  <img width=600px heigth=300px src="images/unknown_gaussian_process_conjugate.png" />
-</p>
-
 #### Unilinear Likelihood
 
 ##### Multivariate normal parameter prior
@@ -465,11 +434,21 @@ from probpy.distributions import unilinear, multivariate_normal
 from probpy.learn import parameter_posterior
 
 prior = multivariate_normal.med(mu=np.ones(2) * -1, sigma=np.eye(2) * 1e-1)
-likelihood = unilinear.med(sigma=1)
+likelihood = unilinear.med(sigma=1e-1)
 
-data = np.array([2, 1])
-x, y = unilinear.sample(data, sigma=1e-1, shape=100, bounds=(-5.0, 5.0))
-result = parameter_posterior((x, y), likelihood=likelihood, priors=prior)
+variables = np.array([2, 1])
+x = np.linspace(-1, 1, 300)
+y = unilinear.sample(x=x, variables=variables, sigma=1e-1)
+posterior = parameter_posterior((y, x), likelihood=likelihood, priors=prior)
+
+prior_samples = prior.sample(shape=10000) # functions for getting mode will come later
+posterior_samples = posterior.sample(shape=10000)
+
+prior_mean = prior_samples.mean(axis=0)
+posterior_mean = posterior_samples.mean(axis=0)
+
+prior_y = unilinear.sample(x=x, variables=prior_mean, sigma=1e-1)
+posterior_y = unilinear.sample(x=x, variables=posterior_mean, sigma=1e-1)
 
 ```
 
@@ -964,13 +943,15 @@ import numpy as np
 from probpy.distributions import gaussian_process
 
 def mu(x): return 0
-def sigma(x, y): return np.exp(-3.0 * np.square(x - y))
-domain = np.linspace(0, 5, 50)
-codomain = np.random.rand(50)
-samples = 20
-n = gaussian_process.sample(mu=mu, sigma=sigma, domain=domain, codomain=codomain, shape=samples)
+def sigma(x, y): return np.exp(-1.0 * np.square(x - y))
 
-probabilities = gaussian_process.p(n, mu=mu, sigma=sigma, domain=domain, codomain=codomain)
+X = np.array([0.0, 2.0])
+Y = np.random.rand(2)
+x = np.linspace(-5, 5, 50)
+samples = 10
+n = gaussian_process.sample(x=x, mu=mu, sigma=sigma, X=X, Y=Y, shape=samples)
+
+probabilities = gaussian_process.p(np.linspace(-2.0, 3.0, 1000), x=np.array([1.0]), mu=mu, sigma=sigma, X=X, Y=Y)
 
 ```
 
@@ -978,7 +959,7 @@ probabilities = gaussian_process.p(n, mu=mu, sigma=sigma, domain=domain, codomai
   <img width=600px heigth=300px src="images/gaussian_process.png" />
 </p>
 
-> Calculating probabilities for GP is pretty much impossible when the domain gets large because of precision errors. This distribution is most useful for sampling / prediction
+> Calculating probabilities for GP is pretty much impossible when the domain gets large because of precision errors. Beware of using p when x is large 
 
 
 ## Unilinear 
@@ -987,8 +968,9 @@ probabilities = gaussian_process.p(n, mu=mu, sigma=sigma, domain=domain, codomai
 import numpy as np
 from probpy.distributions import unilinear
 
-x, y = unilinear.sample(variables=np.ones(2), sigma=1e-2, shape=100)
-probabilities = unilinear.p((x, y), variables=np.ones(2), sigma=1e-2)
+x = np.linspace(0, 2, 100)
+y = unilinear.sample(x=x, variables=np.ones(2), sigma=1e-2, shape=100) # final variable is treated as bias
+probabilities = unilinear.p(y, x=x, variables=np.ones(2), sigma=1e-2)
 
 ```
 
@@ -996,4 +978,3 @@ probabilities = unilinear.p((x, y), variables=np.ones(2), sigma=1e-2)
   <img width=600px heigth=300px src="images/unilinear.png" />
 </p>
 
-> The final "variable" is treated as a bias term

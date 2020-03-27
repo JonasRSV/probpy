@@ -542,37 +542,39 @@ class TestDistributions(unittest.TestCase):
     def test_gaussian_process_by_inspection(self):
 
         def mu(x): return 0
-        def sigma(x, y): return np.exp(-3.0 * np.square(x - y))
+        def sigma(x, y): return np.exp(-1.0 * np.square(x - y))
 
-        domain = np.linspace(0, 5, 50)
-        codomain = np.random.rand(50)
-        samples = 20
-        n = gaussian_process.sample(mu=mu, sigma=sigma, domain=domain, codomain=codomain, shape=samples)
+        X = np.array([0.0, 2.0])
+        Y = np.random.rand(2)
+        x = np.linspace(-5, 5, 50)
+        samples = 10
+        n = gaussian_process.sample(x=x, mu=mu, sigma=sigma, X=X, Y=Y, shape=samples)
 
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
-        plt.title(f"mu: 0 sigma: RBF (3) domain: [0, 5] codomain: rand(0, 1) -- samples: {samples}", fontsize=20)
+        plt.title(f"RBF Gaussian Processes", fontsize=20)
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
         for _n in n:
-            sb.lineplot(domain, _n)
+            sb.lineplot(x, _n)
 
         plt.subplot(2, 1, 2)
-        plt.title("Probabilities of functions above (with additional diagonal variance)", fontsize=20)
-        probabilities = gaussian_process.p(n, mu=mu, sigma=sigma, domain=domain, codomain=codomain)
-        sb.distplot(probabilities)
+        plt.title("Probabilities of functions values above at x = 1.0", fontsize=20)
+        probabilities = gaussian_process.p(np.linspace(-2.0, 3.0, 1000), x=np.array([1.0]), mu=mu, sigma=sigma, X=X, Y=Y)
+        sb.lineplot(np.linspace(-2, 3, 1000), probabilities)
+        plt.xticks(fontsize=20)
+        plt.xlabel("Y", fontsize=20)
         plt.tight_layout()
         plt.savefig("../images/gaussian_process.png", bbox_inches="tight")
         plt.show()
 
     def test_unilinear_by_inspection(self):
 
+        x = np.linspace(0, 2, 100)
         variables = np.ones(2)
         sigma = 0.01
         samples = 100
-        x, y = unilinear.sample(variables=variables, sigma=sigma, shape=samples)
-
-        x = x.flatten()
+        y = unilinear.sample(x=x, variables=variables, sigma=sigma, shape=samples)
 
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
@@ -582,28 +584,27 @@ class TestDistributions(unittest.TestCase):
         sb.lineplot(x, y)
 
         plt.subplot(2, 1, 2)
-        plt.title("P(Y - (1 * 0 + 1))", fontsize=20)
-        x = np.zeros(100)
-        y = np.linspace(-0.5, 0.5, 100) + 1
-        p = unilinear.p((x, y), variables=variables, sigma=sigma)
-        sb.lineplot(y, p)
-        plt.xlabel("Y", fontsize=20)
+        plt.title("Densities of different X", fontsize=20)
+        p = unilinear.p(y, x=x, variables=variables, sigma=sigma)
+        sb.lineplot(x, p)
         plt.tight_layout()
         plt.savefig("../images/unilinear.png", bbox_inches="tight")
         plt.show()
 
     def test_med_unilinear(self):
 
+        x = np.linspace(0, 1, 1000)
         variables = np.ones(2)
         sigma = 0.01
 
-        parameters = [variables, sigma]
-        name = [unilinear.variables,
+        parameters = [x, variables, sigma]
+        name = [unilinear.x,
+                unilinear.variables,
                 unilinear.sigma]
 
         s_results = []
         p_results = []
-        for test_case in itertools.product([0, 1], repeat=2):
+        for test_case in itertools.product([0, 1], repeat=3):
             kwargs = {}
             args = []
             for i, pick in enumerate(test_case):
@@ -613,8 +614,8 @@ class TestDistributions(unittest.TestCase):
                     args.append(parameters[i])
 
             frozen = unilinear.med(**kwargs)
-            x, y = frozen.sample(*args, shape=1000)
-            p = frozen.p((x, y), *args)
+            y = frozen.sample(*args)
+            p = frozen.p(y, *args)
 
             s_results.append(y.mean())
             p_results.append(p.mean())
@@ -630,20 +631,23 @@ class TestDistributions(unittest.TestCase):
             return 0
 
         def sigma(x, y):
-            return np.exp(-3.0 * np.square(x - y))
+            return np.exp(-1.0 * np.square(x - y))
 
-        domain = np.linspace(0, 5, 50)
-        codomain = np.random.rand(50)
+        X = np.linspace(0, 1.0, 5)
+        Y = np.random.rand(5)
 
-        parameters = [mu, sigma, domain, codomain]
-        name = [gaussian_process.mu,
+        x = np.array([0.0, 0.5])
+
+        parameters = [x, mu, sigma, X, Y]
+        name = [gaussian_process.x,
+                gaussian_process.mu,
                 gaussian_process.sigma,
-                gaussian_process.domain,
-                gaussian_process.codomain]
+                gaussian_process.X,
+                gaussian_process.Y]
 
         s_results = []
         p_results = []
-        for test_case in itertools.product([0, 1], repeat=4):
+        for test_case in itertools.product([0, 1], repeat=5):
             kwargs = {}
             args = []
             for i, pick in enumerate(test_case):

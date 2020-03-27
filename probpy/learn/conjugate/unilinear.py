@@ -12,16 +12,19 @@ class UniLinearMultivariateNormal_VariablePrior:
     def is_conjugate(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
         if priors[0].cls is multivariate_normal \
                 and _check_no_none_parameters(priors[0]) \
-                and _check_only_none_is(likelihood, [unilinear.variables]):
+                and _check_only_none_is(likelihood, [unilinear.variables, unilinear.x]):
             return True
         return False
 
     @staticmethod
     def posterior(data: np.ndarray, likelihood: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
         prior = priors[0]
-        x, y = data
-        x_dim = x.shape[0]
 
+        y, x = data
+        if x.ndim == 1:
+            x = x[:, None]
+
+        x_dim = x.shape[0]
         x = np.concatenate([x, np.ones((x_dim, 1))], axis=1)  # Add bias term
 
         likelihood_sigma = np.eye(x_dim) / likelihood.parameters[unilinear.sigma].value
