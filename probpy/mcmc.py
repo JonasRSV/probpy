@@ -42,12 +42,39 @@ def fast_metropolis_hastings(size: int,
     barriers = np.random.rand(size)
     p = initial
     j = 0
-    result = np.zeros(size, dtype=np.float32)
+    result = np.zeros((size, dim), dtype=np.float32)
     for i in range(size):
         while True:
             sample = p + jumps[j % size]
             accept_rate = np.minimum(pdf(sample) / pdf(p), 1.0)
             if accept_rate >= barriers[j % size]:
+                break
+            j += 1
+        j += 1
+        result[i], p = sample, sample
+    return result
+
+
+@numba.jit(nopython=False, forceobj=True)
+def fast_metropolis_hastings_log_space(size: int,
+                                       log_pdf: F[[np.ndarray], np.ndarray],
+                                       initial: np.ndarray,
+                                       energy: float = 1.0):
+    initial = np.array(initial)
+    dim = initial.size
+    if dim == 1:
+        jumps = np.random.normal(0, energy, size=size)
+    else:
+        jumps = np.random.multivariate_normal(np.zeros(dim), np.eye(dim) * energy, size=size)
+
+    p = initial
+    j = 0
+    result = np.zeros((size, dim), dtype=np.float32)
+    for i in range(size):
+        while True:
+            sample = p + jumps[j % size]
+            accept_rate = np.minimum(log_pdf(sample) - log_pdf(p), 0.0)
+            if accept_rate >= np.log(np.random.rand()):
                 break
             j += 1
         j += 1

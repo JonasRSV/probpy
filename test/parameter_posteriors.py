@@ -13,7 +13,8 @@ from probpy.distributions import (normal,
                                   poisson,
                                   geometric,
                                   gaussian_process,
-                                  unilinear)
+                                  unilinear,
+                                  multivariate_uniform)
 from probpy.learn import parameter_posterior
 import matplotlib.pyplot as plt
 import numpy as np
@@ -321,14 +322,92 @@ class PosteriorTest(unittest.TestCase):
         plt.savefig("../images/unilinear_multivariate_gaussian_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_should_fail(self):
+    def test_normal_with_exponential_prior_mcmc(self):
         prior = exponential.med(lam=1.0)
         likelihood = normal.med(sigma=2.0)
 
-        data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
-        parameter_posterior(data, likelihood=likelihood,
-                            priors=prior)  # Should fail because exponential is not conjugate to normal
+        data = normal.sample(mu=3.0, sigma=2.0, shape=1000)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=2000)
 
+        x = np.linspace(0.0, 6, 100)
+        y_prior = prior.p(x)
+        y_posterior = posterior.p(x)
+
+        plt.figure(figsize=(20, 10))
+        sb.lineplot(x, y_prior, label="prior")
+        sb.lineplot(x, y_posterior, label="posterior")
+        plt.legend()
+        plt.show()
+
+    def test_normal_with_exponential_normal_prior_mcmc(self):
+        mu_prior = normal.med(mu=3.0, sigma=2.0)
+        exp_prior = exponential.med(lam=1.0)
+        likelihood = normal.med()
+
+        data = normal.sample(mu=5.0, sigma=2.0, shape=300)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), size=2000)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        sb.distplot(data, label="data")
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        plt.title("Posterior", fontsize=20)
+        grid = 100
+        x = np.linspace(3, 7.0, grid)
+        y = np.linspace(-2.0, 6.0, grid)
+
+        X, Y = np.meshgrid(x, y)
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = posterior.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(grid, grid))
+        plt.tight_layout()
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.savefig("../images/normal-exponential-normal-mcmc-prior.png", bbox_inches="tight")
+        plt.show()
+
+    def test_multinormal_with_multiuniform_prior_mcmc(self):
+        prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
+        likelihood = multivariate_normal.med(sigma=np.eye(2))
+
+        data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), shape=50)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=500, energy=0.05)
+
+        plt.figure(figsize=(20, 10))
+        plt.subplot(2, 1, 1)
+        sb.kdeplot(data[:, 0], data[:, 1], label="data")
+        plt.legend()
+
+        plt.subplot(2, 1, 2)
+        grid = 100
+        x = np.linspace(0, 4.0, grid)
+        y = np.linspace(-2.0, 6.0, grid)
+
+        X, Y = np.meshgrid(x, y)
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = posterior.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(grid, grid))
+        plt.show()
+
+    def test_unilinear_normal_normal_prior(self):
+        prior_variables = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
+        prior_noise = exponential.med(lam=1.0)
+        likelihood = unilinear.med()
+
+        x = np.linspace(-2, 2, 60)
+        variables = np.array([2, 1])
+        y = unilinear.sample(x=x, variables=variables, sigma=1.0)
+        posterior = parameter_posterior((y, x),
+                                        likelihood=likelihood,
+                                        priors=(prior_variables, prior_noise),
+                                        size=600,
+                                        energy=0.05)
+
+        print(posterior.sample(shape=3000).mean(axis=0))
 
 if __name__ == '__main__':
     unittest.main()

@@ -42,6 +42,7 @@ class MultiVariateNormal(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(X: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
+        if X.ndim == 1: X = X.reshape(1, -1)
         normalizing_constant = np.float_power(2 * np.pi, -mu.size / 2) * np.float_power(np.linalg.det(sigma), -0.5)
         return np.array(
             [np.exp((-1 / 2) * (x - mu).T @ np.linalg.inv(sigma) @ (x - mu)) * normalizing_constant for x in X])

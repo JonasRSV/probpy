@@ -49,6 +49,5 @@ class UniLinear(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(y: Tuple[np.ndarray, np.ndarray], x: np.ndarray, variables: np.ndarray, sigma: np.float) -> np.ndarray:
-        if x.ndim == 1:
-            x = x[:, None]
+        if x.ndim == 1: x = x.reshape(-1, 1)
         return normal.p(y - (x @ variables[:-1] + variables[-1]), mu=0.0, sigma=sigma)

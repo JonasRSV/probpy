@@ -52,16 +52,16 @@ class RCKD(Density):
         lb = np.array([particles[:, i].min() for i in range(dim)])
         ub = np.array([particles[:, i].max() for i in range(dim)])
 
-        partition, previous, samples = 0.0, -9999, 1
-        while np.abs(partition - previous) > self.error:
+        partition, previous, samples = 1.0, -9999, 1
+        while np.abs(1 - partition / previous) > self.error:
             integral = uniform_importance_sampling(self.sampling_sz, function, (lb, ub),
                                                    multivariate_uniform.med(a=lb, b=ub))
             partition, samples, previous = (partition * samples + integral) / (samples + 1), samples + 1, partition
 
             if self.verbose:
-                print(f"{samples} - {np.abs(partition - previous)}")
+                print(f"{samples} - {np.abs(1 - partition / previous)}")
 
-        return partition, np.abs(partition - previous)
+        return partition, np.abs(1 - partition / previous)
 
     def fit(self, particles: np.ndarray):
         if particles.ndim == 1: particles = particles.reshape(-1, 1)
@@ -71,4 +71,5 @@ class RCKD(Density):
 
     def p(self, particles: np.ndarray):
         if particles.ndim == 1: particles = particles.reshape(-1, 1)
+        if particles[0].size != self.particles[0].size: raise Exception("Dimension mismatch in p RCKD")
         return RCKD.kernel(particles, self.particles, self.variance) / self.partition

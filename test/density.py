@@ -44,7 +44,7 @@ class DensityTest(unittest.TestCase):
         samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0)
         print("making samples", time.time() - timestamp)
 
-        density = RCKD(variance=5.0, error=1, verbose=True)
+        density = RCKD(variance=5.0, error=0.01, verbose=True)
         timestamp = time.time()
         density.fit(samples)
         print("fitting samples", time.time() - timestamp)

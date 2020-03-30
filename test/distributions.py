@@ -19,6 +19,8 @@ from probpy.distributions import poisson
 from probpy.distributions import hypergeometric
 from probpy.distributions import gaussian_process
 from probpy.distributions import unilinear
+from probpy.distributions import function
+from probpy.distributions import points
 from collections import Counter
 import itertools
 
@@ -26,12 +28,43 @@ import itertools
 class TestDistributions(unittest.TestCase):
 
     def test_r(self):
-        rv = pp.normal.med(mu=0.0)
-        print(rv.sample(1.0, shape=5))
 
-        rv.mu = rv.mu + 5
-        print(rv.sample(1.0, shape=5))
+        diag_mean = np.array([-1, 1])
+        samples = np.concatenate([
+            multivariate_normal.sample(mu=np.ones(2) * -3, sigma=np.eye(2), shape=5000),
+            multivariate_normal.sample(mu=np.ones(2) * 3, sigma=np.eye(2), shape=5000),
+            multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), shape=5000),
+            multivariate_normal.sample(mu=diag_mean * -3, sigma=np.eye(2), shape=5000),
+            multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), shape=5000),
+        ])
 
+        rv = pp.points.med(points=samples, verbose=True)
+
+        s = 10000
+        samples = rv.sample(shape=s)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"samples: {s}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.kdeplot(samples[:, 0], samples[:, 1], shade=True)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Densities", fontsize=20)
+        grid = 100
+        x = np.linspace(-6, 6, grid)
+        y = np.linspace(-6, 6, grid)
+
+        X, Y = np.meshgrid(x, y)
+
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = rv.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(grid, grid))
+        plt.tight_layout()
+        plt.savefig("../images/points_distribution_introduction.png", bbox_inches="tight")
+        plt.show()
 
     def test_first_two_moments(self):
         # Error should be variance / sqrt(n)
@@ -542,6 +575,7 @@ class TestDistributions(unittest.TestCase):
     def test_gaussian_process_by_inspection(self):
 
         def mu(x): return 0
+
         def sigma(x, y): return np.exp(-1.0 * np.square(x - y))
 
         X = np.array([0.0, 2.0])
@@ -560,7 +594,8 @@ class TestDistributions(unittest.TestCase):
 
         plt.subplot(2, 1, 2)
         plt.title("Probabilities of functions values above at x = 1.0", fontsize=20)
-        probabilities = gaussian_process.p(np.linspace(-2.0, 3.0, 1000), x=np.array([1.0]), mu=mu, sigma=sigma, X=X, Y=Y)
+        probabilities = gaussian_process.p(np.linspace(-2.0, 3.0, 1000), x=np.array([1.0]), mu=mu, sigma=sigma, X=X,
+                                           Y=Y)
         sb.lineplot(np.linspace(-2, 3, 1000), probabilities)
         plt.xticks(fontsize=20)
         plt.xlabel("Y", fontsize=20)
@@ -589,6 +624,141 @@ class TestDistributions(unittest.TestCase):
         sb.lineplot(x, p)
         plt.tight_layout()
         plt.savefig("../images/unilinear.png", bbox_inches="tight")
+        plt.show()
+
+    def test_function_1d(self):
+
+        initial = 0.0
+
+        def f(x): return np.exp(-np.square(x - 1))
+
+        rv = function.med(density=f, initial=initial, points=10000)
+
+        s = 10000
+        samples = rv.sample(shape=s)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"samples: {s}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.distplot(samples)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Densities", fontsize=20)
+        x = np.linspace(-1.2, 3, 500)
+        y = rv.p(x)
+        sb.lineplot(x, y)
+        plt.tight_layout()
+        plt.savefig("../images/function_distribution.png", bbox_inches="tight")
+        plt.show()
+
+    def test_function_2d(self):
+
+        initial = np.zeros(2)
+        mean = np.ones(2)
+
+        def f(x): return np.exp(-(x - mean) @ (x - mean))
+
+        rv = function.med(density=f, initial=initial, points=10000)
+
+        s = 10000
+        samples = rv.sample(shape=s)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"samples: {s}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.kdeplot(samples[:, 0], samples[:, 1], shade=True)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Densities", fontsize=20)
+        points = 100
+        x = np.linspace(-2, 4, points)
+        y = np.linspace(-2, 4, points)
+
+        X, Y = np.meshgrid(x, y)
+
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = rv.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(points, points))
+        plt.tight_layout()
+        plt.savefig("../images/function_distribution_2d.png", bbox_inches="tight")
+        plt.show()
+
+    def test_function_2d_gmm(self):
+
+        initial = np.zeros(2)
+        m1, m2, m3 = np.ones(2) * 0, np.ones(2) * -3, np.ones(2) * 3
+
+        def f(x):
+            return np.exp(-(x - m1) @ (x - m1)) \
+                   + np.exp(-(x - m2) @ (x - m2)) \
+                   + np.exp(-(x - m3) @ (x - m3))
+
+        rv = function.med(density=f, initial=initial, points=40000, error=1e-1, variance=5.0, verbose=True)
+
+        s = 10000
+        samples = rv.sample(shape=s)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"samples: {s}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.kdeplot(samples[:, 0], samples[:, 1], shade=True)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Densities", fontsize=20)
+        points = 100
+        x = np.linspace(-6, 6, points)
+        y = np.linspace(-6, 6, points)
+
+        X, Y = np.meshgrid(x, y)
+
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = rv.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(points, points))
+        plt.tight_layout()
+        plt.savefig("../images/function_distribution_gmm_2d.png", bbox_inches="tight")
+        plt.show()
+
+    def test_function_2d_points(self):
+
+        samples = np.concatenate([
+            multivariate_normal.sample(mu=np.ones(2) * -2, sigma=np.eye(2), shape=10000),
+            multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), shape=10000),
+            ])
+
+        rv = points.med(points=samples, verbose=True)
+
+        s = 10000
+        samples = rv.sample(shape=s)
+
+        plt.figure(figsize=(10, 6))
+        plt.subplot(2, 1, 1)
+        plt.title(f"samples: {s}", fontsize=20)
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        sb.kdeplot(samples[:, 0], samples[:, 1], shade=True)
+
+        plt.subplot(2, 1, 2)
+        plt.title("Densities", fontsize=20)
+        grid = 100
+        x = np.linspace(-6, 6, grid)
+        y = np.linspace(-6, 6, grid)
+
+        X, Y = np.meshgrid(x, y)
+
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = rv.p(Z)
+
+        plt.contourf(X, Y, Z.reshape(grid, grid))
+        plt.tight_layout()
+        plt.savefig("../images/points_distribution_gmm_2d.png", bbox_inches="tight")
         plt.show()
 
     def test_med_unilinear(self):
@@ -668,7 +838,6 @@ class TestDistributions(unittest.TestCase):
 
         np.testing.assert_almost_equal(s_results - s_results[0], np.zeros_like(s_results), decimal=1)
         np.testing.assert_almost_equal(p_results - p_results[0], np.zeros_like(p_results), decimal=1)
-
 
     def test_med(self):
         frozen = normal.med(mu=0.6, sigma=0.9)

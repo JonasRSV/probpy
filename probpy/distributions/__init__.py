@@ -16,4 +16,8 @@ from .poisson import Poisson as poisson
 from .hypergeometric import Hypergeometric as hypergeometric
 from .gaussian_process import GaussianProcess as gaussian_process
 from .unilinear import UniLinear as unilinear
+from .function import Function as function
+from .points import Points as points
+from .generic import Generic as generic
+
 

@@ -29,7 +29,7 @@ print(density)
 [0.34065788 0.32611746 0.21425955 0.39664108 0.14948112]
 ```
 
-Variables can be created with partial arguments
+***Variables can be created with partial arguments***
 
 ```python
 import probpy as pp
@@ -43,6 +43,60 @@ print(rv.sample(4.0, shape=5))
 [ 0.24050695  0.19103947  1.01564618 -0.37190388 -0.04080893]
 [5.24490748 3.72506806 3.59844073 4.71898881 2.47418571]
 ```
+
+***Variables can be created from generic functions, for things to work as expected they should be strictly positive***
+
+> Functions need to be using numpy and be vectorised (assume x is a vector)
+
+```python
+import probpy as pp
+import numpy as np
+m1, m2, m3 = np.ones(2) * 0, np.ones(2) * -3, np.ones(2) * 3
+def f(x):
+    return np.exp(-(x - m1) @ (x - m1)) \
+           + np.exp(-(x - m2) @ (x - m2)) \
+           + np.exp(-(x - m3) @ (x - m3))
+
+initial = np.zeros(2)
+rv = pp.function.med(density=f, 
+                     initial=initial,  # Initial value for MCMC estimation 
+                     points=40000,     # Points used, more points -> slower but higher accuracy
+                     variance=5.0,     # Smoothness of estimated density
+                     error=1e-1,       # Error metric of normalization constant -> lower better probability but slower
+                     verbose=True)     # Print density estimation progress
+
+# Only first 2 arguments are required, density and initial 
+# Metropolis-Hastings is used to estimate samples and uniform importance sampling 
+# to integrate for normalization constant
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/function_distribution_gmm_2d.png" />
+</p>
+
+***Variables can also be created from a set of points***
+
+```python
+import probpy as pp
+import numpy as np
+
+diag_mean = np.array([-1, 1])
+samples = np.concatenate([
+    pp.multivariate_normal.sample(mu=np.ones(2) * -3, sigma=np.eye(2), shape=5000),
+    pp.multivariate_normal.sample(mu=np.ones(2) * 3, sigma=np.eye(2), shape=5000),
+    pp.multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), shape=5000),
+    pp.multivariate_normal.sample(mu=diag_mean * -3, sigma=np.eye(2), shape=5000),
+    pp.multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), shape=5000),
+])
+
+rv = pp.points.med(points=samples, variance=2.0, error= 1e-1, verbose=True)
+# Only the first argument is required, points.
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/points_distribution_introduction.png" />
+</p>
+
 
 These variables can be used in many functions in this library. Things ranging from estimating ***parameter posteriors***, ***predictive posteriors***, ***integration*** and ***MCMC*** (and more to come). 
 
@@ -84,6 +138,7 @@ Documentation
         - [Beta Prior](#beta-prior)
       - [Unilinear Likelihood](#unilinear-likelihood)
         - [Multivariate normal parameter prior](#multivariate-normal-parameter-prior)
+    - [MCMC Parameter Estimation](#mcmc-parameter-estimation)
 - [MCMC](#MCMC)
   - [Metropolis](#metropolis)
   - [Metropolis-Hastings](#metropolis-hastings)
@@ -111,6 +166,8 @@ Documentation
   - [Hypergeometric](#hypergeometric)
   - [Gaussian Process](#gaussian-process)
   - [Unilinear](#unilinear)
+  - [Function](#function)
+  - [Points](#points)
 
 
 
@@ -455,6 +512,53 @@ posterior_y = unilinear.sample(x=x, variables=posterior_mean, sigma=1e-1)
 <p align="center">
   <img width=600px heigth=300px src="images/unilinear_multivariate_gaussian_conjugate.png" />
 </p>
+
+### MCMC Parameter Estimation
+
+When there are no conjugate priors the posterior is estimated as a points distribution
+
+```python
+from probpy.distributions import normal, exponential
+from probpy.learn import parameter_posterior
+
+mu_prior = normal.med(mu=3.0, sigma=2.0)
+exp_prior = exponential.med(lam=1.0)
+likelihood = normal.med()
+
+data = normal.sample(mu=5.0, sigma=2.0, shape=300)
+#                                                                order matters here
+posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), 
+                                size=2000, # Number of points in posterior point distribution,
+                                energy=0.05 # The energy in the MCMC distribution - high = more exploration) 
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/normal-exponential-normal-mcmc-prior.png" />
+</p>
+
+#### Linear Regression Example
+```python
+prior_variables = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
+prior_noise = exponential.med(lam=1.0)
+likelihood = unilinear.med()
+
+x = np.linspace(-2, 2, 60)
+variables = np.array([2, 1])
+y = unilinear.sample(x=x, variables=variables, sigma=1.0)
+posterior = parameter_posterior((y, x),
+                                likelihood=likelihood,
+                                priors=(prior_variables, prior_noise),
+                                size=600,
+                                energy=0.05)
+
+print(posterior.sample(shape=3000).mean(axis=0))
+```
+
+```bash
+[1.9861948  0.93879604 1.255713  ]
+```
+
+
 
 # MCMC
 
@@ -976,5 +1080,84 @@ probabilities = unilinear.p(y, x=x, variables=np.ones(2), sigma=1e-2)
 
 <p align="center">
   <img width=600px heigth=300px src="images/unilinear.png" />
+</p>
+
+## Function
+
+### 1D example
+
+```python3
+import numpy as np
+from probpy.distributions import function
+
+def f(x): return np.exp(-np.square(x - 1))
+rv = function.med(density=f, initial=0.0, points=10000)
+
+samples = rv.sample(shape=s)
+x = np.linspace(-1.2, 4, 500)
+p = rv.p(x)
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/function_distribution.png" />
+</p>
+
+### 2D example
+
+```python3
+import numpy as np
+from probpy.distributions import function
+
+initial = np.zeros(2)
+mean = np.ones(2)
+def f(x): return np.exp(-(x - mean) @ (x - mean))
+
+rv = function.med(density=f, initial=initial, points=10000)
+samples = rv.sample(shape=10000)
+
+points = 100
+x = np.linspace(-2, 4, points)
+y = np.linspace(-2, 4, points)
+
+X, Y = np.meshgrid(x, y)
+Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+Z = rv.p(Z)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/function_distribution_2d.png" />
+</p>
+
+## Points
+
+
+```python3
+import numpy as np
+from probpy.distributions import points
+
+samples = np.concatenate([
+    multivariate_normal.sample(mu=np.ones(2) * -2, sigma=np.eye(2), shape=10000),
+    multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), shape=10000),
+    ])
+
+rv = points.med(points=samples, verbose=True)
+
+s = 10000
+samples = rv.sample(shape=s)
+
+grid = 100
+x = np.linspace(-6, 6, grid)
+y = np.linspace(-6, 6, grid)
+
+X, Y = np.meshgrid(x, y)
+
+Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+Z = rv.p(Z)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/points_distribution_gmm_2d.png" />
 </p>
 

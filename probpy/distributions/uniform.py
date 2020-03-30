@@ -87,8 +87,9 @@ class MultiVariateUniform(Distribution):
 
             return a + np.random.rand(*shape) * (b - a)
 
-        return a + np.random.rand(a.shape) * (b - a)
+        return a + np.random.rand(a.size) * (b - a)
 
     @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        if x.ndim == 1: x = x.reshape(-1, a.size)
         return ((a < x) & (x < b)).all(axis=1).astype(np.float32) / np.product(b - a)

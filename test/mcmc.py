@@ -1,6 +1,6 @@
 import unittest
 from probpy.distributions import normal
-from probpy.mcmc import metropolis_hastings, metropolis, fast_metropolis_hastings
+from probpy.mcmc import metropolis_hastings, metropolis, fast_metropolis_hastings, fast_metropolis_hastings_log_space
 import matplotlib.pyplot as plt
 import seaborn as sb
 import numpy as np
@@ -25,6 +25,11 @@ class TestMCMC(unittest.TestCase):
         timestamp = time.time()
         fast_samples = fast_metropolis_hastings(400000, pdf, initial=-5.0, energy=0.3)
         print(f"fast MH took {time.time() - timestamp}")
+
+        # fast mh log-space
+        #timestamp = time.time()
+        #fast_samples = fast_metropolis_hastings_log_space(400000, pdf, initial=-5.0, energy=0.3)
+        #print(f"fast MH took {time.time() - timestamp}")
 
         samples = fast_samples[100000:]
         # samples = samples[10000:]
