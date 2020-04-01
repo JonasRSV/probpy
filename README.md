@@ -46,7 +46,7 @@ print(rv.sample(4.0, size=5))
 
 ***Variables can be created from generic functions, for things to work as expected they should be strictly positive***
 
-> Functions need to be using numpy and be vectorised (assume x is a vector)
+> Functions need to be using numpy and be vectorised (assume x is a vector or matrix in multivariate case)
 
 ```python
 import probpy as pp
@@ -62,16 +62,7 @@ lower_bound = np.ones(2) * -4
 upper_bound = np.ones(2) * 4
 rv = pp.function.med(density=f,
                   lower_bound=lower_bound,
-                  upper_bound=upper_bound,
-                  points=40000, # Optional - number of points to estimate density
-                  error=1e-1,   # Error metric from normalization constant -> lower better probability but slower
-                  variance=5.0, # Smoothness of estimated density
-                  verbose=True) # Print density estimation progress
-
-
-# Only first 3 arguments are required, density and bounds
-# Metropolis-Hastings is used to estimate samples and uniform importance sampling 
-# to integrate for normalization constant
+                  upper_bound=upper_bound)
 ```
 
 <p align="center">
@@ -93,8 +84,7 @@ samples = np.concatenate([
     pp.multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), size=5000),
 ])
 
-rv = pp.points.med(points=samples, variance=2.0, error= 1e-1, verbose=True)
-# Only the first argument is required, points.
+rv = pp.points.med(points=samples)
 ```
 
 <p align="center">
@@ -144,7 +134,7 @@ Documentation
         - [Multivariate normal parameter prior](#multivariate-normal-parameter-prior)
     - [MCMC Parameter Estimation](#mcmc-parameter-estimation)
       - [Custom Parameter Likelihood Example](#custom-parameter-likelihood-example)
-    - [MCMC + Moment Matching Parameter Estimation](#mcmc-+-moment-matching-parameter-estimation)
+    - [MCMC + Moment Matching Parameter Estimation](#mcmc--moment-matching-parameter-estimation)
 - [MCMC](#MCMC)
   - [Metropolis](#metropolis)
   - [Metropolis-Hastings](#metropolis-hastings)
