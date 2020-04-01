@@ -23,7 +23,7 @@ class TestMCMC(unittest.TestCase):
         print(f"MH took {time.time() - timestamp}")
 
         timestamp = time.time()
-        fast_samples = fast_metropolis_hastings(400000, pdf, initial=(np.random.rand(100) - 0.5) * 10.0, energy=1.0)
+        fast_samples = fast_metropolis_hastings(500000, pdf, initial=(np.random.rand(100) - 0.5) * 10.0, energy=1.0)
         print(f"fast MH took {time.time() - timestamp}")
 
         #timestamp = time.time()

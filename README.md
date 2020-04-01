@@ -692,16 +692,44 @@ samples = metropolis(size=100000, pdf=pdf, proposal=normal.med(mu=0, sigma=10), 
 
 ```python3
 from probpy.distributions import normal
-from progpy.mcmc import metropolis_hastings, fast_metropolis_hastings
+from progpy.mcmc import metropolis_hastings
 
 pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
 samples = metropolis_hastings(size=50000, pdf=pdf, proposal=normal.med(sigma=0.5), initial=-5) # This one takes generic proposal
-samples = fast_metropolis_hastings(size=50000, pdf=pdf, initial=-5.0, energy=1.0) # This one is much faster
 ```
 
 <p align="center">
   <img width=600px heigth=300px src="images/metropolis-hastings.png" />
 </p>
+
+### Fast Metropolis-hastings
+
+There is a fast-mh implementation as well (also a fast-log-space mh implementation that is used internally by other functions). The fast MH is about 100x faster but it does not take a custom proposal distribution.
+
+```python3
+from probpy.distributions import normal
+from progpy.mcmc import metropolis_hastings, fast_metropolis_hastings
+
+pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
+
+timestamp = time.time()
+samples = metropolis_hastings(50000, pdf, normal.med(sigma=1.0), initial=-5)
+print(f"MH took {time.time() - timestamp}")
+
+timestamp = time.time()
+fast_samples = fast_metropolis_hastings(500000, 
+                                        pdf, 
+                                        initial=(np.random.rand(1000) - 0.5) * 10.0, 
+                                        energy=1.0)
+
+print(f"fast MH took {time.time() - timestamp}")
+
+```
+
+```bash
+MH took 1.6391911506652832
+fast MH took 0.16809797286987305
+```
 
 
 # Integration
