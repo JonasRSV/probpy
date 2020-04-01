@@ -13,7 +13,6 @@ from probpy.distributions import (normal,
                                   poisson,
                                   geometric,
                                   gaussian_process,
-                                  unknown,
                                   unilinear)
 from probpy.inference import predictive_posterior
 import matplotlib.pyplot as plt
@@ -52,8 +51,8 @@ class PredictivePosteriorTest(unittest.TestCase):
 
         posterior = predictive_posterior(likelihood=likelihood, priors=prior)
 
-        prior_samples = prior.sample(shape=100000)
-        posterior_samples = posterior.sample(shape=100000)
+        prior_samples = prior.sample(size=100000)
+        posterior_samples = posterior.sample(size=100000)
 
         plt.figure(figsize=(20, 10))
         sb.distplot(prior_samples, label="prior")

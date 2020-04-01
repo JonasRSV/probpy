@@ -3,23 +3,28 @@ import numpy as np
 from probpy.core import Distribution, RandomVariable
 from probpy.density import RCKD
 from probpy.mcmc import fast_metropolis_hastings
+from probpy.distributions import multivariate_uniform
 
 
 class Function(Distribution):
     @classmethod
     def med(cls, density,
-            initial: np.ndarray,
+            lower_bound: np.ndarray,
+            upper_bound: np.ndarray,
             points: int = 1000,
             variance: float = 2.0,
             error: float = 1e-1,
             verbose: bool = False) -> RandomVariable:
 
-        samples = fast_metropolis_hastings(points, density, initial)
+        lower_bound, upper_bound = np.array(lower_bound), np.array(upper_bound)
+        initial = multivariate_uniform.sample(lower_bound, upper_bound, size=100)
+
+        samples = fast_metropolis_hastings(np.maximum(points, 10000), density, initial=initial)[-points:]
 
         density = RCKD(variance=variance, sampling_sz=100, error=error, verbose=verbose)
         density.fit(samples)
 
-        def _sample(shape: np.ndarray = ()): return samples[np.random.randint(low=0, high=samples.shape[0], size=shape)]
+        def _sample(size: np.ndarray = ()): return samples[np.random.randint(low=0, high=samples.shape[0], size=size)]
         def _p(x: np.ndarray): return density.p(x)
 
         parameters = {}

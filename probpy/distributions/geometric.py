@@ -13,7 +13,7 @@ class Geometric(Distribution):
             _sample = Geometric.sample
             _p = Geometric.p
         else:
-            def _sample(shape=()): return Geometric.sample(probability, shape)
+            def _sample(size=()): return Geometric.sample(probability, size)
             def _p(x: np.ndarray): return Geometric.p(x, probability)
 
         parameters = {
@@ -23,8 +23,8 @@ class Geometric(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(probability: np.float32, shape = ()) -> np.ndarray:
-        return np.random.geometric(probability, size=shape)
+    def sample(probability: np.float32, size = ()) -> np.ndarray:
+        return np.random.geometric(probability, size=size)
 
     @staticmethod
     def p(x: np.ndarray, probability: np.float32) -> np.ndarray:

@@ -13,16 +13,16 @@ class Poisson(Distribution):
             _sample = Poisson.sample
             _p = Poisson.p
         else:
-            def _sample(shape=()): return Poisson.sample(lam, shape)
+            def _sample(size=()): return Poisson.sample(lam, size)
             def _p(x): return Poisson.p(x, lam)
 
-        parameters = { Poisson.lam: Parameter(shape=(), value=lam) }
+        parameters = {Poisson.lam: Parameter(shape=(), value=lam)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(lam: np.float32, shape=()) -> np.ndarray:
-        return np.random.poisson(lam, size=shape)
+    def sample(lam: np.float32, size=()) -> np.ndarray:
+        return np.random.poisson(lam, size=size)
 
     @staticmethod
     @numba.njit(fastmath=True, parallel=True)

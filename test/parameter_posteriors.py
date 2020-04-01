@@ -12,7 +12,6 @@ from probpy.distributions import (normal,
                                   multinomial,
                                   poisson,
                                   geometric,
-                                  gaussian_process,
                                   unilinear,
                                   multivariate_uniform)
 from probpy.learn import parameter_posterior
@@ -26,7 +25,7 @@ class PosteriorTest(unittest.TestCase):
         prior = normal.med(mu=1.0, sigma=1.0)
         likelihood = normal.med(sigma=2.0)
 
-        data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
+        data = normal.sample(mu=-2.0, sigma=2.0, size=10000)
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(-4, 4, 1000)
@@ -48,7 +47,7 @@ class PosteriorTest(unittest.TestCase):
         prior = normal_inverse_gamma.med(mu=1.0, lam=2.0, a=3.0, b=3.0)
         likelihood = normal.med()
 
-        data = normal.sample(mu=-2.0, sigma=2.0, shape=100)
+        data = normal.sample(mu=-2.0, sigma=2.0, size=100)
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         points = 100
@@ -87,7 +86,7 @@ class PosteriorTest(unittest.TestCase):
         data_sigma = np.random.rand(1, 2) * 0.7
         data_sigma = data_sigma.T @ data_sigma + np.eye(2) * 1
 
-        data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, shape=200)
+        data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, size=200)
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         points = 100
@@ -141,8 +140,8 @@ class PosteriorTest(unittest.TestCase):
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.arange(5)
-        y_prior = prior.sample(shape=10000).sum(axis=0)
-        y_posterior = result.sample(shape=10000).sum(axis=0)
+        y_prior = prior.sample(size=10000).sum(axis=0)
+        y_posterior = result.sample(size=10000).sum(axis=0)
 
         plt.figure(figsize=(20, 10))
         plt.title("Estimating Posterior", fontsize=20)
@@ -162,7 +161,7 @@ class PosteriorTest(unittest.TestCase):
         prior = gamma.med(a=9, b=2)
         likelihood = exponential.med()
 
-        data = exponential.sample(lam=1, shape=100)
+        data = exponential.sample(lam=1, size=100)
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(0, 14, 1000)
@@ -211,8 +210,8 @@ class PosteriorTest(unittest.TestCase):
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.arange(3)
-        y_prior = prior.sample(shape=10000).sum(axis=0)
-        y_posterior = result.sample(shape=10000).sum(axis=0)
+        y_prior = prior.sample(size=10000).sum(axis=0)
+        y_posterior = result.sample(size=10000).sum(axis=0)
 
         plt.figure(figsize=(20, 10))
         plt.title("Estimating Posterior", fontsize=20)
@@ -232,7 +231,7 @@ class PosteriorTest(unittest.TestCase):
         prior = gamma.med(a=9, b=2)
         likelihood = poisson.med()
 
-        data = poisson.sample(lam=2.0, shape=40)
+        data = poisson.sample(lam=2.0, size=40)
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.linspace(0, 14, 1000)
@@ -282,8 +281,8 @@ class PosteriorTest(unittest.TestCase):
         y = unilinear.sample(x=x, variables=variables, sigma=1e-1)
         posterior = parameter_posterior((y, x), likelihood=likelihood, priors=prior)
 
-        prior_samples = prior.sample(shape=10000)
-        posterior_samples = posterior.sample(shape=10000)
+        prior_samples = prior.sample(size=10000)
+        posterior_samples = posterior.sample(size=10000)
 
         prior_mean = prior_samples.mean(axis=0)
         posterior_mean = posterior_samples.mean(axis=0)
@@ -326,7 +325,7 @@ class PosteriorTest(unittest.TestCase):
         prior = exponential.med(lam=1.0)
         likelihood = normal.med(sigma=2.0)
 
-        data = normal.sample(mu=3.0, sigma=2.0, shape=1000)
+        data = normal.sample(mu=3.0, sigma=2.0, size=1000)
         posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=2000)
 
         x = np.linspace(0.0, 6, 100)
@@ -344,7 +343,7 @@ class PosteriorTest(unittest.TestCase):
         exp_prior = exponential.med(lam=1.0)
         likelihood = normal.med()
 
-        data = normal.sample(mu=5.0, sigma=2.0, shape=300)
+        data = normal.sample(mu=5.0, sigma=2.0, size=300)
         posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), size=2000)
 
         plt.figure(figsize=(10, 6))
@@ -373,7 +372,7 @@ class PosteriorTest(unittest.TestCase):
         prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
         likelihood = multivariate_normal.med(sigma=np.eye(2))
 
-        data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), shape=50)
+        data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=100)
         posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=500, energy=0.05)
 
         plt.figure(figsize=(20, 10))
@@ -400,14 +399,79 @@ class PosteriorTest(unittest.TestCase):
 
         x = np.linspace(-2, 2, 60)
         variables = np.array([2, 1])
-        y = unilinear.sample(x=x, variables=variables, sigma=1.0)
+        y = unilinear.sample(x=x, variables=variables, sigma=0.3)
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=(prior_variables, prior_noise),
-                                        size=600,
+                                        size=5000,
                                         energy=0.05)
 
-        print(posterior.sample(shape=3000).mean(axis=0))
+        print(posterior.sample(size=3000).mean(axis=0))
+
+    def test_custom_logistic_regression(self):
+        def sigmoid(x):
+            return 1 / (1 + np.exp(-x))
+
+        def likelihood(y, x, w):
+            return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
+                            mu=0.0, sigma=0.5)
+
+        x = np.linspace(-5, 5, 50).reshape(-1, 1)
+        y = (x > 0).astype(np.float).flatten()
+
+        posterior = parameter_posterior((y, x),
+                                        likelihood=likelihood,
+                                        priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
+                                        parallel=10,
+                                        size=10000)
+
+        mean = posterior.sample(size=3000).mean(axis=0)
+
+        print("accuracy", (y == np.round(sigmoid(x @ mean[:-1] + mean[-1]))).sum() / y.size)
+
+        i = np.linspace(-2, 5, 100)
+        j = np.linspace(-4, 4, 100)
+        I, J = np.meshgrid(i, j)
+        K = np.concatenate([I.reshape(-1, 1), J.reshape(-1, 1)], axis=1)
+        K = posterior.p(K).reshape(100, 100)
+
+        plt.figure(figsize=(10, 6))
+        plt.title("Parameter distribution", fontsize=18)
+        plt.contourf(I, J, K)
+        plt.tight_layout()
+        plt.xticks(fontsize=16)
+        plt.yticks(fontsize=16)
+        plt.savefig("../images/custom_logistic_regression_example.png", bbox_inches="tight")
+        plt.show()
+
+    def test_normal_with_exponential_prior_mcmc_moment_matching(self):
+        prior = exponential.med(lam=0.6)
+        likelihood = normal.med(sigma=1.0)
+
+        data = normal.sample(mu=3.0, sigma=2.0, size=2000)
+        posterior = parameter_posterior(data,
+                                        likelihood=likelihood,
+                                        priors=prior,
+                                        size=10000,
+                                        parallel=25,
+                                        match_moments_for=normal)
+
+        print(posterior)
+
+    def test_normal_with_exponential_prior_mcmc_moment_matching(self):
+        prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
+        likelihood = multivariate_normal.med(sigma=np.eye(2))
+        data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=200)
+
+        posterior = parameter_posterior(data,
+                                        likelihood=likelihood,
+                                        priors=prior,
+                                        size=10000,
+                                        parallel=25,
+                                        match_moments_for=multivariate_normal)
+
+        print(posterior)
+
 
 if __name__ == '__main__':
     unittest.main()

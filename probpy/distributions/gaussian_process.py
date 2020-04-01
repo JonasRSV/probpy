@@ -34,12 +34,12 @@ class GaussianProcess(Distribution):
 
             return GaussianProcess.p(x, *call_args)
 
-        def _sample(*args, shape=()):
+        def _sample(*args, size=()):
             call_args = [None] * 5
             for i, arg in enumerate(args): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
 
-            return GaussianProcess.sample(*call_args, shape=shape)
+            return GaussianProcess.sample(*call_args, size=size)
 
         parameters = {
             GaussianProcess.x: Parameter(None, x),
@@ -90,7 +90,7 @@ class GaussianProcess(Distribution):
                sigma: Callable[[np.ndarray, np.ndarray], np.float],
                X: np.ndarray,
                Y: np.ndarray,
-               shape: np.ndarray = ()) -> np.ndarray:
+               size: np.ndarray = ()) -> np.ndarray:
 
         x_mu_vec, x_covariance_mat = GaussianProcess._build_parameters(mu, sigma, x)
         X_mu_vec, X_covariance_mat = GaussianProcess._build_parameters(mu, sigma, X)
@@ -102,7 +102,7 @@ class GaussianProcess(Distribution):
         posterior_mu = x_mu_vec + off_diagonal @ inv_X_covariance_mat @ (Y - X_mu_vec)
         posterior_sigma = x_covariance_mat - off_diagonal @ inv_X_covariance_mat @ off_diagonal.T
 
-        return multivariate_normal.sample(posterior_mu, posterior_sigma, shape=shape)
+        return multivariate_normal.sample(posterior_mu, posterior_sigma, size=size)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
@@ -112,6 +112,7 @@ class GaussianProcess(Distribution):
           sigma: Callable[[np.ndarray, np.ndarray], np.float],
           X: np.ndarray,
           Y: np.ndarray) -> np.ndarray:
+        if y.ndim == 1: y = y.reshape(-1, 1)
 
         x_mu_vec, x_covariance_mat = GaussianProcess._build_parameters(mu, sigma, x)
         X_mu_vec, X_covariance_mat = GaussianProcess._build_parameters(mu, sigma, X)

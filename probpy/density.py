@@ -71,5 +71,5 @@ class RCKD(Density):
 
     def p(self, particles: np.ndarray):
         if particles.ndim == 1: particles = particles.reshape(-1, 1)
-        if particles[0].size != self.particles[0].size: raise Exception("Dimension mismatch in p RCKD")
+        if particles[1].size != self.particles[1].size: raise Exception("Dimension mismatch in p RCKD")
         return RCKD.kernel(particles, self.particles, self.variance) / self.partition

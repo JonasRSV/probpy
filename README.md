@@ -17,7 +17,7 @@ import probpy as pp
 
 rv = pp.normal.med(mu=0.0, sigma=1.0)
 
-samples = rv.sample(shape=5)
+samples = rv.sample(size=5)
 density = rv.p(samples)
 
 print(samples)
@@ -35,8 +35,8 @@ print(density)
 import probpy as pp
 rv = pp.normal.med(sigma=1.0)
 
-print(rv.sample(0.0, shape=5))
-print(rv.sample(4.0, shape=5))
+print(rv.sample(0.0, size=5))
+print(rv.sample(4.0, size=5))
 ```
 
 ```bash
@@ -51,21 +51,25 @@ print(rv.sample(4.0, shape=5))
 ```python
 import probpy as pp
 import numpy as np
+
 m1, m2, m3 = np.ones(2) * 0, np.ones(2) * -3, np.ones(2) * 3
 def f(x):
-    return np.exp(-(x - m1) @ (x - m1)) \
-           + np.exp(-(x - m2) @ (x - m2)) \
-           + np.exp(-(x - m3) @ (x - m3))
+    return np.exp(-((x - m1) * (x - m1)).sum(axis=1)) \
+           + np.exp(-((x - m2) * (x - m2)).sum(axis=1)) \
+           + np.exp(-((x - m3) * (x - m3)).sum(axis=1))
 
-initial = np.zeros(2)
-rv = pp.function.med(density=f, 
-                     initial=initial,  # Initial value for MCMC estimation 
-                     points=40000,     # Points used, more points -> slower but higher accuracy
-                     variance=5.0,     # Smoothness of estimated density
-                     error=1e-1,       # Error metric of normalization constant -> lower better probability but slower
-                     verbose=True)     # Print density estimation progress
+lower_bound = np.ones(2) * -4
+upper_bound = np.ones(2) * 4
+rv = pp.function.med(density=f,
+                  lower_bound=lower_bound,
+                  upper_bound=upper_bound,
+                  points=40000, # Optional - number of points to estimate density
+                  error=1e-1,   # Error metric from normalization constant -> lower better probability but slower
+                  variance=5.0, # Smoothness of estimated density
+                  verbose=True) # Print density estimation progress
 
-# Only first 2 arguments are required, density and initial 
+
+# Only first 3 arguments are required, density and bounds
 # Metropolis-Hastings is used to estimate samples and uniform importance sampling 
 # to integrate for normalization constant
 ```
@@ -82,11 +86,11 @@ import numpy as np
 
 diag_mean = np.array([-1, 1])
 samples = np.concatenate([
-    pp.multivariate_normal.sample(mu=np.ones(2) * -3, sigma=np.eye(2), shape=5000),
-    pp.multivariate_normal.sample(mu=np.ones(2) * 3, sigma=np.eye(2), shape=5000),
-    pp.multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), shape=5000),
-    pp.multivariate_normal.sample(mu=diag_mean * -3, sigma=np.eye(2), shape=5000),
-    pp.multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), shape=5000),
+    pp.multivariate_normal.sample(mu=np.ones(2) * -3, sigma=np.eye(2), size=5000),
+    pp.multivariate_normal.sample(mu=np.ones(2) * 3, sigma=np.eye(2), size=5000),
+    pp.multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), size=5000),
+    pp.multivariate_normal.sample(mu=diag_mean * -3, sigma=np.eye(2), size=5000),
+    pp.multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), size=5000),
 ])
 
 rv = pp.points.med(points=samples, variance=2.0, error= 1e-1, verbose=True)
@@ -139,6 +143,8 @@ Documentation
       - [Unilinear Likelihood](#unilinear-likelihood)
         - [Multivariate normal parameter prior](#multivariate-normal-parameter-prior)
     - [MCMC Parameter Estimation](#mcmc-parameter-estimation)
+      - [Custom Parameter Likelihood Example](#custom-parameter-likelihood-example)
+    - [MCMC + Moment Matching Parameter Estimation](#mcmc-+-moment-matching-parameter-estimation)
 - [MCMC](#MCMC)
   - [Metropolis](#metropolis)
   - [Metropolis-Hastings](#metropolis-hastings)
@@ -264,7 +270,7 @@ The "parameter_posterior" function will estimate the parameter posterior given a
 
 The methods the functions uses is
 * conjugate priors (this is fast and is what is attempted first)
-* MCMC (not implemented yet)
+* MCMC 
 
 ### Conjugate priors
 
@@ -279,7 +285,7 @@ from probpy.learn import parameter_posterior
 prior = normal.med(mu=1.0, sigma=1.0)
 likelihood = normal.med(sigma=2.0)
 
-data = normal.sample(mu=-2.0, sigma=2.0, shape=10000)
+data = normal.sample(mu=-2.0, sigma=2.0, size=10000)
 result = parameter_posterior(data, likelihood=likelihood, priors=prior) 
 # result is also a r.v with functions sample & p
 ```
@@ -299,7 +305,7 @@ from probpy.learn import parameter_posterior
 prior = normal_inverse_gamma.med(mu=1.0, lam=2.0, a=3.0, b=3.0)
 likelihood = normal.med()
 
-data = normal.sample(mu=-2.0, sigma=2.0, shape=100)
+data = normal.sample(mu=-2.0, sigma=2.0, size=100)
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 # result is also a r.v with functions sample & p
 ```
@@ -322,7 +328,7 @@ likelihood = multivariate_normal.med(sigma=np.eye(2) * 10)
 data_mean = np.ones(2) * -2
 data_sigma = np.random.rand(1, 2) * 0.7
 data_sigma = data_sigma.T @ data_sigma + np.eye(2) * 1
-data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, shape=200)
+data = multivariate_normal.sample(mu=data_mean, sigma=data_sigma, size=200)
 
 result = parameter_posterior(data, likelihood=likelihood, priors=prior) 
 # result is also a r.v with functions sample & p
@@ -368,8 +374,8 @@ likelihood = categorical.med(dim=5)
 data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
-prior_samples = prior.sample(shape=10000).sum(axis=0)
-posterior_samples = result.sample(shape=10000).sum(axis=0)
+prior_samples = prior.sample(size=10000).sum(axis=0)
+posterior_samples = result.sample(size=10000).sum(axis=0)
 
 ```
 
@@ -388,7 +394,7 @@ from probpy.learn import parameter_posterior
 prior = gamma.med(a=9, b=2)
 likelihood = exponential.med()
 
-data = exponential.sample(lam=1, shape=100)
+data = exponential.sample(lam=1, size=100)
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 ```
 
@@ -432,8 +438,8 @@ likelihood = multinomial.med(n=3)
 data = np.array([[1, 1, 1], [0, 2, 1], [0, 0, 3], [0, 0, 3]])
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
-prior_samples = prior.sample(shape=10000).sum(axis=0)
-posterior_samples = result.sample(shape=10000).sum(axis=0)
+prior_samples = prior.sample(size=10000).sum(axis=0)
+posterior_samples = result.sample(size=10000).sum(axis=0)
 
 ```
 
@@ -451,7 +457,7 @@ from probpy.learn import parameter_posterior
 prior = gamma.med(a=9, b=2)
 likelihood = poisson.med()
 
-data = poisson.sample(lam=2, shape=40)
+data = poisson.sample(lam=2, size=40)
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
 ```
@@ -498,8 +504,8 @@ x = np.linspace(-1, 1, 300)
 y = unilinear.sample(x=x, variables=variables, sigma=1e-1)
 posterior = parameter_posterior((y, x), likelihood=likelihood, priors=prior)
 
-prior_samples = prior.sample(shape=10000) # functions for getting mode will come later
-posterior_samples = posterior.sample(shape=10000)
+prior_samples = prior.sample(size=10000) # functions for getting mode will come later
+posterior_samples = posterior.sample(size=10000)
 
 prior_mean = prior_samples.mean(axis=0)
 posterior_mean = posterior_samples.mean(axis=0)
@@ -515,7 +521,7 @@ posterior_y = unilinear.sample(x=x, variables=posterior_mean, sigma=1e-1)
 
 ### MCMC Parameter Estimation
 
-When there are no conjugate priors the posterior is estimated as a points distribution
+When there are no conjugate priors the posterior is estimated as a points distribution. ***Note that likelihoods need to be vectorized in both parameters and data here*** not all of the distributions are that yet. 
 
 ```python
 from probpy.distributions import normal, exponential
@@ -525,10 +531,10 @@ mu_prior = normal.med(mu=3.0, sigma=2.0)
 exp_prior = exponential.med(lam=1.0)
 likelihood = normal.med()
 
-data = normal.sample(mu=5.0, sigma=2.0, shape=300)
+data = normal.sample(mu=5.0, sigma=2.0, size=300)
 #                                                                order matters here
 posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), 
-                                size=2000, # Number of points in posterior point distribution,
+                                size=5000, # Number of points in posterior point distribution,
                                 energy=0.05 # The energy in the MCMC distribution - high = more exploration) 
 ```
 
@@ -538,6 +544,9 @@ posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, e
 
 #### Linear Regression Example
 ```python
+from probpy.distributions import multivariate_normal, exponential, unilinear
+from probpy.learn import parameter_posterior
+
 prior_variables = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
 prior_noise = exponential.med(lam=1.0)
 likelihood = unilinear.med()
@@ -551,11 +560,119 @@ posterior = parameter_posterior((y, x),
                                 size=600,
                                 energy=0.05)
 
-print(posterior.sample(shape=3000).mean(axis=0))
+print(posterior.sample(size=3000).mean(axis=0))
 ```
 
 ```bash
 [1.9861948  0.93879604 1.255713  ]
+```
+
+#### Custom Parameter Likelihood Example
+
+This is an example of logistic regression
+
+```python
+from probpy.distributions import multivariate_normal
+from probpy.learn import parameter_posterior
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+# This likelihood function broadcasts such that for each w we calculate the probability of (y, x)
+# a for loop over w works as well but is significantly slower
+def likelihood(y, x, w):
+    return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
+                    mu=0.0, sigma=0.5)
+
+x = np.linspace(-5, 5, 50).reshape(-1, 1)
+y = (x > 0).astype(np.float).flatten()
+
+posterior = parameter_posterior((y, x),
+                                likelihood=likelihood,
+                                priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
+                                parallel=10,
+                                size=10000)
+
+mean = posterior.sample(size=3000).mean(axis=0)
+
+print("accuracy", (y == np.round(sigmoid(x @ mean[:-1] + mean[-1]))).sum() / y.size)
+
+i = np.linspace(-2, 5, 100)
+j = np.linspace(-4, 4, 100)
+I, J = np.meshgrid(i, j)
+K = np.concatenate([I.reshape(-1, 1), J.reshape(-1, 1)], axis=1)
+K = posterior.p(K).reshape(100, 100)
+
+plt.figure(figsize=(10, 6))
+plt.title("Parameter distribution", fontsize=18)
+plt.contourf(I, J, K)
+plt.tight_layout()
+plt.show()
+```
+```bash
+accuracy 1.0
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/custom_logistic_regression_example.png" />
+</p>
+
+
+### MCMC + Moment Matching Parameter Estimation
+
+To avoid those pesky point distributions one can pick a simple distribution and fit it by matching its moments. Why would one want this? Performance reasons.. Also because for normal distributions the mode is the mean which is the mu parameter, this comes in handy at times.
+
+```python
+from probpy.distributions import exponential, normal
+from probpy.learn import parameter_posterior
+
+prior = exponential.med(lam=0.6)
+likelihood = normal.med(sigma=1.0)
+
+data = normal.sample(mu=3.0, sigma=2.0, size=2000)
+posterior = parameter_posterior(data,
+                                likelihood=likelihood,
+                                priors=prior,
+                                size=10000,
+                                parallel=25,
+                                match_moments_for=normal)
+
+print(posterior)
+```
+
+```bash
+Normal -- output: ()
+mu: () - 3.0081961422243135
+sigma: () - 0.05847424319480537
+```
+
+```python
+from probpy.distributions import multivariate_uniform, multivariate_normal
+from probpy.learn import parameter_posterior
+
+prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
+likelihood = multivariate_normal.med(sigma=np.eye(2))
+data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=200)
+
+posterior = parameter_posterior(data,
+                                likelihood=likelihood,
+                                priors=prior,
+                                size=10000,
+                                parallel=25,
+                                match_moments_for=multivariate_normal)
+
+print(posterior)
+
+```
+
+```bash
+MultiVariateNormal -- output: 2
+mu: 2 - [2.00687866 1.97807209]
+sigma: (2, 2) - [[0.01759853 0.00079202]
+ [0.00079202 0.01714388]]
 ```
 
 
@@ -966,7 +1083,7 @@ true = gamma.p(x, a, b)
 import numpy as np
 from probpy.distributions import normal_inverse_gamma
 
-n = normal_inverse_gamma.sample(2, 1, 2, 2, shape=10000)
+n = normal_inverse_gamma.sample(2, 1, 2, 2, size=10000)
 
 points = 100
 x = np.linspace(-2, 6, points)
@@ -1026,7 +1143,7 @@ p = poisson.p(x, lam)
 import numpy as np
 from probpy.distributions import hypergeometric
 
-n = hypergeometric.sample(N=20, K=13, n=12, shape=samples)
+n = hypergeometric.sample(N=20, K=13, n=12, size=samples)
 
 data = np.arange(0, 13)
 p = hypergeometric.p(x, N=N, K=K, n=12)
@@ -1053,7 +1170,7 @@ X = np.array([0.0, 2.0])
 Y = np.random.rand(2)
 x = np.linspace(-5, 5, 50)
 samples = 10
-n = gaussian_process.sample(x=x, mu=mu, sigma=sigma, X=X, Y=Y, shape=samples)
+n = gaussian_process.sample(x=x, mu=mu, sigma=sigma, X=X, Y=Y, size=samples)
 
 probabilities = gaussian_process.p(np.linspace(-2.0, 3.0, 1000), x=np.array([1.0]), mu=mu, sigma=sigma, X=X, Y=Y)
 
@@ -1073,7 +1190,7 @@ import numpy as np
 from probpy.distributions import unilinear
 
 x = np.linspace(0, 2, 100)
-y = unilinear.sample(x=x, variables=np.ones(2), sigma=1e-2, shape=100) # final variable is treated as bias
+y = unilinear.sample(x=x, variables=np.ones(2), sigma=1e-2, size=100) # final variable is treated as bias
 probabilities = unilinear.p(y, x=x, variables=np.ones(2), sigma=1e-2)
 
 ```
@@ -1091,9 +1208,9 @@ import numpy as np
 from probpy.distributions import function
 
 def f(x): return np.exp(-np.square(x - 1))
-rv = function.med(density=f, initial=0.0, points=10000)
+rv = function.med(density=f, lower_bound=-5, upper_bound=5, points=10000)
 
-samples = rv.sample(shape=s)
+samples = rv.sample(size=s)
 x = np.linspace(-1.2, 4, 500)
 p = rv.p(x)
 ```
@@ -1108,12 +1225,11 @@ p = rv.p(x)
 import numpy as np
 from probpy.distributions import function
 
-initial = np.zeros(2)
 mean = np.ones(2)
-def f(x): return np.exp(-(x - mean) @ (x - mean))
+def f(x): return np.exp(-((x - mean) * (x - mean)).sum(axis=1))
 
-rv = function.med(density=f, initial=initial, points=10000)
-samples = rv.sample(shape=10000)
+rv = function.med(density=f, lower_bound=np.ones(2) * -2, upper_bound=np.ones(2) * 2, points=10000)
+samples = rv.sample(size=10000)
 
 points = 100
 x = np.linspace(-2, 4, points)
@@ -1134,17 +1250,17 @@ Z = rv.p(Z)
 
 ```python3
 import numpy as np
-from probpy.distributions import points
+from probpy.distributions import points, multivariate_normal
 
 samples = np.concatenate([
-    multivariate_normal.sample(mu=np.ones(2) * -2, sigma=np.eye(2), shape=10000),
-    multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), shape=10000),
+    multivariate_normal.sample(mu=np.ones(2) * -2, sigma=np.eye(2), size=10000),
+    multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=10000),
     ])
 
 rv = points.med(points=samples, verbose=True)
 
 s = 10000
-samples = rv.sample(shape=s)
+samples = rv.sample(size=s)
 
 grid = 100
 x = np.linspace(-6, 6, grid)

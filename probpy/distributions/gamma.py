@@ -15,13 +15,13 @@ class Gamma(Distribution):
             _sample = Gamma.sample
             _p = Gamma.p
         elif a is None:
-            def _sample(a: np.ndarray, shape: np.ndarray = ()): return Gamma.sample(a, b, shape)
+            def _sample(a: np.ndarray, size: np.ndarray = ()): return Gamma.sample(a, b, size)
             def _p(x: np.ndarray, a: np.ndarray): return Gamma.p(x, a, b)
         elif b is None:
-            def _sample(b: np.ndarray, shape: np.ndarray = ()): return Gamma.sample(a, b, shape)
+            def _sample(b: np.ndarray, size: np.ndarray = ()): return Gamma.sample(a, b, size)
             def _p(x: np.ndarray, b: np.ndarray): return Gamma.p(x, a, b)
         else:
-            def _sample(shape=()): return Gamma.sample(a, b, shape)
+            def _sample(size=()): return Gamma.sample(a, b, size)
             def _p(x): return Gamma.p(x, a, b)
 
         parameters = {
@@ -33,8 +33,8 @@ class Gamma(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(a: np.float32, b: np.float32, shape=()) -> np.ndarray:
-        return np.random.gamma(a, 1 / b, size=shape)
+    def sample(a: np.float32, b: np.float32, size=()) -> np.ndarray:
+        return np.random.gamma(a, 1 / b, size=size)
 
     @staticmethod
     def p(x: np.ndarray, a: np.float32, b: np.float32) -> np.ndarray:

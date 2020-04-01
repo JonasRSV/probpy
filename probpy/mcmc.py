@@ -27,59 +27,65 @@ def metropolis_hastings(size: int,
     return samples
 
 
-@numba.jit(nopython=False, forceobj=True)
 def fast_metropolis_hastings(size: int,
                              pdf: F[[np.ndarray], np.ndarray],
                              initial: np.ndarray,
                              energy: float = 1.0):
-    initial = np.array(initial)
-    dim = initial.size
+    parallel_samples = initial.shape[0]
+    dim = initial.ndim
     if dim == 1:
-        jumps = np.random.normal(0, energy, size=size)
+        jump = lambda: np.random.normal(0, energy, size=parallel_samples)
     else:
-        jumps = np.random.multivariate_normal(np.zeros(dim), np.eye(dim) * energy, size=size)
+        jump = lambda: np.random.multivariate_normal(np.zeros(initial.shape[1]),
+                                                     np.eye(initial.shape[1]) * energy, size=parallel_samples)
 
-    barriers = np.random.rand(size)
     p = initial
     j = 0
-    result = np.zeros((size, dim), dtype=np.float32)
-    for i in range(size):
-        while True:
-            sample = p + jumps[j % size]
-            accept_rate = np.minimum(pdf(sample) / pdf(p), 1.0)
-            if accept_rate >= barriers[j % size]:
-                break
-            j += 1
+    result = []
+    while len(result) < size:
+        samples = p + jump()
+        accept_rate = np.minimum(pdf(samples) / pdf(p), 1.0)
+        accept_rate = accept_rate.flatten()
+
+        accepted = accept_rate >= np.random.rand(parallel_samples)
+        rejected = False == accepted
+
+        result.extend(samples[accepted])
+
+        samples[rejected] = p[rejected]
+        p = samples
         j += 1
-        result[i], p = sample, sample
-    return result
+
+    return np.array(result)
 
 
-@numba.jit(nopython=False, forceobj=True)
 def fast_metropolis_hastings_log_space(size: int,
                                        log_pdf: F[[np.ndarray], np.ndarray],
                                        initial: np.ndarray,
                                        energy: float = 1.0):
-    initial = np.array(initial)
-    dim = initial.size
-    if dim == 1:
-        jumps = np.random.normal(0, energy, size=size)
-    else:
-        jumps = np.random.multivariate_normal(np.zeros(dim), np.eye(dim) * energy, size=size)
+    parallel_samples = initial.shape[0]
+    dim = initial.ndim
+    if dim == 1: jump = lambda: np.random.normal(0, energy, size=parallel_samples)
+    else: jump = lambda: np.random.multivariate_normal(np.zeros(initial.shape[1]),
+                                                       np.eye(initial.shape[1]) * energy, size=parallel_samples)
 
     p = initial
     j = 0
-    result = np.zeros((size, dim), dtype=np.float32)
-    for i in range(size):
-        while True:
-            sample = p + jumps[j % size]
-            accept_rate = np.minimum(log_pdf(sample) - log_pdf(p), 0.0)
-            if accept_rate >= np.log(np.random.rand()):
-                break
-            j += 1
+    result = []
+    while len(result) < size:
+        samples = p + jump()
+        accept_rate = np.minimum(log_pdf(samples) - log_pdf(p), 0.0)
+        accept_rate = accept_rate.flatten()
+
+        accepted = accept_rate >= np.log(np.random.rand(parallel_samples))
+        rejected = False == accepted
+        result.extend(samples[accepted])
+
+        samples[rejected] = p[rejected]
+        p = samples
         j += 1
-        result[i], p = sample, sample
-    return result
+
+    return np.array(result)
 
 
 def metropolis(size: int,
@@ -89,7 +95,7 @@ def metropolis(size: int,
     samples = []
     while len(samples) < size:
         remainder = size - len(samples)
-        sample = proposal.sample(shape=remainder)
+        sample = proposal.sample(size=remainder)
 
         accept_rate = pdf(sample) / (M * proposal.p(sample))
 

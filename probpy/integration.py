@@ -11,7 +11,7 @@ def uniform_importance_sampling(size: int,
                                 proposal: RandomVariable):
     lower_bounds, upper_bounds = domain
 
-    samples = proposal.sample(shape=size)
+    samples = proposal.sample(size=size)
 
     accepted = (lower_bounds < samples) & (samples < upper_bounds)
 

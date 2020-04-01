@@ -13,18 +13,18 @@ class Bernoulli(Distribution):
             _sample = Bernoulli.sample
             _p = Bernoulli.p
         else:
-            def _sample(shape=()): return Bernoulli.sample(probability, shape)
+            def _sample(size=()): return Bernoulli.sample(probability, size)
             def _p(x): return Bernoulli.p(x, probability)
 
-        parameters = { Bernoulli.probability: Parameter(shape=(), value=probability) }
+        parameters = {Bernoulli.probability: Parameter(shape=(), value=probability)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(probability: np.float32, shape = ()) -> np.ndarray:
-        if type(shape) == int:
-            return (np.random.rand(shape) < probability).astype(np.float32)
-        return (np.random.rand(*shape) < probability).astype(np.float32)
+    def sample(probability: np.float32, size = ()) -> np.ndarray:
+        if type(size) == int:
+            return (np.random.rand(size) < probability).astype(np.float32)
+        return (np.random.rand(*size) < probability).astype(np.float32)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

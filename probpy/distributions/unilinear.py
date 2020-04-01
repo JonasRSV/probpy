@@ -12,7 +12,7 @@ class UniLinear(Distribution):
     sigma = "sigma"
 
     @classmethod
-    def med(cls, x: np.ndarray = None, variables: np.ndarray = None, sigma: np.float = None, shape: int = None) -> RandomVariable:
+    def med(cls, x: np.ndarray = None, variables: np.ndarray = None, sigma: np.float = None) -> RandomVariable:
         params = [x, variables, sigma]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]
@@ -24,12 +24,12 @@ class UniLinear(Distribution):
 
             return UniLinear.p(x, *call_args)
 
-        def _sample(*args, shape=()):
+        def _sample(*args, size=()):
             call_args = [None] * 3
             for i, arg in enumerate(args): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
 
-            return UniLinear.sample(*call_args, shape=shape)
+            return UniLinear.sample(*call_args, size=size)
 
         parameters = {
             UniLinear.x: Parameter((), x),
@@ -41,13 +41,20 @@ class UniLinear(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(x: np.ndarray, variables: np.ndarray, sigma: np.float, shape: np.ndarray = ()) -> Tuple[np.ndarray, np.ndarray]:
+    def sample(x: np.ndarray, variables: np.ndarray, sigma: np.float, size: np.ndarray = ()) -> Tuple[np.ndarray, np.ndarray]:
         if x.ndim == 1:
             x = x[:, None]
-        return x @ variables[:-1] + variables[-1] + normal.sample(mu=0, sigma=sigma, shape=x.shape[0])
+        return x @ variables[:-1] + variables[-1] + normal.sample(mu=0, sigma=sigma, size=x.shape[0])
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(y: Tuple[np.ndarray, np.ndarray], x: np.ndarray, variables: np.ndarray, sigma: np.float) -> np.ndarray:
         if x.ndim == 1: x = x.reshape(-1, 1)
+        #print(y.shape, x.shape, variables.shape, sigma.shape)
+
+        # broadcasting over mu + data
+        if variables.ndim == 2:
+            return normal.p(y - (x @ variables[:, None, :-1] + variables[:, None, None, -1]).squeeze(axis=2),
+                            mu=0.0, sigma=sigma)
+
         return normal.p(y - (x @ variables[:-1] + variables[-1]), mu=0.0, sigma=sigma)

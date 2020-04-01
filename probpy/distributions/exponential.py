@@ -13,19 +13,21 @@ class Exponential(Distribution):
             _sample = Exponential.sample
             _p = Exponential.p
         else:
-            def _sample(shape=()): return Exponential.sample(lam, shape)
+            def _sample(size=()): return Exponential.sample(lam, size)
             def _p(x): return Exponential.p(x, lam)
 
-        parameters = { Exponential.lam: Parameter(shape=(), value=lam) }
+        parameters = {Exponential.lam: Parameter(shape=(), value=lam)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(lam: np.float32, shape=()) -> np.ndarray:
-        return np.random.exponential(1 / lam, size=shape)
+    def sample(lam: np.float32, size=()) -> np.ndarray:
+        return np.random.exponential(1 / lam, size=size)
 
     @staticmethod
-    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
-        return lam * np.exp(-lam * x)
+        result = np.zeros_like(x)
+        lg_0 = x >= 0
+        result[lg_0] = lam * np.exp(-lam * x[lg_0])
+        return result
 

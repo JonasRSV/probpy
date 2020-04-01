@@ -15,17 +15,17 @@ class Dirichlet(Distribution):
             _p = Dirichlet.p
             shape = dim
         else:
-            def _sample(shape=()): return Dirichlet.sample(alpha, shape)
+            def _sample(size=()): return Dirichlet.sample(alpha, size)
             def _p(x): return Dirichlet.p(x, alpha)
             shape = alpha.size
 
-        parameters = { Dirichlet.alpha: Parameter(shape=shape, value=alpha) }
+        parameters = {Dirichlet.alpha: Parameter(shape=shape, value=alpha)}
         return RandomVariable(_sample, _p, shape, parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(alpha: np.ndarray, shape=()) -> np.ndarray:
-        return np.random.dirichlet(alpha, size=shape)
+    def sample(alpha: np.ndarray, size=()) -> np.ndarray:
+        return np.random.dirichlet(alpha, size=size)
 
     @staticmethod
     def p(x: np.ndarray, alpha: np.ndarray) -> np.ndarray:

@@ -14,17 +14,17 @@ class Categorical(Distribution):
             _p = Categorical.p
             shape = dim
         else:
-            def _sample(shape=()): return Categorical.sample(probabilities, shape)
+            def _sample(size=()): return Categorical.sample(probabilities, size)
             def _p(x): return Categorical.p(x, probabilities)
             shape = probabilities.size
 
-        parameters = { Categorical.probabilities: Parameter(shape=shape, value=probabilities) }
+        parameters = {Categorical.probabilities: Parameter(shape=shape, value=probabilities)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(probabilities: np.ndarray, shape=()) -> np.ndarray:
-        return np.random.choice(np.arange(probabilities.size), p=probabilities, size=shape)
+    def sample(probabilities: np.ndarray, size=()) -> np.ndarray:
+        return np.random.choice(np.arange(probabilities.size), p=probabilities, size=size)
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

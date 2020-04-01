@@ -23,8 +23,8 @@ class RandomVariable:
         for name, parameter in parameters.items():
             self.__setattr__(name, parameter.value)
 
-    def sample(self, *args, shape: np.ndarray = ()):
-        return self._sample(*args, shape=shape)
+    def sample(self, *args, size: np.ndarray = ()):
+        return self._sample(*args, size=size)
 
     def p(self, x, *args):
         return self._p(x, *args)
@@ -45,7 +45,7 @@ class Distribution(ABC):
 
     @staticmethod
     @abstractmethod
-    def sample(*args, shape: np.ndarray = ()) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    def sample(*args, size: np.ndarray = ()) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         raise NotImplementedError(f"sample is not implemented")
 
     @staticmethod

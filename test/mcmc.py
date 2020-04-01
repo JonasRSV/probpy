@@ -1,6 +1,6 @@
 import unittest
 from probpy.distributions import normal
-from probpy.mcmc import metropolis_hastings, metropolis, fast_metropolis_hastings, fast_metropolis_hastings_log_space
+from probpy.mcmc import metropolis_hastings, metropolis, fast_metropolis_hastings_log_space, fast_metropolis_hastings
 import matplotlib.pyplot as plt
 import seaborn as sb
 import numpy as np
@@ -18,27 +18,24 @@ class TestMCMC(unittest.TestCase):
         sb.lineplot(x, pdf(x))
 
         plt.subplot(2, 1, 2)
-        # timestamp = time.time()
-        # samples = metropolis_hastings(50000, pdf, normal.freeze(sigma=1.0), initial=-5)
-        # print(f"MH took {time.time() - timestamp}")
+        timestamp = time.time()
+        samples = metropolis_hastings(50000, pdf, normal.med(sigma=1.0), initial=-5)
+        print(f"MH took {time.time() - timestamp}")
 
         timestamp = time.time()
-        fast_samples = fast_metropolis_hastings(400000, pdf, initial=-5.0, energy=0.3)
+        fast_samples = fast_metropolis_hastings(400000, pdf, initial=(np.random.rand(100) - 0.5) * 10.0, energy=1.0)
         print(f"fast MH took {time.time() - timestamp}")
 
-        # fast mh log-space
         #timestamp = time.time()
-        #fast_samples = fast_metropolis_hastings_log_space(400000, pdf, initial=-5.0, energy=0.3)
+        #fast_samples = fast_metropolis_hastings_log_space(400000, pdf, initial=(np.random.rand(1000) - 0.5) * 10.0, energy=1.0)
         #print(f"fast MH took {time.time() - timestamp}")
 
         samples = fast_samples[100000:]
         # samples = samples[10000:]
 
-        print(samples)
-
         sb.distplot(samples)
         plt.xlim([-10, 10])
-        plt.savefig("../images/metropolis-hastings.png", bbox_inches="tight")
+        #plt.savefig("../images/metropolis-hastings.png", bbox_inches="tight")
         plt.show()
 
     def test_metropolis(self):
