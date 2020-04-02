@@ -1,7 +1,7 @@
 from probpy.core import RandomVariable, Distribution
 import numpy as np
-from typing import Callable
-from probpy.mcmc import fast_metropolis_hastings_log_space
+from typing import Callable, List
+from probpy.mcmc import fast_metropolis_hastings_log_space_parameter_posterior_estimation
 from probpy.distributions import (normal,
                                   multivariate_normal,
                                   bernoulli,
@@ -70,30 +70,21 @@ moment_matchers = {
 }
 
 
-def _generic_from_likelihood_priors(data: Union[np.ndarray, Tuple[np.ndarray]],
-                                    likelihood: Callable[[Tuple[np.ndarray]], np.ndarray],
-                                    priors: Union[RandomVariable, Tuple[RandomVariable]]) -> RandomVariable:
-    epsilon = 1e-15
-    prior_sizes = [prior.sample().size for prior in priors]
-    n_priors = len(priors)
-    argument_ranges = []
-    j = 0
-    for i, _ in enumerate(prior_sizes):
-        if i == 0: argument_ranges.append((0, prior_sizes[i]))
-        else: argument_ranges.append((j, j + prior_sizes[i]))
+def log_probabilities(data: Union[np.ndarray, Tuple[np.ndarray]],
+                      likelihood: Callable[[Tuple[np.ndarray]], np.ndarray],
+                      priors: Tuple[RandomVariable]):
+    def _log_likelihood(*args):
+        return np.nan_to_num(np.log(likelihood(*data, *args)).sum(axis=1), copy=False, nan=-100000,
+                             neginf=-1000000, posinf=-1000000)
 
-        j += prior_sizes[i]
+    log_priors = []
+    for prior in priors:
+        def _log_prior(x, prior=prior):
+            return np.log(prior.p(x))
 
-    def _probability_data(x):
-        samples = x.shape[0]
-        args = [x[:, i:j] for i, j in argument_ranges]
-        prior_log_probability = np.sum([np.log(priors[i].p(args[i]) + epsilon).reshape(samples)
-                                        for i in range(n_priors)], axis=0)
-        data_log_probability = np.log(likelihood(*data, *args) + epsilon).sum(axis=1)
-        data_log_probability = np.nan_to_num(data_log_probability, copy=False, nan=-10000.0)
-        return prior_log_probability + data_log_probability
+        log_priors.append(_log_prior)
 
-    return generic.med(probability=_probability_data)
+    return _log_likelihood, log_priors
 
 
 def _attempt_conjugate(data: Union[np.ndarray, Tuple[np.ndarray]],
@@ -110,37 +101,59 @@ def _attempt_conjugate(data: Union[np.ndarray, Tuple[np.ndarray]],
     return None
 
 
+def _reshape_samples(samples: List[np.ndarray]):
+    result = []
+    for sample in samples:
+        if sample.ndim == 1:
+            result.append(sample.reshape(-1, 1))
+        else:
+            result.append(sample)
+    return result
+
+
 def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
                         likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                         priors: Union[RandomVariable, Tuple[RandomVariable]],
                         size: int = 1000,
-                        energy: float = 0.05,
-                        batch=25,
-                        match_moments_for: Distribution = None) -> RandomVariable:
+                        energies: Tuple[float] = 0.05,
+                        batch=10,
+                        match_moments_for: Union[Tuple[Distribution], Distribution] = None) -> RandomVariable:
     if type(priors) == RandomVariable: priors = (priors,)
     if type(data) == np.ndarray: data = (data,)
+    if type(energies) == float: energies = [energies for _ in range(len(priors))]
 
     if type(likelihood) == RandomVariable:
         conjugate = _attempt_conjugate(data, likelihood, priors)
 
         if conjugate is not None: return conjugate
 
-    if type(likelihood) == RandomVariable: rv = _generic_from_likelihood_priors(data, likelihood.p, priors)
-    else: rv = _generic_from_likelihood_priors(data, likelihood, priors)
+    likelihood = likelihood if type(likelihood) != RandomVariable else likelihood.p
 
-    initial = np.concatenate([
-        np.concatenate(
-            [prior.sample().flatten() for prior in priors]).reshape(1, -1)
-        for _ in range(batch)
-    ], axis=0)
+    log_likelihood, log_priors = log_probabilities(data, likelihood, priors)
 
-    samples = fast_metropolis_hastings_log_space(size=size, log_pdf=rv.p, initial=initial, energy=energy)
+    initial = [
+        prior.sample(size=batch)
+        for prior in priors
+    ]
+
+    samples = fast_metropolis_hastings_log_space_parameter_posterior_estimation(
+        size=size,
+        log_likelihood=log_likelihood,
+        log_priors=log_priors,
+        initial=initial,
+        energies=energies)
+
+    samples = _reshape_samples(samples)
 
     if match_moments_for is None:
-        return points.med(points=samples)
+        return points.med(points=np.concatenate(samples, axis=1))
 
-    if match_moments_for in moment_matchers:
-        return moment_matchers[match_moments_for](samples)
+    if type(match_moments_for) == tuple:
+        matches = []
+        for d, s in zip(match_moments_for, samples):
+            matches.append(
+                moment_matchers[d](s)
+            )
+        return matches
     else:
-        raise NotImplementedError(f"No moment matcher implemented for {match_moments_for.__class__}")
-
+        return moment_matchers[match_moments_for](samples)

@@ -6,9 +6,6 @@ End result is a probability library built in numpy
 - [Introduction](#introduction)
 - [Documentation](#documentation)
 
-#### Drawbacks
-- This library is designed for scalar and vector R.V not higher order R.V, meaning some things might not work for matrix R.V and higher order tensors.
-
 Introduction
 ---
 
@@ -433,6 +430,7 @@ prior = dirichlet.med(alpha=np.ones(5))
 likelihood = categorical.med(dim=5)
 
 data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
+data = np.eye(5)[data]
 result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
 prior_samples = prior.sample(size=10000).sum(axis=0)
@@ -1069,12 +1067,10 @@ samples = 10000
 p = np.array([0.3, 0.6, 0.1])
 n = categorical.sample(p, samples)
 
-# Onehot categories
-categorical.one_hot(n, 3)
 
 # PDF
-c = 2
-categorical.p(c, p)
+c = [1, 0, 0]
+categorical.p(c, p) # 0.3
 
 ```
 

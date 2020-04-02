@@ -1,5 +1,5 @@
 from typing import Callable as F
-from typing import List
+from typing import List, Tuple
 import numpy as np
 import numba
 from .core import RandomVariable
@@ -24,37 +24,29 @@ def metropolis_hastings(size: int,
             samples.append(sample)
             p = sample
 
-    return samples
+    return np.array(samples)
 
 
 def fast_metropolis_hastings(size: int,
                              pdf: F[[np.ndarray], np.ndarray],
                              initial: np.ndarray,
                              energy: float = 1.0):
-    parallel_samples = initial.shape[0]
-    dim = initial.ndim
-    if dim == 1:
-        jump = lambda: np.random.normal(0, energy, size=parallel_samples)
-    else:
-        jump = lambda: np.random.multivariate_normal(np.zeros(initial.shape[1]),
-                                                     np.eye(initial.shape[1]) * energy, size=parallel_samples)
+    batch = initial.shape[0]
+    jump = lambda: np.random.normal(0, energy, size=initial.shape)
 
-    p = initial
-    j = 0
-    result = []
+    p, result = initial, []
     while len(result) < size:
         samples = p + jump()
         accept_rate = np.minimum(pdf(samples) / pdf(p), 1.0)
         accept_rate = accept_rate.flatten()
 
-        accepted = accept_rate >= np.random.rand(parallel_samples)
+        accepted = accept_rate >= np.random.rand(batch)
         rejected = False == accepted
 
         result.extend(samples[accepted])
 
         samples[rejected] = p[rejected]
         p = samples
-        j += 1
 
     return np.array(result)
 
@@ -63,29 +55,66 @@ def fast_metropolis_hastings_log_space(size: int,
                                        log_pdf: F[[np.ndarray], np.ndarray],
                                        initial: np.ndarray,
                                        energy: float = 1.0):
-    parallel_samples = initial.shape[0]
-    dim = initial.ndim
-    if dim == 1: jump = lambda: np.random.normal(0, energy, size=parallel_samples)
-    else: jump = lambda: np.random.multivariate_normal(np.zeros(initial.shape[1]),
-                                                       np.eye(initial.shape[1]) * energy, size=parallel_samples)
+    batch = initial.shape[0]
+    jump = lambda: np.random.normal(0, energy, size=initial.shape)
 
-    p = initial
-    j = 0
-    result = []
+    p, result = initial, []
     while len(result) < size:
         samples = p + jump()
         accept_rate = np.minimum(log_pdf(samples) - log_pdf(p), 0.0)
         accept_rate = accept_rate.flatten()
 
-        accepted = accept_rate >= np.log(np.random.rand(parallel_samples))
+        accepted = accept_rate >= np.log(np.random.rand(batch))
         rejected = False == accepted
         result.extend(samples[accepted])
 
         samples[rejected] = p[rejected]
         p = samples
-        j += 1
 
     return np.array(result)
+
+
+def fast_metropolis_hastings_log_space_parameter_posterior_estimation(
+        size: int,
+        log_likelihood: F[[Tuple[np.ndarray]], np.ndarray],
+        log_priors: Tuple[F[[np.ndarray], np.ndarray]],
+        initial: Tuple[np.ndarray],
+        energies: Tuple[float]):
+    if len(log_priors) != len(initial): raise Exception(f"log_priors: {len(log_priors)} != initial: {len(initial)}")
+    batch = initial[0].shape[0]
+
+    for i in initial:
+        if i.shape[0] != batch: raise Exception(f"batch mismatch {batch} != {i.shape[0]}")
+
+    jumpers, n = [], len(initial)
+    for i, e in zip(initial, energies): jumpers.append(lambda i=i, e=e: np.random.normal(0, e, size=i.shape))
+
+    def _probability(x: Tuple[np.ndarray]):
+        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0)
+        data_log_probability = log_likelihood(*x)
+        return prior_log_probability + data_log_probability
+
+    p = initial
+    results = [[] for _ in range(n)]
+    while len(results[0]) < size:
+        samples = [
+            p[i] + jumpers[i]()
+            for i in range(n)
+        ]
+
+        accept_rate = np.minimum(_probability(samples) - _probability(p), 0.0)
+        accept_rate = accept_rate.flatten()
+
+        accepted = accept_rate >= np.log(np.random.rand(batch))
+        rejected = False == accepted
+
+        for i in range(n):
+            results[i].extend(samples[i][accepted])
+            samples[i][rejected] = p[i][rejected]
+
+        p = samples
+
+    return [np.array(result) for result in results]
 
 
 def metropolis(size: int,
@@ -107,4 +136,4 @@ def metropolis(size: int,
 
         samples.extend(sample[accept_mask])
 
-    return samples
+    return np.array(samples)

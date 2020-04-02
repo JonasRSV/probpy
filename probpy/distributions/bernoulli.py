@@ -27,7 +27,6 @@ class Bernoulli(Distribution):
         return (np.random.rand(*size) < probability).astype(np.float32)
 
     @staticmethod
-    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, probability: np.float32) -> np.ndarray:
         res = np.zeros_like(x)
         res[x != 1.0] = 1 - probability

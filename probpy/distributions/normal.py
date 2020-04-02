@@ -11,8 +11,8 @@ class MultiVariateNormal(Distribution):
     @classmethod
     def med(cls, mu: np.ndarray = None, sigma: np.ndarray = None, k=None) -> RandomVariable:
         if mu is None and sigma is None:
-            _sample = Normal.sample
-            _p = Normal.p
+            _sample = MultiVariateNormal.sample
+            _p = MultiVariateNormal.p
             shape = k
         elif mu is None:
             def _sample(mu: np.ndarray, size: np.ndarray = ()): return MultiVariateNormal.sample(mu, sigma, size)
@@ -62,6 +62,9 @@ class Normal(Distribution):
 
     @classmethod
     def med(cls, mu: np.float = None, sigma: np.float = None) -> RandomVariable:
+        if mu is not None: mu = np.array(mu)
+        if sigma is not None: sigma = np.array(sigma)
+
         if mu is None and sigma is None:
             _sample = Normal.sample
             _p = Normal.p
@@ -88,7 +91,13 @@ class Normal(Distribution):
         return np.random.normal(mu, np.sqrt(sigma), size=size)
 
     @staticmethod
-    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
+        if type(mu) == float: mu = np.array(mu)
+        if type(sigma) == float: sigma = np.array(sigma)
+        if mu.ndim == 1: mu = mu[:, None]
+        if sigma.ndim == 1: sigma = sigma[:, None]
+
         normalizing_constant = np.sqrt(2 * np.pi * sigma)
         return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant
+
+

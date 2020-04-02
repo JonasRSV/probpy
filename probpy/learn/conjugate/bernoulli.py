@@ -18,6 +18,7 @@ class BernoulliBeta_PPrior:
 
     @staticmethod
     def posterior(data: np.ndarray, _: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
+        data = data[0]
         prior = priors[0]
 
         n = data.size

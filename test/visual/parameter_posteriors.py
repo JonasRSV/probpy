@@ -20,8 +20,8 @@ import numpy as np
 import seaborn as sb
 
 
-class PosteriorTest(unittest.TestCase):
-    def test_normal_1d_mean_conjugate(self):
+class VisualPosteriorTest(unittest.TestCase):
+    def test_normal_1d_mean_conjugate_visual(self):
         prior = normal.med(mu=1.0, sigma=1.0)
         likelihood = normal.med(sigma=2.0)
 
@@ -34,16 +34,15 @@ class PosteriorTest(unittest.TestCase):
 
         plt.figure(figsize=(20, 10))
         plt.title("Estimating Posterior Mean", fontsize=20)
-        sb.distplot(data, label="Data")
         sb.lineplot(x, y_prior, label="Prior")
         sb.lineplot(x, y_posterior, label="posterior")
         plt.ylim([0, 1])
         plt.legend(fontsize=20)
         plt.tight_layout()
-        plt.savefig("../images/normal_1d_mean_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/normal_1d_mean_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_normal_1d_normal_inverse_gamma_conjugate(self):
+    def test_normal_1d_normal_inverse_gamma_conjugate_visual(self):
         prior = normal_inverse_gamma.med(mu=1.0, lam=2.0, a=3.0, b=3.0)
         likelihood = normal.med()
 
@@ -72,10 +71,10 @@ class PosteriorTest(unittest.TestCase):
         sb.distplot(data)
         plt.xticks(fontsize=25)
         plt.tight_layout()
-        plt.savefig("../images/normal_1d_normal_inverse_gamma_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/normal_1d_normal_inverse_gamma_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_multivariate_normal_mean_conjugate(self):
+    def test_multivariate_normal_mean_conjugate_visual(self):
         mu_prior = np.ones(2)
         sigma_prior = np.eye(2)
 
@@ -107,10 +106,10 @@ class PosteriorTest(unittest.TestCase):
         plt.contour(X, Y, y_prior, levels=10)
         plt.legend(fontsize=20)
         plt.tight_layout()
-        plt.savefig("../images/multinormal_mean_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/multinormal_mean_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_bernoulli_beta_conjugate(self):
+    def test_bernoulli_beta_conjugate_visual(self):
         prior = beta.med(a=1.0, b=3.0)
         likelihood = bernoulli.med()
 
@@ -129,14 +128,15 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.yticks(fontsize=18)
         plt.xticks(fontsize=18)
-        plt.savefig("../images/bernoulli_beta_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/bernoulli_beta_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_categorical_dirichlet_conjugate(self):
+    def test_categorical_dirichlet_conjugate_visual(self):
         prior = dirichlet.med(alpha=np.ones(5))
         likelihood = categorical.med(dim=5)
 
         data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
+        data = np.eye(5)[data]
         result = parameter_posterior(data, likelihood=likelihood, priors=prior)
 
         x = np.arange(5)
@@ -154,10 +154,10 @@ class PosteriorTest(unittest.TestCase):
         plt.legend(fontsize=20)
         plt.tight_layout()
         plt.xticks(fontsize=18)
-        plt.savefig("../images/categorical_dirichlet_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/categorical_dirichlet_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_exponential_gamma_conjugate(self):
+    def test_exponential_gamma_conjugate_visual(self):
         prior = gamma.med(a=9, b=2)
         likelihood = exponential.med()
 
@@ -170,17 +170,16 @@ class PosteriorTest(unittest.TestCase):
 
         plt.figure(figsize=(20, 10))
         plt.title("Estimating Posterior", fontsize=20)
-        sb.distplot(data, label="Data")
         sb.lineplot(x, y_prior, label="Prior")
         sb.lineplot(x, y_posterior, label="posterior")
         plt.tight_layout()
         plt.xticks(fontsize=18)
         plt.legend(fontsize=20)
         plt.ylim([0, 2])
-        plt.savefig("../images/exponential_gamma_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/exponential_gamma_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_binomial_beta_conjugate(self):
+    def test_binomial_beta_conjugate_visual(self):
         prior = beta.med(a=6.0, b=3.0)
         likelihood = binomial.med(n=5)
 
@@ -199,10 +198,10 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.yticks(fontsize=18)
         plt.xticks(fontsize=18)
-        plt.savefig("../images/binomial_beta_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/binomial_beta_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_multinomial_dirichlet_conjugate(self):
+    def test_multinomial_dirichlet_conjugate_visual(self):
         prior = dirichlet.med(alpha=np.ones(3))
         likelihood = multinomial.med(n=3)
 
@@ -224,10 +223,10 @@ class PosteriorTest(unittest.TestCase):
         plt.legend(fontsize=20)
         plt.tight_layout()
         plt.xticks(fontsize=18)
-        plt.savefig("../images/multinomial_dirichlet_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/multinomial_dirichlet_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_poisson_gamma_conjugate(self):
+    def test_poisson_gamma_conjugate_visual(self):
         prior = gamma.med(a=9, b=2)
         likelihood = poisson.med()
 
@@ -240,17 +239,16 @@ class PosteriorTest(unittest.TestCase):
 
         plt.figure(figsize=(20, 10))
         plt.title("Estimating Posterior", fontsize=20)
-        sb.distplot(data, label="Data")
         sb.lineplot(x, y_prior, label="Prior")
         sb.lineplot(x, y_posterior, label="posterior")
         plt.tight_layout()
         plt.xticks(fontsize=18)
         plt.legend(fontsize=20)
         plt.ylim([0, 2])
-        plt.savefig("../images/poisson_gamma_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/poisson_gamma_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_binomial_beta_conjugate(self):
+    def test_geometric_beta_conjugate_visual(self):
         prior = beta.med(a=6.0, b=3.0)
         likelihood = geometric.med()
 
@@ -269,10 +267,10 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.yticks(fontsize=18)
         plt.xticks(fontsize=18)
-        plt.savefig("../images/geometric_beta_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/geometric_beta_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_unilinear_multivariate_normal_conjugate(self):
+    def test_unilinear_multivariate_normal_conjugate_visual(self):
         prior = multivariate_normal.med(mu=np.ones(2) * -1, sigma=np.eye(2) * 1e-1)
         likelihood = unilinear.med(sigma=1e-1)
 
@@ -318,10 +316,10 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.xlim([-2, 3])
         plt.ylim([-2, 3])
-        plt.savefig("../images/unilinear_multivariate_gaussian_conjugate.png", bbox_inches="tight")
+        plt.savefig("../../images/unilinear_multivariate_gaussian_conjugate.png", bbox_inches="tight")
         plt.show()
 
-    def test_normal_with_exponential_prior_mcmc(self):
+    def test_normal_with_exponential_prior_mcmc_visual(self):
         prior = exponential.med(lam=1.0)
         likelihood = normal.med(sigma=2.0)
 
@@ -365,7 +363,7 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
-        plt.savefig("../images/normal-exponential-normal-mcmc-prior.png", bbox_inches="tight")
+        plt.savefig("../../images/normal-exponential-normal-mcmc-prior.png", bbox_inches="tight")
         plt.show()
 
     def test_multinormal_with_multiuniform_prior_mcmc(self):
@@ -373,7 +371,7 @@ class PosteriorTest(unittest.TestCase):
         likelihood = multivariate_normal.med(sigma=np.eye(2))
 
         data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=100)
-        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=500, energy=0.05)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=500, energies=0.05)
 
         plt.figure(figsize=(20, 10))
         plt.subplot(2, 1, 1)
@@ -393,7 +391,7 @@ class PosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_unilinear_normal_normal_prior(self):
-        prior_variables = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
+        prior_variables = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2) * 2)
         prior_noise = exponential.med(lam=1.0)
         likelihood = unilinear.med()
 
@@ -403,8 +401,9 @@ class PosteriorTest(unittest.TestCase):
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=(prior_variables, prior_noise),
-                                        size=5000,
-                                        energy=0.05)
+                                        size=10000,
+                                        batch=10,
+                                        energies=0.05)
 
         print(posterior.sample(size=3000).mean(axis=0))
 
@@ -414,7 +413,7 @@ class PosteriorTest(unittest.TestCase):
 
         def likelihood(y, x, w):
             return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
-                            mu=0.0, sigma=0.5)
+                            mu=0.0, sigma=0.1)
 
         x = np.linspace(-5, 5, 50).reshape(-1, 1)
         y = (x > 0).astype(np.float).flatten()
@@ -422,7 +421,7 @@ class PosteriorTest(unittest.TestCase):
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
-                                        batch=10,
+                                        batch=5,
                                         size=10000)
 
         mean = posterior.sample(size=3000).mean(axis=0)
@@ -441,7 +440,7 @@ class PosteriorTest(unittest.TestCase):
         plt.tight_layout()
         plt.xticks(fontsize=16)
         plt.yticks(fontsize=16)
-        plt.savefig("../images/custom_logistic_regression_example.png", bbox_inches="tight")
+        plt.savefig("../../images/custom_logistic_regression_example.png", bbox_inches="tight")
         plt.show()
 
     def test_normal_with_exponential_prior_mcmc_moment_matching(self):

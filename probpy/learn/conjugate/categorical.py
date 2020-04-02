@@ -28,6 +28,7 @@ class CategoricalDirichlet_PPrior:
 
     @staticmethod
     def posterior(data: np.ndarray, _: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
+        data = data[0]
         data = np.array(data)
         prior = priors[0]
 

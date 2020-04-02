@@ -24,11 +24,13 @@ class Categorical(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(probabilities: np.ndarray, size=()) -> np.ndarray:
-        return np.random.choice(np.arange(probabilities.size), p=probabilities, size=size)
+        return Categorical.one_hot(
+            np.random.choice(np.arange(probabilities.size), p=probabilities, size=size),
+            size=probabilities.size)
 
     @staticmethod
-    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, probabilities: np.ndarray) -> np.ndarray:
+        if x.ndim == 2: x = np.argmax(x, axis=1)
         return probabilities[x]
 
     @staticmethod

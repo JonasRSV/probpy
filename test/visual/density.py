@@ -12,10 +12,10 @@ def distribution(x):
     return 0.3333 * normal.p(x, -2, 1) + 0.3333 * normal.p(x, 2, 0.2) + 0.3333 * normal.p(x, 4, 0.2)
 
 
-class DensityTest(unittest.TestCase):
-    def test_uckd_by_inspection(self):
+class VisualDensityTest(unittest.TestCase):
+    def test_uckd_by_inspection_visual(self):
         timestamp = time.time()
-        samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0)
+        samples = fast_metropolis_hastings(50000, distribution, initial=np.random.rand(10, 1), energy=1.0)
         print("making samples", time.time() - timestamp)
 
         density = UCKD(variance=5.0)
@@ -36,12 +36,12 @@ class DensityTest(unittest.TestCase):
         sb.distplot(samples, label="Histogram of samples")
         plt.tight_layout()
         plt.legend(fontsize=16)
-        plt.savefig("../images/uckd.png", bbox_inches="tight")
+        plt.savefig("../../images/uckd.png", bbox_inches="tight")
         plt.show()
 
-    def test_rckd_by_inspection(self):
+    def test_rckd_by_inspection_visual(self):
         timestamp = time.time()
-        samples = fast_metropolis_hastings(50000, distribution, initial=0.0, energy=1.0)
+        samples = fast_metropolis_hastings(50000, distribution, initial=np.random.rand(10, 1), energy=1.0)
         print("making samples", time.time() - timestamp)
 
         density = RCKD(variance=5.0, error=0.01, verbose=True)
@@ -55,7 +55,6 @@ class DensityTest(unittest.TestCase):
         x = np.linspace(lb, ub, n)
         timestamp = time.time()
         y = density.p(x)
-        print("y", y)
         print("predicting samples", time.time() - timestamp)
 
         plt.figure(figsize=(20, 10))
@@ -63,7 +62,7 @@ class DensityTest(unittest.TestCase):
         plt.plot(x, distribution(x), label="PDF sampled from")
         sb.distplot(samples, label="Histogram of samples")
         plt.legend(fontsize=16)
-        plt.savefig("../images/rckd.png", bbox_inches="tight")
+        plt.savefig("../../images/rckd.png", bbox_inches="tight")
         plt.show()
 
 
