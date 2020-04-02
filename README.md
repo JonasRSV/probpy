@@ -583,7 +583,7 @@ y = (x > 0).astype(np.float).flatten()
 posterior = parameter_posterior((y, x),
                                 likelihood=likelihood,
                                 priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
-                                parallel=10,
+                                batch=10,
                                 size=10000)
 
 mean = posterior.sample(size=3000).mean(axis=0)
@@ -627,7 +627,7 @@ posterior = parameter_posterior(data,
                                 likelihood=likelihood,
                                 priors=prior,
                                 size=10000,
-                                parallel=25,
+                                batch=25,
                                 match_moments_for=normal)
 
 print(posterior)
@@ -651,7 +651,7 @@ posterior = parameter_posterior(data,
                                 likelihood=likelihood,
                                 priors=prior,
                                 size=10000,
-                                parallel=25,
+                                batch=25,
                                 match_moments_for=multivariate_normal)
 
 print(posterior)

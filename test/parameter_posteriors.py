@@ -325,7 +325,7 @@ class PosteriorTest(unittest.TestCase):
         prior = exponential.med(lam=1.0)
         likelihood = normal.med(sigma=2.0)
 
-        data = normal.sample(mu=3.0, sigma=2.0, size=1000)
+        data = normal.sample(mu=3.0, sigma=2.0, size=100)
         posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=2000)
 
         x = np.linspace(0.0, 6, 100)
@@ -422,7 +422,7 @@ class PosteriorTest(unittest.TestCase):
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
-                                        parallel=10,
+                                        batch=10,
                                         size=10000)
 
         mean = posterior.sample(size=3000).mean(axis=0)
@@ -448,17 +448,17 @@ class PosteriorTest(unittest.TestCase):
         prior = exponential.med(lam=0.6)
         likelihood = normal.med(sigma=1.0)
 
-        data = normal.sample(mu=3.0, sigma=2.0, size=2000)
+        data = normal.sample(mu=3.0, sigma=2.0, size=200)
         posterior = parameter_posterior(data,
                                         likelihood=likelihood,
                                         priors=prior,
                                         size=10000,
-                                        parallel=25,
+                                        batch=25,
                                         match_moments_for=normal)
 
         print(posterior)
 
-    def test_normal_with_exponential_prior_mcmc_moment_matching(self):
+    def test_multinormal_with_uniform_prior_mcmc_moment_matching(self):
         prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
         likelihood = multivariate_normal.med(sigma=np.eye(2))
         data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=200)
@@ -467,7 +467,27 @@ class PosteriorTest(unittest.TestCase):
                                         likelihood=likelihood,
                                         priors=prior,
                                         size=10000,
-                                        parallel=25,
+                                        batch=25,
+                                        match_moments_for=multivariate_normal)
+
+        print(posterior)
+
+    def test_sequential_custom(self):
+        prior = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2) * 2)
+
+        def likelihood(y, x, w):
+            result = []
+            for _w in w: result.append(normal.p(y - x * _w[0] - _w[1], mu=0.0, sigma=0.3))
+            return np.array(result)
+
+        x = np.linspace(-1, 1, 100)
+        y = x * 2 + 0.5 + normal.sample(mu=0.0, sigma=0.3, size=100)
+
+        posterior = parameter_posterior((y, x),
+                                        likelihood=likelihood,
+                                        priors=prior,
+                                        size=10000,
+                                        batch=10,
                                         match_moments_for=multivariate_normal)
 
         print(posterior)

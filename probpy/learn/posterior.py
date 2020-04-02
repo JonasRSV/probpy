@@ -73,40 +73,26 @@ moment_matchers = {
 def _generic_from_likelihood_priors(data: Union[np.ndarray, Tuple[np.ndarray]],
                                     likelihood: Callable[[Tuple[np.ndarray]], np.ndarray],
                                     priors: Union[RandomVariable, Tuple[RandomVariable]]) -> RandomVariable:
-    epsilon = 1e-100
-    prior_sz = [prior.sample().size for prior in priors]
+    epsilon = 1e-15
+    prior_sizes = [prior.sample().size for prior in priors]
     n_priors = len(priors)
+    argument_ranges = []
+    j = 0
+    for i, _ in enumerate(prior_sizes):
+        if i == 0: argument_ranges.append((0, prior_sizes[i]))
+        else: argument_ranges.append((j, j + prior_sizes[i]))
 
-    arg_ranges = []
-    accum = 0
-    for i, _ in enumerate(prior_sz):
-        if i == 0:
-            arg_ranges.append((0, prior_sz[i]))
-        else:
-            arg_ranges.append((accum, accum + prior_sz[i]))
+        j += prior_sizes[i]
 
-        accum += prior_sz[i]
-
-    def _probability_data_tuple(x):
+    def _probability_data(x):
         samples = x.shape[0]
-        args = [x[:, i:j] for i, j in arg_ranges]
+        args = [x[:, i:j] for i, j in argument_ranges]
         prior_log_probability = np.sum([np.log(priors[i].p(args[i]) + epsilon).reshape(samples)
                                         for i in range(n_priors)], axis=0)
         data_log_probability = np.log(likelihood(*data, *args) + epsilon).sum(axis=1)
         data_log_probability = np.nan_to_num(data_log_probability, copy=False, nan=-10000.0)
         return prior_log_probability + data_log_probability
 
-    def _probability_data(x):
-        samples = x.shape[0]
-        args = [x[:, i:j] for i, j in arg_ranges]
-        prior_log_probability = np.sum([np.log(priors[i].p(args[i]) + epsilon).reshape(samples)
-                                        for i in range(n_priors)], axis=0)
-        data_log_probability = np.log(likelihood(data, *args) + epsilon).sum(axis=1)
-        data_log_probability = np.nan_to_num(data_log_probability, copy=False, nan=-10000.0)
-
-        return prior_log_probability + data_log_probability
-
-    if type(data) == tuple: return generic.med(probability=_probability_data_tuple)
     return generic.med(probability=_probability_data)
 
 
@@ -129,24 +115,23 @@ def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
                         priors: Union[RandomVariable, Tuple[RandomVariable]],
                         size: int = 1000,
                         energy: float = 0.05,
-                        parallel=25,
+                        batch=25,
                         match_moments_for: Distribution = None) -> RandomVariable:
     if type(priors) == RandomVariable: priors = (priors,)
+    if type(data) == np.ndarray: data = (data,)
 
     if type(likelihood) == RandomVariable:
         conjugate = _attempt_conjugate(data, likelihood, priors)
 
         if conjugate is not None: return conjugate
 
-    if type(likelihood) == RandomVariable:
-        rv = _generic_from_likelihood_priors(data, likelihood.p, priors)
-    else:
-        rv = _generic_from_likelihood_priors(data, likelihood, priors)
+    if type(likelihood) == RandomVariable: rv = _generic_from_likelihood_priors(data, likelihood.p, priors)
+    else: rv = _generic_from_likelihood_priors(data, likelihood, priors)
 
     initial = np.concatenate([
         np.concatenate(
-            [priors[i].sample().flatten() for i in range(len(priors))]).reshape(1, -1)
-        for _ in range(parallel)
+            [prior.sample().flatten() for prior in priors]).reshape(1, -1)
+        for _ in range(batch)
     ], axis=0)
 
     samples = fast_metropolis_hastings_log_space(size=size, log_pdf=rv.p, initial=initial, energy=energy)

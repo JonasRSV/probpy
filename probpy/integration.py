@@ -19,3 +19,12 @@ def uniform_importance_sampling(size: int,
         accepted = accepted.all(axis=1)
 
     return (function(samples[accepted]) / proposal.p(samples[accepted])).sum(axis=0) / size
+
+
+@numba.jit(nopython=False, forceobj=True)
+def expected_value(size: int,
+                   function: Callable[[np.ndarray], np.ndarray],
+                   distribution: RandomVariable):
+
+    return function(distribution.sample(size=size)).mean(axis=0)
+

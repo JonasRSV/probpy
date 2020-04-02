@@ -14,10 +14,11 @@ class Function(Distribution):
             points: int = 1000,
             variance: float = 2.0,
             error: float = 1e-1,
+            batch: int = 25,
             verbose: bool = False) -> RandomVariable:
 
         lower_bound, upper_bound = np.array(lower_bound), np.array(upper_bound)
-        initial = multivariate_uniform.sample(lower_bound, upper_bound, size=100)
+        initial = multivariate_uniform.sample(lower_bound, upper_bound, size=batch)
 
         samples = fast_metropolis_hastings(np.maximum(points, 10000), density, initial=initial)[-points:]
 
