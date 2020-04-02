@@ -33,11 +33,11 @@ class Uniform(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(a: np.ndarray, b: np.ndarray, size: np.ndarray = ()) -> np.ndarray:
+    def sample(a: np.float, b: np.float, size: np.ndarray = ()) -> np.ndarray:
         if type(size) == int:
-            return a + np.random.rand(size) * (b - a)
+            return np.array(a + np.random.rand(size) * (b - a))
 
-        return a + np.random.rand(*size) * (b - a)
+        return np.array(a + np.random.rand(*size) * (b - a))
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

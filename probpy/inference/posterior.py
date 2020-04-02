@@ -32,12 +32,12 @@ def _attempt_conjugate(likelihood: RandomVariable,
     return None
 
 
-def _generic_proposal_from_priors(priors: Tuple[RandomVariable]) -> RandomVariable:
+def _generic_proposal_and_argument_ranges_from_priors(priors: Tuple[RandomVariable]) -> RandomVariable:
     prior_sizes = [prior.sample().size for prior in priors]
 
     def _sample(size: int = ()):
         return np.concatenate([
-            priors.sample(size=size).reshape(-1, prior_sizes[i])
+            prior.sample(size=size).reshape(-1, prior_sizes[i])
             for i, prior in enumerate(priors)
         ], axis=1)
 
@@ -61,17 +61,20 @@ def _generic_proposal_from_priors(priors: Tuple[RandomVariable]) -> RandomVariab
 
         return probabilities
 
-    return generic.med(sampling=_sample, probability=_probability)
+    return generic.med(sampling=_sample, probability=_probability), argument_ranges
 
 
 def _integrate_probability(data: Tuple[np.ndarray],
                            likelihood: Callable[[Tuple[np.ndarray]], np.ndarray],
                            priors: Tuple[RandomVariable],
                            size: int) -> float:
-    proposal = _generic_proposal_from_priors(priors)
+    if type(data) != tuple: data = (data,)
 
-    def _function(*args):
-        return likelihood.p(*data, *args)
+    proposal, argument_ranges = _generic_proposal_and_argument_ranges_from_priors(priors)
+
+    def _function(x):
+        args = [x[:, i:j] for i, j in argument_ranges]
+        return likelihood(*data, *args)
 
     return expected_value(size=size,
                           function=_function,
@@ -82,11 +85,14 @@ def predictive_posterior(likelihood: Union[RandomVariable, Callable[[Tuple[np.nd
                          priors: Union[RandomVariable, Tuple[RandomVariable]],
                          data: Tuple[np.ndarray] = None,
                          size: int = 1000) -> Union[RandomVariable, float]:
+    if type(priors) == RandomVariable: priors = (priors,)
+
     if type(likelihood) == RandomVariable:
         conjugate = _attempt_conjugate(likelihood, priors)
         if conjugate is not None: return conjugate
 
     if data is not None:
-        return _integrate_probability(data, likelihood, priors, size)
+        if type(likelihood) == RandomVariable: return _integrate_probability(data, likelihood.p, priors, size)
+        else: return _integrate_probability(data, likelihood, priors, size)
     else:
         raise NotImplementedError("For non-conjugate non-data is not implemented yet")

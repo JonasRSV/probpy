@@ -1,6 +1,8 @@
 import unittest
 from probpy.distributions import (normal,
                                   multivariate_normal,
+                                  uniform,
+                                  multivariate_uniform,
                                   exponential,
                                   beta,
                                   bernoulli,
@@ -65,7 +67,6 @@ class PredictivePosteriorTest(unittest.TestCase):
         plt.show()
 
     def test_multinormal_multinormal(self):
-
         prior_sigma = np.random.rand(2, 1)
         prior_sigma = prior_sigma.T @ prior_sigma + np.eye(2) * 1
 
@@ -95,6 +96,107 @@ class PredictivePosteriorTest(unittest.TestCase):
         plt.xticks(fontsize=18)
         plt.tight_layout()
         plt.savefig("../images/multinormal_multinormal_predictive.png", bbox_inches="tight")
+        plt.show()
+
+    def test_normal_mean_exponential_prior(self):
+        prior = uniform.med(a=0.0, b=3.0)
+
+        likelihood = normal.med(sigma=0.5)
+
+        x = np.linspace(-2.0, 4.0, 20)
+
+        probability = predictive_posterior(likelihood=likelihood, priors=prior, data=x)
+
+        plt.figure(figsize=(10, 6))
+        sb.lineplot(x, probability)
+        plt.show()
+
+    def test_multinormal_mean_multiuniform_prior(self):
+        prior = multivariate_uniform.med(a=np.ones(2) * 0, b=np.ones(2) * 2)
+        likelihood = multivariate_normal.med(sigma=np.eye(2))
+
+        grid = 20
+        i = np.linspace(-2.0, 4.0, grid)
+        j = np.linspace(-2.0, 4.0, grid)
+
+        I, J = np.meshgrid(i, j)
+        X = np.concatenate([I.reshape(-1, 1), J.reshape(-1, 1)], axis=1)
+
+        probability = predictive_posterior(likelihood=likelihood, priors=prior, data=X)
+
+        plt.figure(figsize=(10, 6))
+        plt.contourf(I, J, probability.reshape(grid, grid))
+        plt.show()
+
+    def test_unilinear_multinormal_prior(self):
+        prior = multivariate_normal.med(mu=np.array([1.0, 0.5]), sigma=np.eye(2) * 1e-1)
+        likelihood = unilinear.med(sigma=0.3)
+
+        x = np.array(0.8)
+        y = np.linspace(-2, 4, 20)
+
+        probability = predictive_posterior(likelihood=likelihood, priors=prior, data=(y, x))
+
+        print(probability)
+        plt.figure(figsize=(10, 6))
+        sb.lineplot(y, probability)
+        plt.xlabel("Y", fontsize=15)
+        plt.ylabel("Probability", fontsize=15)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.savefig("../images/unilinear-multinormal-predictive-posterior.png")
+        plt.show()
+
+    def test_custom_likelihood_function(self):
+        prior = uniform.med(a=-4, b=4)
+
+        def likelihood(y, x, w):
+            result = []
+            for _w in w:
+                result.append(
+                    normal.p(_w - np.float_power(y, x), mu=0.0, sigma=0.001)
+                )
+
+            return np.array(result)
+
+        x = np.array(2.0)
+        y = np.linspace(-3, 3, 20)
+
+        probability = predictive_posterior(likelihood=likelihood, priors=prior, data=(y, x), size=10000)
+
+        plt.figure(figsize=(10, 6))
+        sb.lineplot(y, probability)
+        plt.xlabel("Y", fontsize=15)
+        plt.ylabel("Probability", fontsize=15)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.savefig("../images/custom-odd-predictive-posterior.png")
+        plt.show()
+
+    def test_custom_likelihood_function_logistic_regression(self):
+        def sigmoid(x):
+            return 1 / (1 + np.exp(-x))
+
+        def likelihood(y, x, w):
+            return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
+                            mu=0.0, sigma=0.01)
+
+        x = np.array(0.6).reshape(1, 1)
+        y = np.linspace(-1, 3, 50)
+
+        probability = predictive_posterior(likelihood=likelihood,
+                                           priors=multivariate_normal.med(mu=np.array([1.5, 0.1]),
+                                                                          sigma=np.eye(2)),
+                                           data=(y, x),
+                                           size=10000)
+
+        plt.figure(figsize=(10, 6))
+        sb.lineplot(y, probability)
+        plt.xlabel("Y", fontsize=15)
+        plt.ylabel("Probability", fontsize=15)
+        plt.xticks(fontsize=12)
+        plt.yticks(fontsize=12)
+        plt.savefig("../images/custom-logistic-regression-predictive-posterior.png")
         plt.show()
 
 

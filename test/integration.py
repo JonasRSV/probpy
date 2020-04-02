@@ -1,7 +1,7 @@
 import unittest
 
-from probpy.integration import uniform_importance_sampling
-from probpy.distributions import normal, multivariate_normal
+from probpy.integration import uniform_importance_sampling, expected_value
+from probpy.distributions import normal, multivariate_normal, exponential
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -77,6 +77,30 @@ class TestIntegration(unittest.TestCase):
         plt.tight_layout()
         plt.savefig("../images/uniform_importance_sampling_multivariate.png", bbox_inches="tight")
         plt.show()
+
+    def test_expectation_univariate_normal(self):
+        function = lambda x: x
+        distribution = normal.med(mu=0, sigma=1)
+
+        E = expected_value(100000, function, distribution)
+        print(E)
+        self.assertAlmostEqual(E, 0, delta=0.1)
+
+    def test_expectation_multivariate_normal(self):
+        function = lambda x: x * x
+        distribution = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
+
+        E = expected_value(100000, function, distribution)
+        print(E)
+
+    def test_expectation_univariate_exponential(self):
+        function = lambda x: x
+        lam = 1
+        distribution = exponential.med(lam=lam)
+
+        E = expected_value(1000, function, distribution)
+        print(E)
+        self.assertAlmostEqual(E, lam, delta=0.1)
 
 
 if __name__ == '__main__':

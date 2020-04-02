@@ -6,6 +6,9 @@ End result is a probability library built in numpy
 - [Introduction](#introduction)
 - [Documentation](#documentation)
 
+#### Drawbacks
+- This library is designed for scalar and vector R.V not higher order R.V, meaning some things might not work for matrix R.V and higher order tensors.
+
 Introduction
 ---
 
@@ -104,34 +107,21 @@ Documentation
   - [Predictive-Posterior](#predictive-posterior)
     - [Conjugate parameter posteriors](#conjugate-parameter-posteriors)
       - [Bernoulli Likelihood](#bernoulli-likelihood-predictive)
-        - [Beta Prior](#beta-prior)
       - [Normal Likelihood](#normal-likelihood-predictive)
-        - [Normal Prior](#normal-prior)
       - [Multivariate Normal Likelihood](#multivariate-normal-likelihood-predictive)
-        - [Multivariate Normal Prior](#multivariate-normal-prior)
+    - [Numerically Integrate Posterior](#numerically-integrate-posterior)
 - [Learn](#learn)
   - [Parameter Posterior](#parameter-posterior)
     - [Conjugate priors](#conjugate-priors)
       - [Normal Likelihood](#normal-likelihood)
-        - [Normal prior mean](#normal-prior-mean)
-        - [Normal prior mean and variance](#normal-prior-mean-and-variance)
-        - [Multivariate normal prior mean](#multivariate-normal-prior-mean)
       - [Bernoulli Likelihood](#bernoulli-likelihood)
-        - [Beta Prior](#beta-prior)
       - [Categorical Likelihood](#categorical-likelihood)
-        - [Dirichlet Prior](#dirichlet-prior)
       - [Exponential Likelihood](#exponential-likelihood)
-        - [Gamma Prior](#gamma-prior)
       - [Binomial Likelihood](#binomial-likelihood)
-        - [Beta Prior](#beta-prior)
       - [Multinomial Likelihood](#multinomial-likelihood)
-        - [Dirichlet Prior](#dirichlet-prior)
       - [Poisson Likelihood](#poisson-likelihood)
-        - [Gamma Prior](#gamma-prior)
       - [Geometric Likelihood](#geometric-likelihood)
-        - [Beta Prior](#beta-prior)
       - [Unilinear Likelihood](#unilinear-likelihood)
-        - [Multivariate normal parameter prior](#multivariate-normal-parameter-prior)
     - [MCMC Parameter Estimation](#mcmc-parameter-estimation)
       - [Custom Parameter Likelihood Example](#custom-parameter-likelihood-example)
     - [MCMC + Moment Matching Parameter Estimation](#mcmc--moment-matching-parameter-estimation)
@@ -140,6 +130,7 @@ Documentation
   - [Metropolis-Hastings](#metropolis-hastings)
 - [Integration](#integration)
   - [Uniform Importance Sampling](#uniform-importance-sampling)
+  - [Expectation of R.V](#expectation-of-rv)
 - [Density Estimation](#density-estimation)
   - [Non-parametric UCKD](#uckd)
   - [Non-parametric RCKD](#rckd)
@@ -173,11 +164,11 @@ Inference contains functions for predicting future samples
 
 ## Predictive Posterior
 
-The "predictive_posterior" function will estimate the predictive posterior given a likelihood and some parameter prior.  Which most likely is some parameter posterior learned with the "parameter_posterior" function.
+The "predictive_posterior" function will estimate the predictive posterior given a likelihood and some parameter prior.  Which most likely is some parameter posterior learned with the "parameter_posterior" function. If there exist no conjugate then data can be provided and it will estimate the probability of the data.
 
 The methods the functions uses is
 * conjugate priors (this is fast and is what is attempted first)
-* MCMC (not implemented yet)
+* Numerical Integration 
 
 ### Conjugate parameter posteriors
 
@@ -249,6 +240,86 @@ posterior = predictive_posterior(likelihood=likelihood, priors=prior)
   <img width=600px heigth=300px src="images/multinormal_multinormal_predictive.png" />
 </p>
 
+## Numerically Integrate Posterior
+
+### Unilinear Example
+
+```python
+from probpy.distributions import multivariate_normal, unilinear
+from probpy.inference import predictive_posterior
+import numpy as np
+
+prior = multivariate_normal.med(mu=np.array([1.0, 0.5]), sigma=np.eye(2) * 1e-1)
+likelihood = unilinear.med(sigma=0.3)
+
+x = np.array(0.8)
+y = np.linspace(-2, 4, 20)
+
+probability = predictive_posterior(likelihood=likelihood, priors=prior, data=(y, x))
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/unilinear-multinormal-predictive-posterior.png" />
+</p>
+
+### Odd Custom Example
+
+```python
+from probpy.distributions import uniform
+from probpy.inference import predictive_posterior
+import numpy as np
+
+prior = uniform.med(a=-4, b=4)
+
+def likelihood(y, x, w):
+    result = []
+    for _w in w:
+        result.append(
+            normal.p(_w - np.float_power(y, x), mu=0.0, sigma=0.001)
+        )
+
+    return np.array(result)
+
+x = np.array(2.0)
+y = np.linspace(-3, 3, 20)
+
+probability = predictive_posterior(likelihood=likelihood, priors=prior, data=(y, x), size=10000)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/custom-odd-predictive-posterior.png" />
+</p>
+
+### Custom Logistic Regression Example
+
+```python
+from probpy.distributions import multivariate_normal
+from probpy.inference import predictive_posterior
+import numpy as np
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def likelihood(y, x, w):
+    return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
+                    mu=0.0, sigma=0.01)
+
+x = np.array(0.6).reshape(1, 1)
+y = np.linspace(-1, 3, 50)
+
+probability = predictive_posterior(likelihood=likelihood,
+                                   priors=multivariate_normal.med(mu=np.array([1.5, 0.1]),
+                                                                  sigma=np.eye(2)),
+                                   data=(y, x),
+                                   size=10000)
+
+```
+
+<p align="center">
+  <img width=600px heigth=300px src="images/custom-logistic-regression-predictive-posterior.png" />
+</p>
 
 # Learn
 
@@ -709,6 +780,7 @@ There is a fast-mh implementation as well (also a fast-log-space mh implementati
 ```python3
 from probpy.distributions import normal
 from progpy.mcmc import metropolis_hastings, fast_metropolis_hastings
+import numpy as np
 
 pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)
 
@@ -776,6 +848,42 @@ results = uniform_importance_sampling(size=100000,
 <p align="center">
   <img width=600px heigth=300px src="images/uniform_importance_sampling_multivariate.png" />
 </p>
+
+## Expectation of R.V
+
+Works for any R.V and function, this is what is used internally to compute the probabilities in predictive posterior.
+
+```python
+from probpy.distributions import normal
+from probpy.integration import expected_value
+
+function = lambda x: x
+distribution = normal.med(mu=0, sigma=1)
+
+E = expected_value(100000, function, distribution)
+print(E)
+```
+
+```bash
+0.00394142000271756
+```
+
+```python
+from probpy.distributions import multivariate_normal
+from probpy.integration import expected_value
+
+function = lambda x: x * x
+distribution = multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2))
+
+E = expected_value(1000, function, distribution)
+print(E)
+
+```
+
+```bash
+[0.99717207 1.0056662 ]
+```
+
 
 # Density Estimation
 

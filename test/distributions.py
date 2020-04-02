@@ -578,9 +578,9 @@ class TestDistributions(unittest.TestCase):
         def mu(x): return 0
         def sigma(x, y): return np.exp(-1.0 * np.square(x - y))
 
-        X = np.linspace(-1000, 1000, 1000)
-        Y = np.random.rand(1000) * 10
-        x = (np.random.rand(5) - 0.5) * 200
+        X = np.array([0.0, 2.0])
+        Y = np.random.rand(2) * 2
+        x = np.linspace(-5, 5, 50)
         samples = 10
 
         timestamp = time.time()
