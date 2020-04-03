@@ -2,72 +2,10 @@ from probpy.core import RandomVariable, Distribution
 import numpy as np
 from typing import Callable, List
 from probpy.mcmc import fast_metropolis_hastings_log_space_parameter_posterior_estimation
-from probpy.distributions import (normal,
-                                  multivariate_normal,
-                                  bernoulli,
-                                  categorical,
-                                  exponential,
-                                  binomial,
-                                  multinomial,
-                                  poisson,
-                                  geometric,
-                                  unilinear,
-                                  generic,
-                                  points)
+from . import conjugate, moment_matching
+from probpy.distributions import points
 
-from .conjugate import (NormalNormal_MuPrior1D,
-                        NormalNormal_NormalInverseGammaPrior1D,
-                        MultivariateNormalNormal_MuPrior,
-                        BernoulliBeta_PPrior,
-                        CategoricalDirichlet_PPrior,
-                        ExponentialGamma_LambdaPrior,
-                        BinomialBeta_PPrior,
-                        MultinomialDirichlet_PPrior,
-                        PoissonGamma_LambdaPrior,
-                        GeometricBeta_PPrior,
-                        UniLinearMultivariateNormal_VariablePrior)
-
-from .moment_matching import (multivariate_normal_matcher, univariate_normal_matcher)
 from typing import Union, Tuple
-
-conjugates = {
-    normal: [
-        NormalNormal_MuPrior1D,
-        NormalNormal_NormalInverseGammaPrior1D
-    ],
-    multivariate_normal: [
-        MultivariateNormalNormal_MuPrior
-    ],
-    bernoulli: [
-        BernoulliBeta_PPrior
-    ],
-    categorical: [
-        CategoricalDirichlet_PPrior
-    ],
-    exponential: [
-        ExponentialGamma_LambdaPrior
-    ],
-    binomial: [
-        BinomialBeta_PPrior
-    ],
-    multinomial: [
-        MultinomialDirichlet_PPrior
-    ],
-    poisson: [
-        PoissonGamma_LambdaPrior
-    ],
-    geometric: [
-        GeometricBeta_PPrior
-    ],
-    unilinear: [
-        UniLinearMultivariateNormal_VariablePrior
-    ]
-}
-
-moment_matchers = {
-    normal: univariate_normal_matcher,
-    multivariate_normal: multivariate_normal_matcher
-}
 
 
 def log_probabilities(data: Union[np.ndarray, Tuple[np.ndarray]],
@@ -87,20 +25,6 @@ def log_probabilities(data: Union[np.ndarray, Tuple[np.ndarray]],
     return _log_likelihood, log_priors
 
 
-def _attempt_conjugate(data: Union[np.ndarray, Tuple[np.ndarray]],
-                       likelihood: RandomVariable,
-                       priors: [RandomVariable]):
-    candidates = []
-    if likelihood.cls in conjugates:
-        candidates = conjugates[likelihood.cls]
-
-    for conjugate in candidates:
-        if len(priors) == 1 and conjugate.is_conjugate(likelihood, priors):
-            return conjugate.posterior(data, likelihood, priors)
-
-    return None
-
-
 def _reshape_samples(samples: List[np.ndarray]):
     result = []
     for sample in samples:
@@ -111,22 +35,27 @@ def _reshape_samples(samples: List[np.ndarray]):
     return result
 
 
-def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
-                        likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-                        priors: Union[RandomVariable, Tuple[RandomVariable]],
-                        size: int = 1000,
-                        energies: Tuple[float] = 0.05,
-                        batch=10,
-                        match_moments_for: Union[Tuple[Distribution], Distribution] = None) -> RandomVariable:
+def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
+                           likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
+                           priors: Union[RandomVariable, Tuple[RandomVariable]],
+                           size: int,
+                           energies: Tuple[float],
+                           batch: int,
+                           match_moments_for: Union[Tuple[Distribution], Distribution]):
     if type(priors) == RandomVariable: priors = (priors,)
     if type(data) == np.ndarray: data = (data,)
     if type(energies) == float: energies = [energies for _ in range(len(priors))]
+    if match_moments_for is not None and type(match_moments_for) != tuple: match_moments_for = (match_moments_for,)
 
-    if type(likelihood) == RandomVariable:
-        conjugate = _attempt_conjugate(data, likelihood, priors)
+    return data, likelihood, priors, size, energies, batch, match_moments_for
 
-        if conjugate is not None: return conjugate
 
+def _sample_posterior(data: Tuple[np.ndarray],
+                      likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
+                      priors: Tuple[RandomVariable],
+                      size: int,
+                      energies: Tuple[float],
+                      batch: int):
     likelihood = likelihood if type(likelihood) != RandomVariable else likelihood.p
 
     log_likelihood, log_priors = log_probabilities(data, likelihood, priors)
@@ -143,17 +72,33 @@ def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
         initial=initial,
         energies=energies)
 
-    samples = _reshape_samples(samples)
+    return _reshape_samples(samples)
 
-    if match_moments_for is None:
-        return points.med(points=np.concatenate(samples, axis=1))
 
-    if type(match_moments_for) == tuple:
-        matches = []
-        for d, s in zip(match_moments_for, samples):
-            matches.append(
-                moment_matchers[d](s)
-            )
-        return matches
-    else:
-        return moment_matchers[match_moments_for](samples)
+def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
+                        likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
+                        priors: Union[RandomVariable, Tuple[RandomVariable]],
+                        size: int = 1000,
+                        energies: Tuple[float] = 0.05,
+                        batch=10,
+                        match_moments_for: Union[Tuple[Distribution], Distribution] = None) -> RandomVariable:
+    data, likelihood, priors, size, energies, batch, match_moments_for = _standardize_arguments(
+        data, likelihood, priors, size, energies, batch, match_moments_for
+    )
+
+    rv = conjugate.attempt(data, likelihood, priors)
+    if rv is not None: return rv
+
+    samples = _sample_posterior(
+        data, likelihood, priors, size, energies, batch
+    )
+
+    rvs = moment_matching.attempt(
+        samples,
+        match_moments_for
+    )
+
+    if rvs is not None: return rvs
+
+    return points.med(points=np.concatenate(samples, axis=1))
+

@@ -458,14 +458,14 @@ class VisualPosteriorTest(unittest.TestCase):
         print(posterior)
 
     def test_multinormal_with_uniform_prior_mcmc_moment_matching(self):
-        prior = multivariate_uniform.med(a=np.zeros(2), b=np.ones(2) * 4)
+        prior = multivariate_uniform.med(a=np.ones(2) * -2, b=np.ones(2) * 2)
         likelihood = multivariate_normal.med(sigma=np.eye(2))
-        data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=200)
+        data = multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), size=300)
 
         posterior = parameter_posterior(data,
                                         likelihood=likelihood,
                                         priors=prior,
-                                        size=10000,
+                                        size=20000,
                                         batch=25,
                                         match_moments_for=multivariate_normal)
 

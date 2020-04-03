@@ -1,6 +1,6 @@
 import unittest
 
-from probpy.integration import uniform_importance_sampling, expected_value
+from probpy.integration import uniform_importance_sampling, expected_value, posterior_predictive_integration
 from probpy.distributions import *
 import numpy as np
 
@@ -29,6 +29,24 @@ class TestIntegration(unittest.TestCase):
                                                                               sigma=np.eye(2) * 2))
         self.assertAlmostEqual(result, -32, delta=1.0)
 
+    def test_posterior_predictive_integral(self):
+        def _run_test(priors=None, likelihood=None, correct=None):
+            result = posterior_predictive_integration(500, likelihood, priors)
+
+            if correct is not None:
+                pass # TODO
+
+        tests = [
+            {
+                "priors": (normal.med(mu=0.0, sigma=1.0), exponential.med(lam=1.0)),
+                "likelihood": lambda *theta: normal.med().p(0.5, *theta),
+                "correct": None
+            }
+        ]
+
+        for test in tests:
+            _run_test(**test)
+
     def test_expected_value(self):
 
         function = lambda x: x
@@ -53,7 +71,7 @@ class TestIntegration(unittest.TestCase):
                 for i in range(expectation.size):
                    self.assertAlmostEqual(expectation[i], label[i], delta=0.1)
             else:
-                raise Exception(f"Samples should not have {samples.dim} dim")
+                raise Exception(f"Samples should not have {expectation.dim} dim")
 
 
 if __name__ == '__main__':

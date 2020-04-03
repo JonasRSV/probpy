@@ -25,6 +25,11 @@ def uniform_importance_sampling(size: int,
 def expected_value(size: int,
                    function: Callable[[np.ndarray], np.ndarray],
                    distribution: RandomVariable):
-
     return function(distribution.sample(size=size)).mean(axis=0)
 
+
+def posterior_predictive_integration(size: int,
+                                     likelihood: Callable,
+                                     priors: Tuple[RandomVariable]):
+    samples = [prior.sample(size=size) for prior in priors]
+    return likelihood(*samples).mean(axis=0)

@@ -7,3 +7,4 @@ from .multinomial import MultinomialDirichlet_PPrior
 from .poisson import PoissonGamma_LambdaPrior
 from .geometric import GeometricBeta_PPrior
 from .unilinear import UniLinearMultivariateNormal_VariablePrior
+from .attempt import attempt
