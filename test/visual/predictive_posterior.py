@@ -137,7 +137,6 @@ class VisualPredictivePosteriorTest(unittest.TestCase):
 
         probability = predictive_posterior(likelihood=likelihood, priors=prior, data=(y, x))
 
-        print(probability)
         plt.figure(figsize=(10, 6))
         sb.lineplot(y, probability)
         plt.xlabel("Y", fontsize=15)

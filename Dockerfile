@@ -1,5 +1,8 @@
 FROM python
 
+RUN apt update
+RUN apt install -y ffmpeg
+
 RUN mkdir probpy_demo
 WORKDIR probpy_demo
 

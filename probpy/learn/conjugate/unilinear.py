@@ -21,13 +21,16 @@ class UniLinearMultivariateNormal_VariablePrior:
         prior = priors[0]
 
         y, x = data
-        if x.ndim == 1:
-            x = x[:, None]
+        y, x = np.array(y), np.array(x)
 
-        x_dim = x.shape[0]
-        x = np.concatenate([x, np.ones((x_dim, 1))], axis=1)  # Add bias term
+        if y.ndim != 1: y= y.reshape(-1)
+        if x.ndim == 0: x = x.reshape(1, 1)
+        if x.ndim == 1: x = x[:, None]
 
-        likelihood_sigma = np.eye(x_dim) / likelihood.parameters[unilinear.sigma].value
+        x_samples = x.shape[0]
+        x = np.concatenate([x, np.ones((x_samples, 1))], axis=1)  # Add bias term
+
+        likelihood_sigma = np.eye(x_samples) / likelihood.parameters[unilinear.sigma].value
 
         prior_mu = prior.parameters[multivariate_normal.mu].value
         prior_sigma_inv = np.linalg.inv(prior.parameters[multivariate_normal.sigma].value)

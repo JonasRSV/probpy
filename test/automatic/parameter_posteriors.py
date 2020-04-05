@@ -97,6 +97,12 @@ class PosteriorTest(unittest.TestCase):
                 "likelihood": unilinear.med(sigma=0.1),
                 "data": (y, x),
                 "correct": None
+            },
+            {
+                "prior": multivariate_normal.med(mu=mu_prior, sigma=sigma_prior),
+                "likelihood": unilinear.med(sigma=0.1),
+                "data": (1.0, 2.0),
+                "correct": None
             }
         ]
 
