@@ -64,12 +64,12 @@ def classic_mcmc(data: Tuple[np.ndarray],
                    likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                    priors: Union[RandomVariable, Tuple[RandomVariable]],
                    samples: int = 1000,
-                   burn_in: int = 100,
+                   mixing: int = 100,
                    energies: Tuple[float] = 0.5,
                    batch=5,
                    match_moments_for: Union[Tuple[Distribution], Distribution] = None,
                    normalize: bool = True):
-    samples = [sample[burn_in:] for sample in _sample_posterior(
+    samples = [sample[mixing:] for sample in _sample_posterior(
         data, likelihood, priors, samples, energies, batch
     )]
 

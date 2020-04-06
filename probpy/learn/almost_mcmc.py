@@ -11,7 +11,7 @@ def _sample_posterior(data: Tuple[np.ndarray],
                       likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                       priors: Tuple[RandomVariable],
                       samples: int,
-                      burn_in: int,
+                      mixing: int,
                       energies: Tuple[float],
                       batch: int):
     likelihood = likelihood if type(likelihood) != RandomVariable else likelihood.p
@@ -30,8 +30,8 @@ def _sample_posterior(data: Tuple[np.ndarray],
         initial=initial,
         energies=energies)
 
-    samples = samples[burn_in:]
-    densities = densities[burn_in:]
+    samples = samples[mixing:]
+    densities = densities[mixing:]
 
     return samples, densities
 
@@ -40,11 +40,11 @@ def almost_mcmc(data: Tuple[np.ndarray],
                 likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                 priors: Union[RandomVariable, Tuple[RandomVariable]],
                 samples: int = 1000,
-                burn_in: int = 100,
+                mixing: int = 100,
                 energies: Tuple[float] = 0.5,
                 batch=5,
                 normalize: bool = False):
-    samples, densities = _sample_posterior(data, likelihood, priors, samples, burn_in, energies, batch)
+    samples, densities = _sample_posterior(data, likelihood, priors, samples, mixing, energies, batch)
 
     if normalize:
         raise NotImplementedError("almost mcmc cannot normalize atm")

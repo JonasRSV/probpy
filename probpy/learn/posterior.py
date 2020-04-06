@@ -12,7 +12,7 @@ def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
                            likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                            priors: Union[RandomVariable, Tuple[RandomVariable]],
                            samples: int,
-                           burn_in: int,
+                           mixing: int,
                            energies: Tuple[float],
                            batch: int,
                            match_moments_for: Union[Tuple[Distribution], Distribution],
@@ -22,31 +22,31 @@ def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
     if type(energies) == float: energies = [energies for _ in range(len(priors))]
     if match_moments_for is not None and type(match_moments_for) != tuple: match_moments_for = (match_moments_for,)
 
-    return data, likelihood, priors, samples, burn_in, energies, batch, match_moments_for, normalize
+    return data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
 
 
 def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
                         likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                         priors: Union[RandomVariable, Tuple[RandomVariable]],
                         samples: int = 1000,
-                        burn_in: int = 100,
+                        mixing: int = 100,
                         energies: Tuple[float] = 0.5,
                         batch=5,
                         match_moments_for: Union[Tuple[Distribution], Distribution] = None,
                         normalize: bool = True,
-                        mcmc: bool = True) -> RandomVariable:
-    data, likelihood, priors, samples, burn_in, energies, batch, match_moments_for, normalize = _standardize_arguments(
-        data, likelihood, priors, samples, burn_in, energies, batch, match_moments_for, normalize
+                        classical_mcmc: bool = True) -> RandomVariable:
+    data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize = _standardize_arguments(
+        data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
     )
 
     rv = conjugate.attempt(data, likelihood, priors)
     if rv is not None: return rv
 
-    if mcmc:
+    if classical_mcmc:
         return classic_mcmc(
-            data, likelihood, priors, samples, burn_in, energies, batch, match_moments_for, normalize
+            data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
         )
     else:
         return almost_mcmc(
-            data, likelihood, priors, samples, burn_in, energies, batch, normalize
+            data, likelihood, priors, samples, mixing, energies, batch, normalize
         )
