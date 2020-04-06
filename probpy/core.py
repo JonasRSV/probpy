@@ -23,8 +23,8 @@ class RandomVariable:
         for name, parameter in parameters.items():
             self.__setattr__(name, parameter.value)
 
-    def sample(self, *args, size: np.ndarray = ()):
-        return self._sample(*args, size=size)
+    def sample(self, *args, **kwargs):
+        return self._sample(*args, **kwargs)
 
     def p(self, x, *args):
         return self._p(x, *args)
@@ -34,6 +34,12 @@ class RandomVariable:
         body = '\n'.join(
             [f'{name}: {parameter.shape} - {parameter.value}' for name, parameter in self.parameters.items()])
         return title + body
+
+    def __setattr__(self, key, value):
+        if hasattr(self, key):
+            raise Exception(f"{key} is immutable in {self.__class__}")
+
+        super().__setattr__(key, value)
 
 
 class Distribution(ABC):

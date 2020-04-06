@@ -5,13 +5,10 @@ from probpy.sampling import (metropolis_hastings,
                          fast_metropolis_hastings_log_space,
                          fast_metropolis_hastings,
                          fast_metropolis_hastings_log_space_parameter_posterior_estimation)
-import matplotlib.pyplot as plt
-import seaborn as sb
 import numpy as np
-import time
 
 
-class VisualTestMCMC(unittest.TestCase):
+class TestSampling(unittest.TestCase):
     def test_metropolis_hastings(self):
         pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3)
         log_pdf = lambda x: np.log(normal.p(x, 0, 1) + normal.p(x, 6, 3))

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from probpy.distributions import normal
 from probpy.density import UCKD, RCKD
-from probpy.mcmc import fast_metropolis_hastings
+from probpy.sampling import fast_metropolis_hastings
 
 
 def distribution(x):
