@@ -14,13 +14,13 @@ class Binomial(Distribution):
             _sample = Binomial.sample
             _p = Binomial.p
         elif n is None:
-            def _sample(n: np.ndarray, size: np.ndarray = ()): return Binomial.sample(n, probability, size)
-            def _p(x: np.ndarray, n: np.ndarray): return Binomial.p(x, n, probability)
+            def _sample(n: np.int, size: int = 1): return Binomial.sample(n, probability, size)
+            def _p(x: np.ndarray, n: np.int): return Binomial.p(x, n, probability)
         elif probability is None:
-            def _sample(probability: np.ndarray, size: np.ndarray = ()): return Binomial.sample(n, probability, size)
-            def _p(x: np.ndarray, probability: np.ndarray): return Binomial.p(x, n, probability)
+            def _sample(probability: np.float, size: int = 1): return Binomial.sample(n, probability, size)
+            def _p(x: np.ndarray, probability: np.float): return Binomial.p(x, n, probability)
         else:
-            def _sample(size: np.ndarray = ()): return Binomial.sample(n, probability, size)
+            def _sample(size: int = 1): return Binomial.sample(n, probability, size)
             def _p(x: np.ndarray): return Binomial.p(x, n, probability)
 
         parameters = {
@@ -43,12 +43,12 @@ class Binomial(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(n: int, probability: np.float32, size=()) -> np.ndarray:
+    def sample(n: int, probability: np.float, size: int = 1) -> np.ndarray:
         return np.random.binomial(n, probability, size=size)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def p(x: np.ndarray, n: int, probability: np.float32) -> np.ndarray:
+    def p(x: np.ndarray, n: int, probability: np.float) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 0: x = x.reshape(-1)
         constants = np.array([Binomial._combinations_high_n(n, _x) for _x in x])

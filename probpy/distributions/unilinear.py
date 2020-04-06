@@ -24,7 +24,7 @@ class UniLinear(Distribution):
 
             return UniLinear.p(x, *call_args)
 
-        def _sample(*args, size=()):
+        def _sample(*args, size: int = 1):
             call_args = [None] * 3
             for i, arg in enumerate(args): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
@@ -41,7 +41,7 @@ class UniLinear(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(x: np.ndarray, variables: np.ndarray, sigma: np.float, size: np.ndarray = ()) -> Tuple[np.ndarray, np.ndarray]:
+    def sample(x: np.ndarray, variables: np.ndarray, sigma: np.float, size: int = 1) -> Tuple[np.ndarray, np.ndarray]:
         if x.ndim == 1:
             x = x[:, None]
         return x @ variables[:-1] + variables[-1] + normal.sample(mu=0, sigma=sigma, size=x.shape[0])

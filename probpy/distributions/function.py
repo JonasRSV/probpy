@@ -25,7 +25,7 @@ class Function(Distribution):
         density = RCKD(variance=variance, sampling_sz=100, error=error, verbose=verbose)
         density.fit(samples)
 
-        def _sample(size: np.ndarray = ()): return samples[np.random.randint(low=0, high=samples.shape[0], size=size)]
+        def _sample(size: int = 1): return samples[np.random.randint(low=0, high=samples.shape[0], size=size)]
         def _p(x: np.ndarray): return density.p(x)
 
         parameters = {}

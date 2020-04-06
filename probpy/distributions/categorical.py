@@ -14,7 +14,7 @@ class Categorical(Distribution):
             _p = Categorical.p
             shape = dim
         else:
-            def _sample(size=()): return Categorical.sample(probabilities, size)
+            def _sample(size: int = 1): return Categorical.sample(probabilities, size)
             def _p(x): return Categorical.p(x, probabilities)
             shape = probabilities.size
 
@@ -23,7 +23,7 @@ class Categorical(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(probabilities: np.ndarray, size=()) -> np.ndarray:
+    def sample(probabilities: np.ndarray, size: int = 1) -> np.ndarray:
         return Categorical.one_hot(
             np.random.choice(np.arange(probabilities.size), p=probabilities, size=size),
             size=probabilities.size)

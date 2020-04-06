@@ -14,13 +14,13 @@ class Beta(Distribution):
             _sample = Beta.sample
             _p = Beta.p
         elif a is None:
-            def _sample(a: np.ndarray, size: np.ndarray = ()): return Beta.sample(a, b, size)
+            def _sample(a: np.ndarray, size: int = 1): return Beta.sample(a, b, size)
             def _p(x: np.ndarray, a: np.ndarray): return Beta.p(x, a, b)
         elif b is None:
-            def _sample(b: np.ndarray, size: np.ndarray = ()): return Beta.sample(a, b, size)
+            def _sample(b: np.ndarray, size: int = 1): return Beta.sample(a, b, size)
             def _p(x: np.ndarray, b: np.ndarray): return Beta.p(x, a, b)
         else:
-            def _sample(size: np.ndarray = ()): return Beta.sample(a, b, size)
+            def _sample(size: int = 1): return Beta.sample(a, b, size)
             def _p(x: np.ndarray): return Beta.p(x, a, b)
 
         parameters = {
@@ -31,7 +31,7 @@ class Beta(Distribution):
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
-    def sample(a: np.float32, b: np.float32, size=()) -> np.ndarray:
+    def sample(a: np.float32, b: np.float32, size: int = 1) -> np.ndarray:
         return np.random.beta(a, b, size=size)
 
     @staticmethod

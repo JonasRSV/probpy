@@ -14,7 +14,7 @@ class Points(Distribution):
         density = RCKD(variance=variance, sampling_sz=100, error=error, verbose=verbose)
         density.fit(points)
 
-        def _sample(size: np.ndarray = ()): return points[np.random.randint(low=0, high=points.shape[0], size=size)]
+        def _sample(size: int = 1): return points[np.random.randint(low=0, high=points.shape[0], size=size)]
         def _p(x: np.ndarray): return density.p(x)
 
         parameters = {}

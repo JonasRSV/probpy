@@ -15,13 +15,13 @@ class Uniform(Distribution):
             _sample = Uniform.sample
             _p = Uniform.p
         elif a is None:
-            def _sample(a: np.ndarray, size: np.ndarray = ()): return Uniform.sample(a, b, size)
+            def _sample(a: np.ndarray, size: int = 1): return Uniform.sample(a, b, size)
             def _p(x: np.ndarray, a: np.ndarray): return Uniform.p(x, a, b)
         elif b is None:
-            def _sample(b: np.ndarray, size: np.ndarray = ()): return Uniform.sample(a, b, size)
+            def _sample(b: np.ndarray, size: int = 1): return Uniform.sample(a, b, size)
             def _p(x: np.ndarray, b: np.ndarray): return Uniform.p(x, a, b)
         else:
-            def _sample(size: np.ndarray = ()): return Uniform.sample(a, b, size)
+            def _sample(size: int = 1): return Uniform.sample(a, b, size)
             def _p(x: np.ndarray): return Uniform.p(x, a, b)
 
         parameters = {
@@ -53,15 +53,15 @@ class MultiVariateUniform(Distribution):
             _p = MultiVariateUniform.p
             shape = parameter_shape
         elif a is None:
-            def _sample(a: np.ndarray, size: np.ndarray = ()): return MultiVariateUniform.sample(a, b, size)
+            def _sample(a: np.ndarray, size: int = 1): return MultiVariateUniform.sample(a, b, size)
             def _p(x: np.ndarray, a: np.ndarray): return MultiVariateUniform.p(x, a, b)
             shape = b.size
         elif b is None:
-            def _sample(b: np.ndarray, size: np.ndarray = ()): return MultiVariateUniform.sample(a, b, size)
+            def _sample(b: np.ndarray, size: int = 1): return MultiVariateUniform.sample(a, b, size)
             def _p(x: np.ndarray, b: np.ndarray): return MultiVariateUniform.p(x, a, b)
             shape = a.size
         else:
-            def _sample(size: np.ndarray = ()): return MultiVariateUniform.sample(a, b, size)
+            def _sample(size: int = 1): return MultiVariateUniform.sample(a, b, size)
             def _p(x: np.ndarray): return MultiVariateUniform.p(x, a, b)
             shape = a.size
 

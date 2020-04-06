@@ -34,7 +34,7 @@ class GaussianProcess(Distribution):
 
             return GaussianProcess.p(x, *call_args)
 
-        def _sample(*args, size=()):
+        def _sample(*args, size: int = 1):
             call_args = [None] * 5
             for i, arg in enumerate(args): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
@@ -90,7 +90,7 @@ class GaussianProcess(Distribution):
                sigma: Callable[[np.ndarray, np.ndarray], np.float],
                X: np.ndarray,
                Y: np.ndarray,
-               size: np.ndarray = ()) -> np.ndarray:
+               size: int = 1) -> np.ndarray:
 
         x_mu_vec, x_covariance_mat = GaussianProcess._build_parameters(mu, sigma, x)
         X_mu_vec, X_covariance_mat = GaussianProcess._build_parameters(mu, sigma, X)

@@ -15,7 +15,7 @@ class Dirichlet(Distribution):
             _p = Dirichlet.p
             shape = dim
         else:
-            def _sample(size=()): return Dirichlet.sample(alpha, size)
+            def _sample(size: int = 1): return Dirichlet.sample(alpha, size)
             def _p(x): return Dirichlet.p(x, alpha)
             shape = alpha.size
 
@@ -24,7 +24,7 @@ class Dirichlet(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(alpha: np.ndarray, size=()) -> np.ndarray:
+    def sample(alpha: np.ndarray, size: int = 1) -> np.ndarray:
         return np.random.dirichlet(alpha, size=size)
 
     @staticmethod

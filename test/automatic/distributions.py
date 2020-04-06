@@ -234,6 +234,101 @@ class TestDistributions(unittest.TestCase):
         for test in tests:
             _execute_test(**test)
 
+    def test_sample(self):
+        def _execute_test(f=None, correct=None):
+            for f, c in zip(f, correct):
+                result = f()
+
+                if c is not None:
+                    res = result.shape == c
+                    if hasattr(res, "__iter__"): self.assertTrue(all(res))
+                    else: self.assertTrue(res)
+
+        tests = [
+            {
+                "f": [lambda: normal.med(mu=0.0, sigma=1.0).sample(), lambda: normal.med(mu=0.0, sigma=1.0).sample(10)],
+                "correct": [(1,), (10, )]
+            },
+            {
+                "f": [lambda: multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)).sample(),
+                      lambda: multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)).sample(10)],
+                "correct": [(1, 2), (10, 2)]
+            },
+            {
+                "f": [lambda: uniform.med(a=0.0, b=1.0).sample(),
+                      lambda: uniform.med(a=0.0, b=1.0).sample(10)],
+                "correct": [(1,), (10, )]
+            },
+            {
+                "f": [lambda: multivariate_uniform.med(a=np.zeros(2), b=np.ones(2)).sample(),
+                      lambda: multivariate_uniform.med(a=np.zeros(2), b=np.ones(2)).sample(10)],
+                "correct": [(1, 2), (10, 2)]
+            },
+            {
+                "f": [lambda: bernoulli.med(probability=0.8).sample(),
+                      lambda: bernoulli.med(probability=0.8).sample(10)],
+                "correct": [(1,), (10, )]
+            },
+            {
+                "f": [lambda: categorical.med(probabilities=np.ones(3) / 3).sample(),
+                      lambda: categorical.med(probabilities=np.ones(3) / 3).sample(10)],
+                "correct": [(1, 3), (10, 3)]
+            },
+            {
+                "f": [lambda: dirichlet.med(alpha=np.ones(3) / 3).sample(),
+                      lambda: dirichlet.med(alpha=np.ones(3) / 3).sample(10)],
+                "correct": [(1, 3), (10, 3)]
+            },
+            {
+                "f": [lambda: beta.med(a=0.8, b=0.9).sample(),
+                      lambda: beta.med(a=0.8, b=0.8).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: exponential.med(lam=1.0).sample(),
+                      lambda: exponential.med(lam=1.0).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: binomial.med(n=3, probability=0.5).sample(),
+                      lambda: binomial.med(n=3, probability=0.6).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: multinomial.med(n=3, probabilities=np.ones(3) / 3).sample(),
+                      lambda: multinomial.med(n=3, probabilities=np.ones(3) / 3).sample(10)],
+                "correct": [(1, 3), (10, 3)]
+            },
+            {
+                "f": [lambda: gamma.med(a=0.8, b=0.9).sample(),
+                      lambda: gamma.med(a=0.8, b=0.8).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: normal_inverse_gamma.med(mu=2.0, lam=1.0, a=0.8, b=0.9).sample(),
+                      lambda: normal_inverse_gamma.med(mu=2.0, lam=1.0, a=0.8, b=0.8).sample(10)],
+                "correct": [(1, 2), (10, 2)]
+            },
+            {
+                "f": [lambda: geometric.med(probability=0.6).sample(),
+                      lambda: geometric.med(probability=0.6).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: poisson.med(lam=0.6).sample(),
+                      lambda: poisson.med(lam=0.6).sample(10)],
+                "correct": [(1,), (10,)]
+            },
+            {
+                "f": [lambda: hypergeometric.med(N=4, K=2, n=1).sample(),
+                      lambda: hypergeometric.med(N=4, K=2, n=1).sample(10)],
+                "correct": [(1,), (10,)]
+            }
+        ]
+
+        for test in tests:
+            _execute_test(**test)
+
 
 if __name__ == '__main__':
     unittest.main()

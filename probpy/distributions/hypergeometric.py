@@ -23,10 +23,12 @@ class Hypergeometric(Distribution):
 
             return Hypergeometric.p(x, *call_args)
 
-        def _sample(*args, size=()):
+        def _sample(*args, size: int = 1):
             call_args = [None] * 3
-            for i, arg in enumerate(args): call_args[none[i]] = arg
+            for i, arg in enumerate(args[:len(none)]): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
+
+            if len(args) > len(none): size = args[-1]
 
             return Hypergeometric.sample(*call_args, size=size)
 
@@ -40,7 +42,7 @@ class Hypergeometric(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(N: np.int, K: np.int, n: np.int, size = ()) -> np.ndarray:
+    def sample(N: np.int, K: np.int, n: np.int, size: int = 1) -> np.ndarray:
         return np.random.hypergeometric(ngood=K, nbad=N - K, nsample=n, size=size)
 
     @staticmethod

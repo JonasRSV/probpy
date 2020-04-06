@@ -1,5 +1,4 @@
 import unittest
-from probpy.core import RandomVariable
 from probpy.distributions import (normal,
                                   multivariate_normal,
                                   exponential,

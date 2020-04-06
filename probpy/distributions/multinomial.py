@@ -15,15 +15,15 @@ class Multinomial(Distribution):
             _p = Multinomial.p
             shape = dim
         elif n is None:
-            def _sample(n: np.ndarray, size: np.ndarray = ()): return Multinomial.sample(n, probabilities, size)
+            def _sample(n: np.ndarray, size: int = 1): return Multinomial.sample(n, probabilities, size)
             def _p(x: np.ndarray, n: np.ndarray): return Multinomial.p(x, n, probabilities)
             shape = probabilities.size
         elif probabilities is None:
-            def _sample(probabilities: np.ndarray, size: np.ndarray = ()): return Multinomial.sample(n, probabilities, size)
+            def _sample(probabilities: np.ndarray, size: int = 1): return Multinomial.sample(n, probabilities, size)
             def _p(x: np.ndarray, probabilities: np.ndarray): return Multinomial.p(x, n, probabilities)
             shape = None
         else:
-            def _sample(size: np.ndarray = ()): return Multinomial.sample(n, probabilities, size)
+            def _sample(size: int = 1): return Multinomial.sample(n, probabilities, size)
             def _p(x: np.ndarray): return Multinomial.p(x, n, probabilities)
             shape = probabilities.size
 
@@ -51,7 +51,7 @@ class Multinomial(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(n: int, probabilities: np.ndarray, size=()) -> np.ndarray:
+    def sample(n: int, probabilities: np.ndarray, size: int = 1) -> np.ndarray:
         return np.random.multinomial(n, probabilities, size=size)
 
     @staticmethod

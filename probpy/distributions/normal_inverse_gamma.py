@@ -29,10 +29,12 @@ class NormalInverseGamma(Distribution):
 
             return NormalInverseGamma.p(x, *call_args)
 
-        def _sample(*args, size=()):
+        def _sample(*args, size: int = 1):
             call_args = [None] * 4
-            for i, arg in enumerate(args): call_args[none[i]] = arg
+            for i, arg in enumerate(args[:len(none)]): call_args[none[i]] = arg
             for i in not_none: call_args[i] = params[i]
+
+            if len(args) > len(none): size = args[-1]
 
             return NormalInverseGamma.sample(*call_args, size=size)
 
@@ -47,7 +49,7 @@ class NormalInverseGamma(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(mu: np.float, lam: np.float, a: np.float, b: np.float, size: np.ndarray = ()) -> np.ndarray:
+    def sample(mu: np.float, lam: np.float, a: np.float, b: np.float, size: int = 1) -> np.ndarray:
         sigma = 1 / gamma.sample(a, b, size=size)
         x = normal.sample(mu=mu, sigma=sigma / lam, size=size)
         return np.concatenate([x[:, None], sigma[:, None]], axis=1)
