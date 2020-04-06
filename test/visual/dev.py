@@ -30,29 +30,31 @@ class MyTestCase(unittest.TestCase):
 
         prior = pp.multivariate_normal.med(mu=np.zeros(4), sigma=np.eye(4) * 5)
 
-        for i in range(50):
-            j = random.randint(0, 80)
-            data = (y[j: j + 50], x[j: j + 50])
+        for i in range(5):
+            data = (y, x)
 
             prior = pp.parameter_posterior(data, likelihood=likelihood,
                                            priors=prior,
-                                           batch=100,
-                                           samples=10000,
-                                           burn_in=1000,
-                                           energies=1.0,
-                                           normalize=False,
-                                           mcmc=False)
+                                           batch=10,
+                                           samples=50000,
+                                           mixing=1000,
+                                           energies=0.2,
+                                           classical_mcmc=False,
+                                           normalize=False)
 
-            if i % 1 == 0:
-                modes = pp.mode(prior)
+            modes = pp.mode(prior)  # modes are sorted in order first is largest
 
-                print("modes", len(modes))
-                w_approx = modes[0]
+            print("Number of modes", len(modes))
+            for mode in modes:
+                print(mode)
 
-                print("Parameter approximation", w_approx)
-                print("Prior MSE", np.square(y - sigmoid(predict(w_approx, x))).mean(), "True MSE",
-                      np.square(y - sigmoid(predict(w, x))).mean())
-                print()
+            w_approx = modes[0]
+
+            print("Parameter Estimate", w_approx)
+
+            print("Prior MSE", np.square(y - sigmoid(predict(w_approx, x))).mean(),
+                  "True MSE", np.square(y - sigmoid(predict(w, x))).mean())
+            print()
 
 
 if __name__ == '__main__':

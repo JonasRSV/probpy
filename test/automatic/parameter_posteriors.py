@@ -294,7 +294,7 @@ class PosteriorTest(unittest.TestCase):
         def _run_test(priors=None, likelihood=None, data=None, correct=None):
             posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000,
                                             normalize=False,
-                                            mcmc=False)
+                                            classical_mcmc=False)
 
             if correct is not None:
                 pass  # TODO

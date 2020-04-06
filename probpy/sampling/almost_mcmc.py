@@ -33,30 +33,32 @@ def fast_almost_mcmc_parameter_posterior_estimation(
         data_log_probability = log_likelihood(*x)
         return prior_log_probability + data_log_probability
 
-    p = initial
+    samples = initial
     points = [[] for _ in range(n)]
     densities = []
+    indexes = np.arange(0, batch)
     while len(points[0]) < size:
         samples = [
-            p[i] + jumpers[i]()
+            samples[i] + jumpers[i]()
             for i in range(n)
         ]
 
-        density = _probability(samples)
+        density = _probability(samples).flatten()
 
-        accept_rate = np.minimum(density - _probability(p), 0.0)
-        accept_rate = accept_rate.flatten()
+        probability = np.exp(density + np.abs(density.max()))
+        probability = np.nan_to_num(probability, copy=False, nan=1e-15,
+                             neginf=1e-15, posinf=1e-15)
+        probability = probability / probability.sum()
 
-        accepted = accept_rate >= np.log(np.random.rand(batch))
-        rejected = False == accepted
+        accepted = np.random.choice(indexes, size=batch, p=probability)
+        unique_accepted = np.unique(accepted)
 
         for i in range(n):
-            points[i].extend(samples[i][accepted])
-            samples[i][rejected] = p[i][rejected]
+            points[i].extend(samples[i][unique_accepted])
 
-        densities.extend(density[accepted])
+        densities.extend(density[unique_accepted])
 
-        p = samples
+        samples = [samples[i][accepted] for i in range(n)]
 
     densities = np.array(densities)
     return np.concatenate(_reshape_samples([np.array(point) for point in points]), axis=1), \
