@@ -55,8 +55,10 @@ class Multinomial(Distribution):
         return np.random.multinomial(n, probabilities, size=size)
 
     @staticmethod
-    @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, n: int, probabilities: np.ndarray) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 1: x = x.reshape(1, -1)
+
         constants = np.array([Multinomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.prod(np.float_power(probabilities, x), axis=1)
 

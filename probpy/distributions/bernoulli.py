@@ -28,6 +28,7 @@ class Bernoulli(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, probability: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         res = np.zeros_like(x)
         res[x != 1.0] = 1 - probability
         res[x == 1.0] = probability

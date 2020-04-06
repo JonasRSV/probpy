@@ -1,6 +1,6 @@
 import unittest
 from probpy.distributions import normal, exponential
-from probpy.mcmc import (metropolis_hastings,
+from probpy.sampling import (metropolis_hastings,
                          metropolis,
                          fast_metropolis_hastings_log_space,
                          fast_metropolis_hastings,

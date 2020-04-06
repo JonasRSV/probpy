@@ -38,6 +38,7 @@ class Gamma(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, a: np.float32, b: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         normalizing_constant = np.float_power(b, a) / gamma(a)
         return np.float_power(x, a - 1) * np.exp(-b * x) * normalizing_constant
 

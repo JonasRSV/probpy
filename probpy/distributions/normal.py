@@ -42,6 +42,7 @@ class MultiVariateNormal(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 1: x = x.reshape(1, -1)
         # Broadcasting over parameters
         if mu.ndim == 2: mu = mu[:, None]
@@ -92,8 +93,8 @@ class Normal(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
-        if type(mu) == float: mu = np.array(mu)
-        if type(sigma) == float: sigma = np.array(sigma)
+        if type(mu) != np.ndarray: mu = np.array(mu)
+        if type(sigma) != np.ndarray: sigma = np.array(sigma)
         if mu.ndim == 1: mu = mu[:, None]
         if sigma.ndim == 1: sigma = sigma[:, None]
 

@@ -30,6 +30,9 @@ class Dirichlet(Distribution):
     @staticmethod
     def p(x: np.ndarray, alpha: np.ndarray) -> np.ndarray:
         # TODO: find out if there is a more numerically stable implementation
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 1: x = x.reshape(1, -1)
+
         normalizing_constant = np.prod(gamma(alpha)) / gamma(alpha.sum())
         return np.float_power(x, alpha - 1).prod(axis=1) / normalizing_constant
 

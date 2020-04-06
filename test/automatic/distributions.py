@@ -74,8 +74,10 @@ class TestDistributions(unittest.TestCase):
             for test_case in itertools.product([0, 1], repeat=len(parameters)):
                 kwargs, args = {}, []
                 for i, pick in enumerate(test_case):
-                    if pick == 1: kwargs[names[i]] = parameters[i]
-                    else: args.append(parameters[i])
+                    if pick == 1:
+                        kwargs[names[i]] = parameters[i]
+                    else:
+                        args.append(parameters[i])
 
                 rv = distribution.med(**kwargs)
                 _s = rv.sample(*args, size=100000)
@@ -95,18 +97,18 @@ class TestDistributions(unittest.TestCase):
             (multivariate_normal, (np.zeros(2), np.eye(2)), (multivariate_normal.mu, multivariate_normal.sigma)),
             (uniform, (0.0, 1.0), (uniform.a, uniform.b)),
             (multivariate_uniform, (np.zeros(2), np.ones(2)), (multivariate_uniform.a, multivariate_uniform.b)),
-            (bernoulli, (0.5,), (bernoulli.probability, )),
+            (bernoulli, (0.5,), (bernoulli.probability,)),
             (beta, (2.0, 1.0), (beta.a, beta.b)),
             (binomial, (3, 0.5), (binomial.n, binomial.probability)),
-            (categorical, (np.ones(2) * 0.5, ), (categorical.probabilities, )),
-            (dirichlet, (np.ones(2) * 2, ), (dirichlet.alpha, )),
-            (exponential, (1.0, ), (exponential.lam, )),
-            (multinomial, (10, np.ones(4) * 0.25, ), (multinomial.n, multinomial.probabilities)),
+            (categorical, (np.ones(2) * 0.5,), (categorical.probabilities,)),
+            (dirichlet, (np.ones(2) * 2,), (dirichlet.alpha,)),
+            (exponential, (1.0,), (exponential.lam,)),
+            (multinomial, (10, np.ones(4) * 0.25,), (multinomial.n, multinomial.probabilities)),
             (gamma, (2.0, 1.0), (gamma.a, gamma.b)),
             (normal_inverse_gamma, (2, 1, 2, 2), (normal_inverse_gamma.mu, normal_inverse_gamma.lam,
                                                   normal_inverse_gamma.a, normal_inverse_gamma.b)),
-            (geometric, (0.5, ), (geometric.probability, )),
-            (poisson, (2.0, ), (poisson.lam, )),
+            (geometric, (0.5,), (geometric.probability,)),
+            (poisson, (2.0,), (poisson.lam,)),
             (hypergeometric, (10, 5, 3), (hypergeometric.N, hypergeometric.K, hypergeometric.n)),
             (gaussian_process, (
                 np.array([0.0, 0.5]),
@@ -138,7 +140,99 @@ class TestDistributions(unittest.TestCase):
         for distribution, parameters, names in tests:
             _execute_test(distribution, parameters, names, f"{distribution.__name__} failed")
 
+    def test_p(self):
+        def _execute_test(distribution=None, data=None, correct=None):
+            for d, c in zip(data, correct):
+                result = distribution.p(d)
 
+                if c is not None:
+                    pass  # TODO
+
+        tests = [
+            {
+                "distribution": normal.med(mu=0.0, sigma=1.0),
+                "data": [1.0, [1.0, 0.5], np.ones(2)],
+                "correct": [None, None, None]
+            },
+            {
+                "distribution": multivariate_normal.med(mu=np.ones(2), sigma=np.eye(2)),
+                "data": [[0.0, 0.0], np.ones(2), np.ones((2, 2)), [[0.1, 0.2], [0.5, 0.2]]],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": uniform.med(a=0.0, b=1.0),
+                "data": [0.5, [0.5], np.ones(1), np.ones(10) * 0.5],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": multivariate_uniform.med(a=np.zeros(2), b=np.ones(2)),
+                "data": [[0.0, 0.0], np.zeros(2), [[0.0, 1.0], [0.5, 1.0]], np.random.rand(2, 2)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": bernoulli.med(probability=0.6),
+                "data": [0.5, [0.5], [0.5, 0.5]],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": categorical.med(probabilities=np.ones(4) / 4),
+                "data": [3, [1, 2], np.eye(4)[[1, 2]], [[0, 0, 0, 1]]],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": dirichlet.med(alpha=np.ones(4)),
+                "data": [np.ones(4) / 4, [0.25, 0.25, 0.25, 0.25], [[0.25, 0.25, 0.25, 0.25]], np.ones((1, 4))],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": beta.med(a=1.0, b=2.0),
+                "data": [0.5, [0.5], [0.5, 0.5], np.random.rand(), np.random.rand(3)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": exponential.med(lam=1.0),
+                "data": [0.5, [0.5], [0.5, 0.5], np.random.rand(), np.random.rand(3)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": binomial.med(n=2, probability=0.5),
+                "data": [1, [1], [0, 0, 1], np.ones(2)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": multinomial.med(n=3, probabilities=np.ones(3) / 3),
+                "data": [[1, 1, 1], np.ones(3), [[1, 1, 1]], np.ones((2, 3))],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": gamma.med(a=1.0, b=2.0),
+                "data": [0.5, [0.5], [0.5, 0.5], np.random.rand(), np.random.rand(3)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": normal_inverse_gamma.med(mu=2.0, lam=1.0, a=1.0, b=2.0),
+                "data": [[0.5, 1.0], [[0.5, 1.0]], np.ones(2), np.ones((2, 2))],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": geometric.med(probability=0.7),
+                "data": [5, [5], np.ones(1) * 5, np.ones(5) * 5],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": hypergeometric.med(N=3, K=2, n=1),
+                "data": [1.0, [1.0], [1.0, 1.0], np.ones(2)],
+                "correct": [None, None, None, None]
+            },
+            {
+                "distribution": poisson.med(lam=2.0),
+                "data": [1.0, [1.0], [1.0, 1.0], np.ones(2)],
+                "correct": [None, None, None, None]
+            }
+        ]
+
+        for test in tests:
+            _execute_test(**test)
 
 
 if __name__ == '__main__':

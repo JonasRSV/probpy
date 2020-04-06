@@ -1,6 +1,6 @@
 import unittest
 from probpy.distributions import normal
-from probpy.mcmc import metropolis_hastings, metropolis
+from probpy.sampling import metropolis_hastings, metropolis
 import matplotlib.pyplot as plt
 import seaborn as sb
 import numpy as np

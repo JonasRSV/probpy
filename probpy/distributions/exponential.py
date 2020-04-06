@@ -26,6 +26,7 @@ class Exponential(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         result = np.zeros_like(x)
         lg_0 = x >= 0
         result[lg_0] = lam * np.exp(-lam * x[lg_0])

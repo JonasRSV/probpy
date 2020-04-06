@@ -34,5 +34,7 @@ class Poisson(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 0: x = x.reshape(-1)
         return (np.float_power(lam, x) * np.exp(-lam)) / Poisson._factorial(x)
 

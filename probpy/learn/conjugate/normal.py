@@ -18,7 +18,7 @@ class NormalNormal_MuPrior1D:
 
     @staticmethod
     def posterior(data: np.ndarray, likelihood: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
-        data = data[0]
+        data = np.array(data[0])
         prior = priors[0]
 
         n = data.size
@@ -50,7 +50,9 @@ class NormalNormal_NormalInverseGammaPrior1D:
 
     @staticmethod
     def posterior(data: np.ndarray, _: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
-        data = data[0]
+        data = np.array(data[0])
+        if data.ndim == 0: data = data.reshape(-1)
+
         prior = priors[0]
 
         n = data.shape[0]
@@ -83,7 +85,9 @@ class MultivariateNormalNormal_MuPrior:
 
     @staticmethod
     def posterior(data: np.ndarray, likelihood: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
-        data = data[0]
+        data = np.array(data[0])
+        if data.ndim == 1: data = data.reshape(1, -1)
+
         prior = priors[0]
 
         n = data.shape[0]

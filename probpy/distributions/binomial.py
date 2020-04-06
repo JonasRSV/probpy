@@ -49,5 +49,7 @@ class Binomial(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, n: int, probability: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 0: x = x.reshape(-1)
         constants = np.array([Binomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.float_power(probability, x) * np.float_power(1 - probability, n - x)

@@ -33,15 +33,12 @@ class Uniform(Distribution):
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
-    def sample(a: np.float, b: np.float, size: np.ndarray = ()) -> np.ndarray:
-        if type(size) == int:
-            return np.array(a + np.random.rand(size) * (b - a))
-
-        return np.array(a + np.random.rand(*size) * (b - a))
+    def sample(a: np.float, b: np.float, size: int = 1) -> np.ndarray:
+        return np.array(a + np.random.rand(size) * (b - a))
 
     @staticmethod
-    @numba.jit(nopython=True, forceobj=False)
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         return ((a < x) & (x < b)).astype(np.float32) / (b - a)
 
 
@@ -76,20 +73,11 @@ class MultiVariateUniform(Distribution):
         return RandomVariable(_sample, _p, shape=shape, parameters=parameters, cls=cls)
 
     @staticmethod
-    def sample(a: np.ndarray, b: np.ndarray, size: np.ndarray = ()) -> np.ndarray:
-        if type(size) == int:
-            return a + np.random.rand(size, a.size) * (b - a)
-
-        if size != ():
-            if a.shape != size[1:]:
-                raise Exception(
-                    f"shape of a needs to match provided shape a: {a.shape} -- provided: {size} -- {a.shape} != {size[1:]}")
-
-            return a + np.random.rand(*size) * (b - a)
-
-        return a + np.random.rand(a.size) * (b - a)
+    def sample(a: np.ndarray, b: np.ndarray, size: int = 1) -> np.ndarray:
+        return a + np.random.rand(size, a.size) * (b - a)
 
     @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 1: x = x.reshape(-1, a.size)
         return ((a < x) & (x < b)).all(axis=1).astype(np.float32) / np.product(b - a)

@@ -45,6 +45,8 @@ class Hypergeometric(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, N: np.int, K: np.int, n: np.int) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 0: x = x.reshape(-1)
         K_choose_x = np.array([Binomial._combinations_high_n(K, _x) for _x in x])
         NK_choose_nx = np.array([Binomial._combinations_high_n(N - K, n - _x) for _x in x])
         N_choose_n = np.array(Binomial._combinations_high_n(N, n))

@@ -18,7 +18,7 @@ class BinomialBeta_PPrior:
 
     @staticmethod
     def posterior(data: np.ndarray, likelihood: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
-        data = data[0]
+        data = np.array(data[0])
         prior = priors[0]
 
         n_data = data.size

@@ -1,7 +1,7 @@
 from probpy.core import RandomVariable, Distribution
 import numpy as np
 from typing import Callable, List
-from probpy.mcmc import fast_metropolis_hastings_log_space_parameter_posterior_estimation
+from probpy.sampling import fast_metropolis_hastings_log_space_parameter_posterior_estimation
 from . import conjugate, moment_matching
 from probpy.distributions import points
 
@@ -43,7 +43,7 @@ def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
                            batch: int,
                            match_moments_for: Union[Tuple[Distribution], Distribution]):
     if type(priors) == RandomVariable: priors = (priors,)
-    if type(data) == np.ndarray: data = (data,)
+    if type(data) != tuple: data = (data,)
     if type(energies) == float: energies = [energies for _ in range(len(priors))]
     if match_moments_for is not None and type(match_moments_for) != tuple: match_moments_for = (match_moments_for,)
 

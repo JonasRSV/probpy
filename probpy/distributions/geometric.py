@@ -28,4 +28,5 @@ class Geometric(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, probability: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         return np.float_power(1 - probability, x - 1) * probability

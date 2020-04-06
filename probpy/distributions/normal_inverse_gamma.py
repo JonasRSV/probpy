@@ -54,6 +54,8 @@ class NormalInverseGamma(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, mu: np.float, lam: np.float, a: np.float, b: np.float) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
+        if x.ndim == 1: x = x.reshape(1, 2)
         lam_norm = np.sqrt(lam) / np.sqrt(2 * np.pi * x[:, 1])
         beta_norm = np.float_power(b, a) / _gamma(a)
         sigma_norm = np.float_power(x[:, 1], - (a + 1))

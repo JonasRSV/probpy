@@ -30,6 +30,7 @@ class Categorical(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, probabilities: np.ndarray) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 2: x = np.argmax(x, axis=1)
         return probabilities[x]
 

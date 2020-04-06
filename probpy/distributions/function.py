@@ -2,7 +2,7 @@ import numpy as np
 
 from probpy.core import Distribution, RandomVariable
 from probpy.density import RCKD
-from probpy.mcmc import fast_metropolis_hastings
+from probpy.sampling import fast_metropolis_hastings
 from probpy.distributions import multivariate_uniform
 
 

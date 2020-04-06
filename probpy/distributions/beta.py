@@ -36,5 +36,6 @@ class Beta(Distribution):
 
     @staticmethod
     def p(x: np.ndarray, a: np.float32, b: np.float32) -> np.ndarray:
+        if type(x) != np.ndarray: x = np.array(x)
         # TODO: find out if there is a more numerically stable implementation
         return np.float_power(x, a - 1) * np.float_power(1 - x, b - 1) / beta(a, b)

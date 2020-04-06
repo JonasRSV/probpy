@@ -103,7 +103,67 @@ class PosteriorTest(unittest.TestCase):
                 "likelihood": unilinear.med(sigma=0.1),
                 "data": (1.0, 2.0),
                 "correct": None
-            }
+            },
+            {
+                "prior": normal.med(mu=1.0, sigma=1.0),
+                "likelihood": normal.med(sigma=2.0),
+                "data": 2.0,
+                "correct": None
+            },
+            {
+                "prior": normal_inverse_gamma.med(mu=1.0, lam=2.0, a=3.0, b=3.0),
+                "likelihood": normal.med(),
+                "data": 2.0,
+                "correct": None
+            },
+            {
+                "prior": multivariate_normal.med(mu=mu_prior, sigma=sigma_prior),
+                "likelihood": multivariate_normal.med(sigma=sigma_prior),
+                "data": np.zeros(2),
+                "correct": None
+            },
+            {
+                "prior": beta.med(a=1.0, b=3.0),
+                "likelihood": bernoulli.med(),
+                "data": 1,
+                "correct": None
+            },
+            {
+                "prior": dirichlet.med(alpha=np.ones(5)),
+                "likelihood": categorical.med(dim=5),
+                "data": 3,
+                "correct": None
+            },
+            {
+                "prior": gamma.med(a=9, b=2),
+                "likelihood": exponential.med(),
+                "data": 5.1,
+                "correct": None
+            },
+            {
+                "prior": beta.med(a=6.0, b=3.0),
+                "likelihood": binomial.med(n=5),
+                "data": 4,
+                "correct": None
+            },
+            {
+                "prior": dirichlet.med(alpha=np.ones(3)),
+                "likelihood": multinomial.med(n=3),
+                "data": [1, 1, 1],
+                "correct": None
+            },
+            {
+                "prior": gamma.med(a=9.0, b=2.0),
+                "likelihood": poisson.med(),
+                "data": 7,
+                "correct": None
+            },
+            {
+                "prior": beta.med(a=6.0, b=3.0),
+                "likelihood": geometric.med(),
+                "data": 6,
+                "correct": None
+            },
         ]
 
         for test in tests:
