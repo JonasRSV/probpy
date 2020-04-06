@@ -4,12 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 from probpy.distributions import normal
-from probpy.density import UCKD, RCKD
-from probpy.mcmc import fast_metropolis_hastings
+from probpy.density import UCKD, RCKD, URBK
+from probpy.sampling import fast_metropolis_hastings, fast_almost_mcmc_parameter_posterior_estimation
 
 
 def distribution(x):
     return 0.3333 * normal.p(x, -2, 1) + 0.3333 * normal.p(x, 2, 0.2) + 0.3333 * normal.p(x, 4, 0.2)
+
+
+def log_distribution(x):
+    return np.log(0.3333 * normal.p(x, -2, 1) + 0.3333 * normal.p(x, 2, 0.2) + 0.3333 * normal.p(x, 4, 0.2))
 
 
 class VisualDensityTest(unittest.TestCase):
@@ -63,6 +67,40 @@ class VisualDensityTest(unittest.TestCase):
         sb.distplot(samples, label="Histogram of samples")
         plt.legend(fontsize=16)
         plt.savefig("../../images/rckd.png", bbox_inches="tight")
+        plt.show()
+
+    def test_urbk_by_inspection_visual(self):
+        timestamp = time.time()
+
+        log_priors = [lambda x: np.log(normal.p(x, mu=0.0, sigma=10.0))]
+
+        samples, densities = fast_almost_mcmc_parameter_posterior_estimation(50000,
+                                                                             log_distribution,
+                                                                             log_priors,
+                                                                             initial=np.random.rand(1, 10) * 10,
+                                                                             energies=np.repeat(1.0, 10))
+        print("making samples", time.time() - timestamp)
+
+        density = URBK(variance=5.0, error=0.01, verbose=True)
+        timestamp = time.time()
+        density.fit(samples, densities)
+        print("fitting samples", time.time() - timestamp)
+
+        lb, ub = -6, 6
+        n = 2000
+
+        x = np.linspace(lb, ub, n)
+        timestamp = time.time()
+        y = density.p(x)
+        print("predicting samples", time.time() - timestamp)
+
+        print(y.shape)
+        plt.figure(figsize=(20, 10))
+        plt.plot(x, y, label="URBK")
+        plt.plot(x, distribution(x), label="PDF sampled from")
+        sb.distplot(samples, label="Histogram of samples")
+        plt.legend(fontsize=16)
+        plt.savefig("../../images/urbk.png", bbox_inches="tight")
         plt.show()
 
 

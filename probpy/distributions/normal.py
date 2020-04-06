@@ -92,6 +92,7 @@ class Normal(Distribution):
         return np.random.normal(mu, np.sqrt(sigma), size=size)
 
     @staticmethod
+    @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
         if type(mu) != np.ndarray: mu = np.array(mu)
         if type(sigma) != np.ndarray: sigma = np.array(sigma)

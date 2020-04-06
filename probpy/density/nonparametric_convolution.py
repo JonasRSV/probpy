@@ -1,4 +1,4 @@
-from .core import Density
+from probpy.core import Density
 import numpy as np
 from probpy.integration import uniform_importance_sampling
 from probpy.distributions import multivariate_uniform
@@ -7,7 +7,7 @@ from probpy.distributions import multivariate_uniform
 class UCKD(Density):
     """Un-normalised Convolution Kernel Density"""
 
-    def __init__(self, variance: float):
+    def __init__(self, variance: float, **_):
         """Kernel is a function [x] -> [0, 1]"""
         self.variance = variance
         self.particles = None

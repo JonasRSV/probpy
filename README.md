@@ -593,7 +593,7 @@ likelihood = normal.med()
 data = normal.sample(mu=5.0, sigma=2.0, size=300)
 #                                                                order matters here
 posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), 
-                                size=5000, # Number of points in posterior point distribution,
+                                samples=5000, # Number of points in posterior point distribution,
                                 energy=0.05 # The energy in the MCMC distribution - high = more exploration) 
 ```
 
@@ -616,7 +616,7 @@ y = unilinear.sample(x=x, variables=variables, sigma=1.0)
 posterior = parameter_posterior((y, x),
                                 likelihood=likelihood,
                                 priors=(prior_variables, prior_noise),
-                                size=600,
+                                samples=600,
                                 energy=0.05)
 
 print(posterior.sample(size=3000).mean(axis=0))
@@ -653,7 +653,7 @@ posterior = parameter_posterior((y, x),
                                 likelihood=likelihood,
                                 priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
                                 batch=10,
-                                size=10000)
+                                samples=10000)
 
 mean = posterior.sample(size=3000).mean(axis=0)
 
@@ -695,7 +695,7 @@ data = normal.sample(mu=3.0, sigma=2.0, size=2000)
 posterior = parameter_posterior(data,
                                 likelihood=likelihood,
                                 priors=prior,
-                                size=10000,
+                                samples=10000,
                                 batch=25,
                                 match_moments_for=normal)
 
@@ -719,7 +719,7 @@ data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=200)
 posterior = parameter_posterior(data,
                                 likelihood=likelihood,
                                 priors=prior,
-                                size=10000,
+                                samples=10000,
                                 batch=25,
                                 match_moments_for=multivariate_normal)
 

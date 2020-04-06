@@ -1,10 +1,11 @@
 import unittest
 from probpy.distributions import normal, exponential
 from probpy.sampling import (metropolis_hastings,
-                         metropolis,
-                         fast_metropolis_hastings_log_space,
-                         fast_metropolis_hastings,
-                         fast_metropolis_hastings_log_space_parameter_posterior_estimation)
+                             metropolis,
+                             fast_metropolis_hastings_log_space,
+                             fast_metropolis_hastings,
+                             fast_metropolis_hastings_log_space_parameter_posterior_estimation,
+                             fast_almost_mcmc_parameter_posterior_estimation)
 import numpy as np
 
 
@@ -38,6 +39,7 @@ class TestSampling(unittest.TestCase):
             return np.nan_to_num(ll, copy=False, nan=-10000.0)
 
         def log_prior_mu(b): return np.log(prior_mu.p(b))
+
         def log_prior_sigma(b): return np.log(prior_sigma.p(b))
 
         result = fast_metropolis_hastings_log_space_parameter_posterior_estimation(
@@ -50,6 +52,28 @@ class TestSampling(unittest.TestCase):
         correct = [3.0, 1.0]
         for res, corr in zip(result, correct):
             self.assertAlmostEqual(res.mean(), corr, delta=0.5)
+
+    def test_parameter_posterior_almost_mcmc(self):
+        prior_mu = normal.med(mu=0.5, sigma=1.0)
+        prior_sigma = exponential.med(lam=1.0)
+        likelihood = normal.med()
+
+        data = normal.sample(mu=3.0, sigma=1.0, size=100)
+
+        def log_likelihood(*args):
+            ll = np.log(likelihood.p(data, *args)).sum(axis=1)
+            return np.nan_to_num(ll, copy=False, nan=-10000.0)
+
+        def log_prior_mu(b): return np.log(prior_mu.p(b))
+
+        def log_prior_sigma(b): return np.log(prior_sigma.p(b))
+
+        points, densities = fast_almost_mcmc_parameter_posterior_estimation(
+            size=20000, log_likelihood=log_likelihood,
+            log_priors=[log_prior_mu, log_prior_sigma],
+            initial=[prior_mu.sample(size=10), prior_sigma.sample(size=10)],
+            energies=(0.1, 0.1)
+        )
 
     def test_metropolis(self):
         pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)

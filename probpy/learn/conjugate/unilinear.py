@@ -25,7 +25,7 @@ class UniLinearMultivariateNormal_VariablePrior:
 
         if y.ndim != 1: y= y.reshape(-1)
         if x.ndim == 0: x = x.reshape(1, 1)
-        if x.ndim == 1: x = x[:, None]
+        if x.ndim == 1: x = x[None, :]
 
         x_samples = x.shape[0]
         x = np.concatenate([x, np.ones((x_samples, 1))], axis=1)  # Add bias term

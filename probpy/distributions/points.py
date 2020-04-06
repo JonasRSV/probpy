@@ -1,18 +1,21 @@
 import numpy as np
 
-from probpy.core import Distribution, RandomVariable
+from probpy.core import Distribution, RandomVariable, Density
 from probpy.density import RCKD
 
 
 class Points(Distribution):
     @classmethod
-    def med(cls, points: np.ndarray,
+    def med(cls, points: np.ndarray = None,
             variance: float = 2.0,
             error: float = 1e-1,
-            verbose: bool = False) -> RandomVariable:
+            verbose: bool = False,
+            density_estimator: Density = RCKD,
+            density: Density = None) -> RandomVariable:
 
-        density = RCKD(variance=variance, sampling_sz=100, error=error, verbose=verbose)
-        density.fit(points)
+        if density is None:
+            density = density_estimator(variance=variance, error=error, verbose=verbose)
+            density.fit(points)
 
         def _sample(size: int = 1): return points[np.random.randint(low=0, high=points.shape[0], size=size)]
         def _p(x: np.ndarray): return density.p(x)

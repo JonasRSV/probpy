@@ -2,7 +2,7 @@ from typing import Callable as F
 from typing import List, Tuple
 import numpy as np
 import numba
-from .core import RandomVariable
+from probpy.core import RandomVariable
 
 
 @numba.jit(nopython=False, forceobj=True)

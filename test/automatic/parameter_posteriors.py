@@ -21,15 +21,15 @@ import numpy as np
 class PosteriorTest(unittest.TestCase):
     def test_conjugates(self):
         def _run_test(prior=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=1000)
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, samples=1000)
 
             if correct is not None:
                 pass  # TODO
 
         mu_prior, sigma_prior = np.ones(2), np.eye(2)
         probabilities = np.array([0.3, 0.2, 0.2, 0.2, 0.1])
-        x = np.linspace(0, 1, 10)
-        y = x + 1 + normal.sample(mu=0.0, sigma=1e-1, size=10)
+        x = np.linspace(0, 1, 10).reshape(-1, 1)
+        y = x.flatten() + 1 + normal.sample(mu=0.0, sigma=1e-1, size=10)
         tests = [
             {
                 "prior": normal.med(mu=1.0, sigma=1.0),
@@ -171,7 +171,7 @@ class PosteriorTest(unittest.TestCase):
     def test_mcmc(self):
 
         def _run_test(priors=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, size=1000)
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000)
 
             if correct is not None:
                 pass  # TODO
@@ -232,7 +232,7 @@ class PosteriorTest(unittest.TestCase):
     def test_mcmc_moment_matching(self):
         def _run_test(priors=None, likelihood=None, data=None, match=None, correct=None):
             posterior = parameter_posterior(data, likelihood=likelihood,
-                                            priors=priors, size=3000, batch=5, match_moments_for=match)
+                                            priors=priors, samples=3000, batch=5, match_moments_for=match)
 
             if correct is not None:
                 pass  # TODO
@@ -285,6 +285,69 @@ class PosteriorTest(unittest.TestCase):
                 "correct": None
             }
         ]
+
+        for test in tests:
+            _run_test(**test)
+
+    def test_almost_mcmc(self):
+
+        def _run_test(priors=None, likelihood=None, data=None, correct=None):
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000,
+                                            normalize=False,
+                                            mcmc=False)
+
+            if correct is not None:
+                pass  # TODO
+
+        mu_prior = np.zeros(2)
+        sigma_prior = np.eye(2)
+        variables = np.array([2, 1])
+        x = np.linspace(-2, 2, 60)
+        y = unilinear.sample(x=x, variables=variables, sigma=0.3)
+        a = np.zeros(2)
+        b = np.ones(2)
+
+        logistic_x = np.linspace(-5, 5, 50).reshape(-1, 1)
+        logistic_y = (logistic_x > 0).astype(np.float).flatten()
+
+        def sigmoid(x):
+            return 1 / (1 + np.exp(-x))
+
+        def _custom_likelihood(y, x, w):
+            return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
+                            mu=0.0, sigma=0.5)
+
+        tests = (
+            {
+                "priors": exponential.med(lam=1.0),
+                "likelihood": normal.med(sigma=2.0),
+                "data": normal.sample(mu=3.0, sigma=2.0, size=200),
+                "correct": None
+            },
+            {
+                "priors": (normal.med(mu=3.0, sigma=2.0), exponential.med(lam=1.0)),
+                "likelihood": normal.med(),
+                "data": normal.sample(mu=5.0, sigma=2.0, size=300),
+                "correct": None
+            },
+            {
+                "priors": multivariate_uniform.med(a=a, b=b),
+                "likelihood": multivariate_normal.med(sigma=sigma_prior),
+                "data": multivariate_normal.sample(mu=mu_prior, sigma=sigma_prior, size=100),
+                "correct": None
+            },
+            {
+                "priors": (multivariate_normal.med(mu=mu_prior, sigma=sigma_prior), exponential.med(lam=1.0)),
+                "likelihood": unilinear.med(),
+                "data": (y, x),
+                "correct": None
+            },
+            {
+                "priors": multivariate_normal.med(mu=mu_prior, sigma=sigma_prior),
+                "likelihood": _custom_likelihood,
+                "data": (logistic_y, logistic_x),
+                "correct": None
+            })
 
         for test in tests:
             _run_test(**test)

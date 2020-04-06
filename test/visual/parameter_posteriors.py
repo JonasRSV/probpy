@@ -324,7 +324,7 @@ class VisualPosteriorTest(unittest.TestCase):
         likelihood = normal.med(sigma=2.0)
 
         data = normal.sample(mu=3.0, sigma=2.0, size=100)
-        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=2000)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, samples=2000)
 
         x = np.linspace(0.0, 6, 100)
         y_prior = prior.p(x)
@@ -342,7 +342,7 @@ class VisualPosteriorTest(unittest.TestCase):
         likelihood = normal.med()
 
         data = normal.sample(mu=5.0, sigma=2.0, size=300)
-        posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), size=2000)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=(mu_prior, exp_prior), samples=2000)
 
         plt.figure(figsize=(10, 6))
         plt.subplot(2, 1, 1)
@@ -371,7 +371,7 @@ class VisualPosteriorTest(unittest.TestCase):
         likelihood = multivariate_normal.med(sigma=np.eye(2))
 
         data = multivariate_normal.sample(mu=np.ones(2) * 2, sigma=np.eye(2), size=100)
-        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, size=500, energies=0.05)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, samples=500, energies=0.05)
 
         plt.figure(figsize=(20, 10))
         plt.subplot(2, 1, 1)
@@ -401,7 +401,7 @@ class VisualPosteriorTest(unittest.TestCase):
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=(prior_variables, prior_noise),
-                                        size=10000,
+                                        samples=10000,
                                         batch=10,
                                         energies=0.05)
 
@@ -422,7 +422,7 @@ class VisualPosteriorTest(unittest.TestCase):
                                         likelihood=likelihood,
                                         priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
                                         batch=5,
-                                        size=10000)
+                                        samples=10000)
 
         mean = posterior.sample(size=3000).mean(axis=0)
 
@@ -451,7 +451,7 @@ class VisualPosteriorTest(unittest.TestCase):
         posterior = parameter_posterior(data,
                                         likelihood=likelihood,
                                         priors=prior,
-                                        size=10000,
+                                        samples=10000,
                                         batch=25,
                                         match_moments_for=normal)
 
@@ -465,7 +465,7 @@ class VisualPosteriorTest(unittest.TestCase):
         posterior = parameter_posterior(data,
                                         likelihood=likelihood,
                                         priors=prior,
-                                        size=20000,
+                                        samples=20000,
                                         batch=25,
                                         match_moments_for=multivariate_normal)
 
@@ -485,7 +485,7 @@ class VisualPosteriorTest(unittest.TestCase):
         posterior = parameter_posterior((y, x),
                                         likelihood=likelihood,
                                         priors=prior,
-                                        size=10000,
+                                        samples=10000,
                                         batch=10,
                                         match_moments_for=multivariate_normal)
 
