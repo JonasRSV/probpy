@@ -1,0 +1,984 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Distributions &#8212; probpy 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to probpy’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to probpy’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="distributions">
+<h1>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h1>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">probpy</span> <span class="kn">as</span> <span class="nn">pp</span>
+
+<span class="n">rv</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">normal</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">densities</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">p</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+
+<span class="c1"># conditional distribution</span>
+
+<span class="n">rv</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">normal</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">densities</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">p</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<span class="target" id="module-probpy.distributions.normal"></span><dl class="class">
+<dt id="probpy.distributions.normal.MultiVariateNormal">
+<em class="property">class </em><code class="descclassname">probpy.distributions.normal.</code><code class="descname">MultiVariateNormal</code><a class="reference internal" href="_modules/probpy/distributions/normal.html#MultiVariateNormal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.MultiVariateNormal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multivariate Normal Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.normal.MultiVariateNormal.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>mu: numpy.ndarray = None</em>, <em>sigma: numpy.ndarray = None</em>, <em>k=None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/normal.html#MultiVariateNormal.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.MultiVariateNormal.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mu</strong> – mean</li>
+<li><strong>sigma</strong> – variance</li>
+<li><strong>k</strong> – dimensions (optional)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.normal.MultiVariateNormal.sample">
+<code class="descname">sample</code><a class="reference internal" href="_modules/probpy/distributions/normal.html#MultiVariateNormal.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.MultiVariateNormal.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param mu</em> – mean
+:param sigma: variance
+:param size: number of samples
+:return: array of samples</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="probpy.distributions.normal.Normal">
+<em class="property">class </em><code class="descclassname">probpy.distributions.normal.</code><code class="descname">Normal</code><a class="reference internal" href="_modules/probpy/distributions/normal.html#Normal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.Normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard Normal Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.normal.Normal.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>mu: float = None</em>, <em>sigma: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/normal.html#Normal.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.Normal.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mu</strong> – mean</li>
+<li><strong>sigma</strong> – variance</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.normal.Normal.p">
+<code class="descname">p</code><a class="reference internal" href="_modules/probpy/distributions/normal.html#Normal.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.Normal.p" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param x</em> – samples
+:param mu: mean
+:param sigma: variance
+:return: densities</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.normal.Normal.sample">
+<code class="descname">sample</code><a class="reference internal" href="_modules/probpy/distributions/normal.html#Normal.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal.Normal.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param mu</em> – mean
+:param sigma: variance
+:param size: number of samples
+:return: array of samples</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.bernoulli"></span><dl class="class">
+<dt id="probpy.distributions.bernoulli.Bernoulli">
+<em class="property">class </em><code class="descclassname">probpy.distributions.bernoulli.</code><code class="descname">Bernoulli</code><a class="reference internal" href="_modules/probpy/distributions/bernoulli.html#Bernoulli"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.bernoulli.Bernoulli" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bernoulli Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.bernoulli.Bernoulli.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>probability: numpy.float32 = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/bernoulli.html#Bernoulli.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.bernoulli.Bernoulli.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>probability</strong> – probability of positive outcome</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">RandomVariable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.bernoulli.Bernoulli.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>probability: numpy.float32</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/bernoulli.html#Bernoulli.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.bernoulli.Bernoulli.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – </li>
+<li><strong>probability</strong> – probability of positive outcome</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.bernoulli.Bernoulli.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>probability: numpy.float32</em>, <em>size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/bernoulli.html#Bernoulli.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.bernoulli.Bernoulli.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>probability</strong> – probability of positive outcome</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.beta"></span><dl class="class">
+<dt id="probpy.distributions.beta.Beta">
+<em class="property">class </em><code class="descclassname">probpy.distributions.beta.</code><code class="descname">Beta</code><a class="reference internal" href="_modules/probpy/distributions/beta.html#Beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.beta.Beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Beta distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.beta.Beta.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>a: float = None</em>, <em>b: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/beta.html#Beta.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.beta.Beta.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – alpha shape</li>
+<li><strong>b</strong> – beta shape</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.beta.Beta.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>a: float</em>, <em>b: float</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/beta.html#Beta.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.beta.Beta.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – samples</li>
+<li><strong>a</strong> – alpha shape</li>
+<li><strong>b</strong> – beta shape</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.beta.Beta.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>a: float</em>, <em>b: float</em>, <em>size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/beta.html#Beta.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.beta.Beta.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – alpha shape</li>
+<li><strong>b</strong> – beta shape</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.binomial"></span><dl class="class">
+<dt id="probpy.distributions.binomial.Binomial">
+<em class="property">class </em><code class="descclassname">probpy.distributions.binomial.</code><code class="descname">Binomial</code><a class="reference internal" href="_modules/probpy/distributions/binomial.html#Binomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.binomial.Binomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Binomial distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.binomial.Binomial.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>n: int = None</em>, <em>probability: numpy.float32 = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/binomial.html#Binomial.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.binomial.Binomial.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n</strong> – number of observations</li>
+<li><strong>probability</strong> – probability of positive observation</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.binomial.Binomial.p">
+<code class="descname">p</code><a class="reference internal" href="_modules/probpy/distributions/binomial.html#Binomial.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.binomial.Binomial.p" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param x</em> – samples
+:param n: number of observations
+:param probability: probability of positive observatiosn
+:return: array of samples</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.binomial.Binomial.sample">
+<code class="descname">sample</code><a class="reference internal" href="_modules/probpy/distributions/binomial.html#Binomial.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.binomial.Binomial.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param n</em> – number of observations
+:param probability: probability of positive observations
+:param size: number of samples
+:return: array of samples</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.categorical"></span><dl class="class">
+<dt id="probpy.distributions.categorical.Categorical">
+<em class="property">class </em><code class="descclassname">probpy.distributions.categorical.</code><code class="descname">Categorical</code><a class="reference internal" href="_modules/probpy/distributions/categorical.html#Categorical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.categorical.Categorical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Categorical Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.categorical.Categorical.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>probabilities: numpy.ndarray = None</em>, <em>categories: int = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/categorical.html#Categorical.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.categorical.Categorical.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>probabilities</strong> – probability of categories</li>
+<li><strong>categories</strong> – number of categories</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.categorical.Categorical.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>probabilities: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/categorical.html#Categorical.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.categorical.Categorical.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – samples</li>
+<li><strong>probabilities</strong> – probability of categories</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.distributions.categorical.Categorical.sample">
+<code class="descname">sample</code><a class="reference internal" href="_modules/probpy/distributions/categorical.html#Categorical.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.categorical.Categorical.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>param probabilities</em> – probability of categories
+:param size: number of samples
+:return: array of samples</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.dirichlet"></span><dl class="class">
+<dt id="probpy.distributions.dirichlet.Dirichlet">
+<em class="property">class </em><code class="descclassname">probpy.distributions.dirichlet.</code><code class="descname">Dirichlet</code><a class="reference internal" href="_modules/probpy/distributions/dirichlet.html#Dirichlet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.dirichlet.Dirichlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dirichlet Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.dirichlet.Dirichlet.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>alpha: numpy.ndarray = None</em>, <em>categories: int = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/dirichlet.html#Dirichlet.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.dirichlet.Dirichlet.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>alpha</strong> – probability weights</li>
+<li><strong>categories</strong> – number of categories</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.dirichlet.Dirichlet.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>alpha: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/dirichlet.html#Dirichlet.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.dirichlet.Dirichlet.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – samples</li>
+<li><strong>alpha</strong> – probability weights</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.dirichlet.Dirichlet.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>alpha: numpy.ndarray</em>, <em>size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/dirichlet.html#Dirichlet.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.dirichlet.Dirichlet.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>alpha</strong> – probability weights</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.exponential"></span><dl class="class">
+<dt id="probpy.distributions.exponential.Exponential">
+<em class="property">class </em><code class="descclassname">probpy.distributions.exponential.</code><code class="descname">Exponential</code><a class="reference internal" href="_modules/probpy/distributions/exponential.html#Exponential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.exponential.Exponential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exponential distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.exponential.Exponential.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>lam: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/exponential.html#Exponential.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.exponential.Exponential.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lam</strong> – lambda, rate parameter</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">RandomVariable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.exponential.Exponential.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>lam: float</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/exponential.html#Exponential.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.exponential.Exponential.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – samples</li>
+<li><strong>lam</strong> – lambda, rate parameter</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.exponential.Exponential.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>lam: float</em>, <em>size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/exponential.html#Exponential.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.exponential.Exponential.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lam</strong> – lambda, rate parameter</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.function"></span><dl class="class">
+<dt id="probpy.distributions.function.Function">
+<em class="property">class </em><code class="descclassname">probpy.distributions.function.</code><code class="descname">Function</code><a class="reference internal" href="_modules/probpy/distributions/function.html#Function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.function.Function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distribution from function</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.function.Function.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>density</em>, <em>lower_bound: numpy.ndarray</em>, <em>upper_bound: numpy.ndarray</em>, <em>points: int = 1000</em>, <em>variance: float = 2.0</em>, <em>error: float = 0.1</em>, <em>batch: int = 25</em>, <em>verbose: bool = False</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/function.html#Function.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.function.Function.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>density</strong> – function to act as density</li>
+<li><strong>lower_bound</strong> – lower bound of density</li>
+<li><strong>upper_bound</strong> – upper bound of density</li>
+<li><strong>points</strong> – points to estimate density</li>
+<li><strong>variance</strong> – variance of kernel</li>
+<li><strong>error</strong> – tolerance of normalization constant error</li>
+<li><strong>batch</strong> – particles in each mcmc step</li>
+<li><strong>verbose</strong> – print error will estimating partition</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.gamma"></span><dl class="class">
+<dt id="probpy.distributions.gamma.Gamma">
+<em class="property">class </em><code class="descclassname">probpy.distributions.gamma.</code><code class="descname">Gamma</code><a class="reference internal" href="_modules/probpy/distributions/gamma.html#Gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gamma.Gamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gamma distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.gamma.Gamma.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>a: float = None</em>, <em>b: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/gamma.html#Gamma.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gamma.Gamma.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – shape</li>
+<li><strong>b</strong> – rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.gamma.Gamma.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>x: numpy.ndarray</em>, <em>a: float</em>, <em>b: float</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/gamma.html#Gamma.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gamma.Gamma.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – samples</li>
+<li><strong>a</strong> – shape</li>
+<li><strong>b</strong> – rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.gamma.Gamma.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>a: float</em>, <em>b: float</em>, <em>size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/gamma.html#Gamma.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gamma.Gamma.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – shape</li>
+<li><strong>b</strong> – rate</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.gaussian_process"></span><dl class="class">
+<dt id="probpy.distributions.gaussian_process.GaussianProcess">
+<em class="property">class </em><code class="descclassname">probpy.distributions.gaussian_process.</code><code class="descname">GaussianProcess</code><a class="reference internal" href="_modules/probpy/distributions/gaussian_process.html#GaussianProcess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gaussian_process.GaussianProcess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian Process</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.gaussian_process.GaussianProcess.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>x: numpy.ndarray = None, mu: typing.Callable[numpy.ndarray, float] = None, sigma: typing.Callable[[numpy.ndarray, numpy.ndarray], float] = None, X: numpy.ndarray = None, Y: numpy.ndarray = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/gaussian_process.html#GaussianProcess.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gaussian_process.GaussianProcess.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – non-observed samples</li>
+<li><strong>mu</strong> – mean function</li>
+<li><strong>sigma</strong> – variance function</li>
+<li><strong>X</strong> – observed samples</li>
+<li><strong>Y</strong> – observed values</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.gaussian_process.GaussianProcess.p">
+<em class="property">static </em><code class="descname">p</code><span class="sig-paren">(</span><em>y: numpy.ndarray, x: numpy.ndarray, mu: typing.Callable[numpy.ndarray, float], sigma: typing.Callable[[numpy.ndarray, numpy.ndarray], float], X: numpy.ndarray, Y: numpy.ndarray</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/gaussian_process.html#GaussianProcess.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gaussian_process.GaussianProcess.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>y</strong> – non-observed values</li>
+<li><strong>x</strong> – non-observed samples</li>
+<li><strong>mu</strong> – mean function</li>
+<li><strong>sigma</strong> – variance function</li>
+<li><strong>X</strong> – observed samples</li>
+<li><strong>Y</strong> – observed values</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">densities</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="probpy.distributions.gaussian_process.GaussianProcess.sample">
+<em class="property">static </em><code class="descname">sample</code><span class="sig-paren">(</span><em>x: numpy.ndarray, mu: typing.Callable[numpy.ndarray, float], sigma: typing.Callable[[numpy.ndarray, numpy.ndarray], float], X: numpy.ndarray, Y: numpy.ndarray, size: int = 1</em><span class="sig-paren">)</span> &#x2192; numpy.ndarray<a class="reference internal" href="_modules/probpy/distributions/gaussian_process.html#GaussianProcess.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.gaussian_process.GaussianProcess.sample" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – non-observed samples</li>
+<li><strong>mu</strong> – mean function</li>
+<li><strong>sigma</strong> – variance function</li>
+<li><strong>X</strong> – observed samples</li>
+<li><strong>Y</strong> – observed values</li>
+<li><strong>size</strong> – number of samples</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">array of samples</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.generic"></span><dl class="class">
+<dt id="probpy.distributions.generic.Generic">
+<em class="property">class </em><code class="descclassname">probpy.distributions.generic.</code><code class="descname">Generic</code><a class="reference internal" href="_modules/probpy/distributions/generic.html#Generic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.generic.Generic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generic distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.generic.Generic.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>sampling=None</em>, <em>probability=None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/generic.html#Generic.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.generic.Generic.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sampling</strong> – sampling function</li>
+<li><strong>probability</strong> – probability function</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.geometric"></span><dl class="class">
+<dt id="probpy.distributions.geometric.Geometric">
+<em class="property">class </em><code class="descclassname">probpy.distributions.geometric.</code><code class="descname">Geometric</code><a class="reference internal" href="_modules/probpy/distributions/geometric.html#Geometric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.geometric.Geometric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Geometric distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.geometric.Geometric.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>probability: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/geometric.html#Geometric.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.geometric.Geometric.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>probability</strong> – probability of success</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">RandomVariable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.hypergeometric"></span><dl class="class">
+<dt id="probpy.distributions.hypergeometric.Hypergeometric">
+<em class="property">class </em><code class="descclassname">probpy.distributions.hypergeometric.</code><code class="descname">Hypergeometric</code><a class="reference internal" href="_modules/probpy/distributions/hypergeometric.html#Hypergeometric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.hypergeometric.Hypergeometric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hypergeometric distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.hypergeometric.Hypergeometric.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>N: int = None</em>, <em>K: int = None</em>, <em>n: int = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/hypergeometric.html#Hypergeometric.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.hypergeometric.Hypergeometric.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>N</strong> – population size</li>
+<li><strong>K</strong> – success states in population</li>
+<li><strong>n</strong> – number of draws</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.multinomial"></span><dl class="class">
+<dt id="probpy.distributions.multinomial.Multinomial">
+<em class="property">class </em><code class="descclassname">probpy.distributions.multinomial.</code><code class="descname">Multinomial</code><a class="reference internal" href="_modules/probpy/distributions/multinomial.html#Multinomial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.multinomial.Multinomial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multinomial distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.multinomial.Multinomial.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>n: int = None</em>, <em>probabilities: numpy.ndarray = None</em>, <em>outcomes: int = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/multinomial.html#Multinomial.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.multinomial.Multinomial.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>n</strong> – number of observations</li>
+<li><strong>probabilities</strong> – probability for each outcome</li>
+<li><strong>outcomes</strong> – number of outcomes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.normal_inverse_gamma"></span><dl class="class">
+<dt id="probpy.distributions.normal_inverse_gamma.NormalInverseGamma">
+<em class="property">class </em><code class="descclassname">probpy.distributions.normal_inverse_gamma.</code><code class="descname">NormalInverseGamma</code><a class="reference internal" href="_modules/probpy/distributions/normal_inverse_gamma.html#NormalInverseGamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal_inverse_gamma.NormalInverseGamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normal Inverse Gamma distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.normal_inverse_gamma.NormalInverseGamma.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>mu: float = None</em>, <em>lam: float = None</em>, <em>a: float = None</em>, <em>b: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/normal_inverse_gamma.html#NormalInverseGamma.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.normal_inverse_gamma.NormalInverseGamma.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mu</strong> – mean</li>
+<li><strong>lam</strong> – precision</li>
+<li><strong>a</strong> – shape</li>
+<li><strong>b</strong> – rate</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.points"></span><dl class="class">
+<dt id="probpy.distributions.points.Points">
+<em class="property">class </em><code class="descclassname">probpy.distributions.points.</code><code class="descname">Points</code><a class="reference internal" href="_modules/probpy/distributions/points.html#Points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.points.Points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Distribution of points</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.points.Points.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>points: numpy.ndarray = None</em>, <em>variance: float = 2.0</em>, <em>error: float = 0.1</em>, <em>verbose: bool = False</em>, <em>density_estimator: probpy.core.Density = &lt;class 'probpy.density.nonparametric_convolution.RCKD'&gt;</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/points.html#Points.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.points.Points.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>points</strong> – points to estimate density from</li>
+<li><strong>variance</strong> – variance of kernel</li>
+<li><strong>error</strong> – acceptable error of partition function</li>
+<li><strong>verbose</strong> – print estimation of partition function</li>
+<li><strong>density_estimator</strong> – density estimator</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.poisson"></span><dl class="class">
+<dt id="probpy.distributions.poisson.Poisson">
+<em class="property">class </em><code class="descclassname">probpy.distributions.poisson.</code><code class="descname">Poisson</code><a class="reference internal" href="_modules/probpy/distributions/poisson.html#Poisson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.poisson.Poisson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Poisson distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.poisson.Poisson.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>lam: numpy.float32 = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/poisson.html#Poisson.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.poisson.Poisson.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lam</strong> – rate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">RandomVariable</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.uniform"></span><dl class="class">
+<dt id="probpy.distributions.uniform.MultiVariateUniform">
+<em class="property">class </em><code class="descclassname">probpy.distributions.uniform.</code><code class="descname">MultiVariateUniform</code><a class="reference internal" href="_modules/probpy/distributions/uniform.html#MultiVariateUniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.uniform.MultiVariateUniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multivariate Uniform distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.uniform.MultiVariateUniform.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>a: numpy.ndarray = None</em>, <em>b: numpy.ndarray = None</em>, <em>dimension: typing.Tuple = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/uniform.html#MultiVariateUniform.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.uniform.MultiVariateUniform.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – lower bound</li>
+<li><strong>b</strong> – upper bound</li>
+<li><strong>dimension</strong> – dimension of r.v</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="probpy.distributions.uniform.Uniform">
+<em class="property">class </em><code class="descclassname">probpy.distributions.uniform.</code><code class="descname">Uniform</code><a class="reference internal" href="_modules/probpy/distributions/uniform.html#Uniform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.uniform.Uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uniform Distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.uniform.Uniform.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>a: float = None</em>, <em>b: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/uniform.html#Uniform.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.uniform.Uniform.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a</strong> – lower bound</li>
+<li><strong>b</strong> – upper bound</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-probpy.distributions.unilinear"></span><dl class="class">
+<dt id="probpy.distributions.unilinear.UniLinear">
+<em class="property">class </em><code class="descclassname">probpy.distributions.unilinear.</code><code class="descname">UniLinear</code><a class="reference internal" href="_modules/probpy/distributions/unilinear.html#UniLinear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.unilinear.UniLinear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Linear with one target distribution</p>
+<dl class="classmethod">
+<dt id="probpy.distributions.unilinear.UniLinear.med">
+<em class="property">classmethod </em><code class="descname">med</code><span class="sig-paren">(</span><em>x: numpy.ndarray = None</em>, <em>variables: numpy.ndarray = None</em>, <em>sigma: float = None</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/distributions/unilinear.html#UniLinear.med"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.distributions.unilinear.UniLinear.med" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> – input</li>
+<li><strong>variables</strong> – weights</li>
+<li><strong>sigma</strong> – variance of estimates</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to probpy’s documentation!</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to probpy’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jonas Valfridsson.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

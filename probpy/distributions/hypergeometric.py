@@ -6,12 +6,20 @@ from probpy.distributions.binomial import Binomial
 
 
 class Hypergeometric(Distribution):
+    """Hypergeometric distribution"""
     N = "N"
     K = "K"
     n = "n"
 
     @classmethod
     def med(cls, N: np.int = None, K: np.int = None, n: np.int = None) -> RandomVariable:
+        """
+
+        :param N: population size
+        :param K: success states in population
+        :param n: number of draws
+        :return: RandomVariable
+        """
         params = [N, K, n]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]

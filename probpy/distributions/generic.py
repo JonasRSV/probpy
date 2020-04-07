@@ -4,8 +4,15 @@ from probpy.core import Distribution, RandomVariable
 
 
 class Generic(Distribution):
+    """Generic distribution"""
     @classmethod
     def med(cls, sampling=None, probability=None) -> RandomVariable:
+        """
+
+        :param sampling: sampling function
+        :param probability: probability function
+        :return:
+        """
         if sampling is None:
             def sampling(*args, **kwargs): raise NotImplementedError("Sampling not implemented in this Generic")
 

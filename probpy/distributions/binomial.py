@@ -5,11 +5,18 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Binomial(Distribution):
+    """Binomial distribution"""
     n = "n"
     probability = "probability"
 
     @classmethod
     def med(cls, n: int = None, probability: np.float32 = None) -> RandomVariable:
+        """
+
+        :param n: number of observations
+        :param probability: probability of positive observation
+        :return: RandomVariable
+        """
         if n is None and probability is None:
             _sample = Binomial.sample
             _p = Binomial.p
@@ -44,11 +51,25 @@ class Binomial(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(n: int, probability: np.float, size: int = 1) -> np.ndarray:
+        """
+
+        :param n: number of observations
+        :param probability: probability of positive observations
+        :param size: number of samples
+        :return: array of samples
+        """
         return np.random.binomial(n, probability, size=size)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, n: int, probability: np.float) -> np.ndarray:
+        """
+
+        :param x: samples
+        :param n: number of observations
+        :param probability: probability of positive observatiosn
+        :return: array of samples
+        """
         if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 0: x = x.reshape(-1)
         constants = np.array([Binomial._combinations_high_n(n, _x) for _x in x])

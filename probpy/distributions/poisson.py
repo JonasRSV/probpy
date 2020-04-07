@@ -5,10 +5,16 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Poisson(Distribution):
+    """Poisson distribution"""
     lam = "lam"
 
     @classmethod
     def med(cls, lam: np.float32 = None) -> RandomVariable:
+        """
+
+        :param lam: rate
+        :return: RandomVariable
+        """
         if lam is None:
             _sample = Poisson.sample
             _p = Poisson.p

@@ -5,15 +5,23 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Multinomial(Distribution):
+    """Multinomial distribution"""
     n = "n"
     probabilities = "probabilities"
 
     @classmethod
-    def med(cls, n: int = None, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
+    def med(cls, n: int = None, probabilities: np.ndarray = None, outcomes: int = None) -> RandomVariable:
+        """
+
+        :param n: number of observations
+        :param probabilities: probability for each outcome
+        :param outcomes: number of outcomes
+        :return: RandomVariable
+        """
         if n is None and probabilities is None:
             _sample = Multinomial.sample
             _p = Multinomial.p
-            shape = dim
+            shape = outcomes
         elif n is None:
             def _sample(n: np.ndarray, size: int = 1): return Multinomial.sample(n, probabilities, size)
             def _p(x: np.ndarray, n: np.ndarray): return Multinomial.p(x, n, probabilities)

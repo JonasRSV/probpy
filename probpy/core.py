@@ -26,8 +26,8 @@ class RandomVariable:
     def sample(self, *args, **kwargs):
         return self._sample(*args, **kwargs)
 
-    def p(self, x, *args):
-        return self._p(x, *args)
+    def p(self, x, *args, **kwargs):
+        return self._p(x, *args, **kwargs)
 
     def __str__(self):
         title = f"{self.cls.__name__} -- output: {self.shape}\n"

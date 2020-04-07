@@ -6,11 +6,18 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Uniform(Distribution):
+    """Uniform Distribution"""
     a = "a"
     b = "b"
 
     @classmethod
-    def med(cls, a: np.float32 = None, b: np.float32 = None) -> RandomVariable:
+    def med(cls, a: np.float = None, b: np.float = None) -> RandomVariable:
+        """
+
+        :param a: lower bound
+        :param b: upper bound
+        :return: RandomVariable
+        """
         if a is None and b is None:
             _sample = Uniform.sample
             _p = Uniform.p
@@ -39,19 +46,27 @@ class Uniform(Distribution):
     @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
-        return ((a < x) & (x < b)).astype(np.float32) / (b - a)
+        return ((a < x) & (x < b)).astype(np.float) / (b - a)
 
 
 class MultiVariateUniform(Distribution):
+    """Multivariate Uniform distribution"""
     a = "a"
     b = "b"
 
     @classmethod
-    def med(cls, a: np.ndarray = None, b: np.ndarray = None, parameter_shape: Tuple = None) -> RandomVariable:
+    def med(cls, a: np.ndarray = None, b: np.ndarray = None, dimension: Tuple = None) -> RandomVariable:
+        """
+
+        :param a: lower bound
+        :param b: upper bound
+        :param dimension: dimension of r.v
+        :return: RandomVariable
+        """
         if a is None and b is None:
             _sample = MultiVariateUniform.sample
             _p = MultiVariateUniform.p
-            shape = parameter_shape
+            shape = dimension
         elif a is None:
             def _sample(a: np.ndarray, size: int = 1): return MultiVariateUniform.sample(a, b, size)
             def _p(x: np.ndarray, a: np.ndarray): return MultiVariateUniform.p(x, a, b)
@@ -80,4 +95,4 @@ class MultiVariateUniform(Distribution):
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 1: x = x.reshape(-1, a.size)
-        return ((a < x) & (x < b)).all(axis=1).astype(np.float32) / np.product(b - a)
+        return ((a < x) & (x < b)).all(axis=1).astype(np.float) / np.product(b - a)

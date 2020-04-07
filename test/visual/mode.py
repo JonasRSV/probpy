@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import probpy as pp
+import matplotlib.pyplot as plt
 
 
 class VisualTestMode(unittest.TestCase):
@@ -16,8 +17,21 @@ class VisualTestMode(unittest.TestCase):
 
         distribution = pp.distributions.points.med(points=samples)
 
-        print(len(pp.mode(distribution)))
+
         print(pp.mode(distribution))
+
+        x = np.linspace(-5, 5, 100)
+        X, Y = np.meshgrid(x, x)
+        Z = np.concatenate([X.reshape(-1, 1), Y.reshape(-1, 1)], axis=1)
+        Z = distribution.p(Z).reshape(100, 100)
+
+        plt.figure(figsize=(10, 6))
+        plt.contourf(X, Y, Z)
+        plt.yticks(fontsize=16)
+        plt.xticks(fontsize=16)
+        plt.tight_layout()
+        plt.savefig("../../images/mode.png", bbox_inches="tight")
+        plt.show()
 
 
 if __name__ == '__main__':

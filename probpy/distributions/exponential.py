@@ -1,14 +1,20 @@
 import numpy as np
-import numba
 
 from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Exponential(Distribution):
+    """Exponential distribution"""
     lam = "lam"
 
     @classmethod
-    def med(cls, lam: np.float32 = None) -> RandomVariable:
+    def med(cls, lam: np.float = None) -> RandomVariable:
+        """
+
+        :param lam: lambda, rate parameter
+        :return: RandomVariable
+        """
+
         if lam is None:
             _sample = Exponential.sample
             _p = Exponential.p
@@ -20,12 +26,23 @@ class Exponential(Distribution):
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
 
     @staticmethod
-    @numba.jit(nopython=False, forceobj=True)
-    def sample(lam: np.float32, size: int = 1) -> np.ndarray:
+    def sample(lam: np.float, size: int = 1) -> np.ndarray:
+        """
+
+        :param lam: lambda, rate parameter
+        :param size: number of samples
+        :return: array of samples
+        """
         return np.random.exponential(1 / lam, size=size)
 
     @staticmethod
-    def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
+    def p(x: np.ndarray, lam: np.float) -> np.ndarray:
+        """
+
+        :param x: samples
+        :param lam: lambda, rate parameter
+        :return: densities
+        """
         if type(x) != np.ndarray: x = np.array(x)
         result = np.zeros_like(x)
         lg_0 = x >= 0

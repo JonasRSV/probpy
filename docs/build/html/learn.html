@@ -1,0 +1,193 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Learn &#8212; probpy 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Distributions" href="distributions.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="distributions.html" title="Distributions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="learn">
+<h1>Learn<a class="headerlink" href="#learn" title="Permalink to this headline">¶</a></h1>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">probpy</span> <span class="kn">as</span> <span class="nn">pp</span>
+
+<span class="n">prior</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">normal</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">likelihood</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">normal</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">normal</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">prior</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">parameter_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="o">=</span><span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="o">=</span><span class="n">prior</span><span class="p">)</span>
+</pre></div>
+</div>
+<span class="target" id="module-probpy.learn.posterior"></span><dl class="function">
+<dt id="probpy.learn.posterior.parameter_posterior">
+<code class="descclassname">probpy.learn.posterior.</code><code class="descname">parameter_posterior</code><span class="sig-paren">(</span><em>data: typing.Union[numpy.ndarray, typing.Tuple[numpy.ndarray]], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], mode='ga', **kwargs</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/learn/posterior.html#parameter_posterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.parameter_posterior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the posterior distribution of some likelihood and priors. This function uses conjugate priors, mcmc or ga.
+If a likelihood is given conjugate priors then the mode argument will be ignored and a conjugate update will be done, because
+it is much faster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – data for likelihood</li>
+<li><strong>likelihood</strong> – likelihood function / distribution</li>
+<li><strong>priors</strong> – prior or list of priors</li>
+<li><strong>mode</strong> – mcmc or ga</li>
+<li><strong>kwargs</strong> – arguments passed to mcmc / ga</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-probpy.learn.mcmc"></span><dl class="function">
+<dt id="probpy.learn.mcmc.mcmc">
+<code class="descclassname">probpy.learn.mcmc.</code><code class="descname">mcmc</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, mixing: int = 100, energies: typing.Tuple[float] = 0.5, batch=5, match_moments_for: typing.Union[typing.Tuple[probpy.core.Distribution], probpy.core.Distribution] = None, normalize: bool = True, density: probpy.core.Density = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/mcmc.html#mcmc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.mcmc.mcmc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Don’t call this function directly, always use parameter_posterior with mode=”mcmc”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – data passed to likelihood</li>
+<li><strong>likelihood</strong> – likelihood function / distribution</li>
+<li><strong>priors</strong> – prior / priors</li>
+<li><strong>samples</strong> – number of mcmc samples to generate</li>
+<li><strong>mixing</strong> – number of initial samples to ignore</li>
+<li><strong>energies</strong> – energies in exploration (variance in normal distribution)</li>
+<li><strong>batch</strong> – number of particles to run concurrently</li>
+<li><strong>match_moments_for</strong> – distributions to force posterior into using moment matching</li>
+<li><strong>normalize</strong> – normalize the resulting density</li>
+<li><strong>density</strong> – density estimator</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<span class="target" id="module-probpy.learn.ga"></span><dl class="function">
+<dt id="probpy.learn.ga.ga">
+<code class="descclassname">probpy.learn.ga.</code><code class="descname">ga</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, mixing: int = 100, energies: typing.Tuple[float] = 0.5, batch=5, normalize: bool = False, density: probpy.core.Density = None, **ubrk_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/ga.html#ga"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.ga.ga" title="Permalink to this definition">¶</a></dt>
+<dd><p>Don’t call this function directly, always use parameter_posterior with mode=”ga”</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> – data passed to likelihood</li>
+<li><strong>likelihood</strong> – likelihood function</li>
+<li><strong>priors</strong> – prior / priors</li>
+<li><strong>samples</strong> – samples in ga estimate</li>
+<li><strong>mixing</strong> – number of initial samples to ignore</li>
+<li><strong>energies</strong> – energies in exploration</li>
+<li><strong>batch</strong> – number of samples run concurrently</li>
+<li><strong>normalize</strong> – normalize posterior</li>
+<li><strong>density</strong> – density estimator</li>
+<li><strong>ubrk_args</strong> – arguments to ubrk (default density estimator)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">RandomVariable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="distributions.html"
+                        title="previous chapter">Distributions</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="distributions.html" title="Distributions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jonas Valfridsson.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

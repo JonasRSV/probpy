@@ -133,7 +133,7 @@ class VisualPosteriorTest(unittest.TestCase):
 
     def test_categorical_dirichlet_conjugate_visual(self):
         prior = dirichlet.med(alpha=np.ones(5))
-        likelihood = categorical.med(dim=5)
+        likelihood = categorical.med(categories=5)
 
         data = np.array([0, 1, 2, 1, 2, 3, 4, 1])
         data = np.eye(5)[data]

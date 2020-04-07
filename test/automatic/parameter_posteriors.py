@@ -1,4 +1,5 @@
 import unittest
+from probpy.density import URBK
 from probpy.distributions import (normal,
                                   multivariate_normal,
                                   exponential,
@@ -57,7 +58,7 @@ class PosteriorTest(unittest.TestCase):
             },
             {
                 "prior": dirichlet.med(alpha=np.ones(5)),
-                "likelihood": categorical.med(dim=5),
+                "likelihood": categorical.med(categories=5),
                 "data": categorical.med(probabilities=probabilities).sample(size=200),
                 "correct": None
             },
@@ -129,7 +130,7 @@ class PosteriorTest(unittest.TestCase):
             },
             {
                 "prior": dirichlet.med(alpha=np.ones(5)),
-                "likelihood": categorical.med(dim=5),
+                "likelihood": categorical.med(categories=5),
                 "data": 3,
                 "correct": None
             },
@@ -171,7 +172,10 @@ class PosteriorTest(unittest.TestCase):
     def test_mcmc(self):
 
         def _run_test(priors=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000)
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors,
+                                            mode="mcmc",
+                                            batch=30,
+                                            samples=1000)
 
             if correct is not None:
                 pass  # TODO
@@ -232,7 +236,9 @@ class PosteriorTest(unittest.TestCase):
     def test_mcmc_moment_matching(self):
         def _run_test(priors=None, likelihood=None, data=None, match=None, correct=None):
             posterior = parameter_posterior(data, likelihood=likelihood,
-                                            priors=priors, samples=3000, batch=5, match_moments_for=match)
+                                            mode="mcmc",
+                                            priors=priors, samples=3000, batch=40,
+                                            match_moments_for=match)
 
             if correct is not None:
                 pass  # TODO
@@ -289,12 +295,13 @@ class PosteriorTest(unittest.TestCase):
         for test in tests:
             _run_test(**test)
 
-    def test_almost_mcmc(self):
+    def test_ga(self):
+
+        density = URBK(use_cl=False)
 
         def _run_test(priors=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000,
-                                            normalize=False,
-                                            classical_mcmc=False)
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=5000,
+                                            density=density)
 
             if correct is not None:
                 pass  # TODO

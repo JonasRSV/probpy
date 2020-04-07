@@ -1,15 +1,21 @@
 from typing import Callable as F
 from typing import List, Tuple
 import numpy as np
-import numba
 from probpy.core import RandomVariable
 
 
-@numba.jit(nopython=False, forceobj=True)
 def metropolis_hastings(size: int,
                         pdf: F[[np.ndarray], np.ndarray],
                         proposal: RandomVariable,
                         initial: np.ndarray = None) -> List[np.ndarray]:
+    """
+
+    :param size: number of samples
+    :param pdf: pdf to sample from
+    :param proposal: proposal distribution
+    :param initial: starting point
+    :return: array of samples
+    """
     if initial is None:
         p = np.random.rand(*proposal.shape)
     else:
@@ -31,6 +37,14 @@ def fast_metropolis_hastings(size: int,
                              pdf: F[[np.ndarray], np.ndarray],
                              initial: np.ndarray,
                              energy: float = 1.0):
+    """
+
+    :param size: number of samples
+    :param pdf: pdf to sample from
+    :param initial: initial points
+    :param energy: variance of jumps
+    :return: array of samples
+    """
     batch = initial.shape[0]
     jump = lambda: np.random.normal(0, energy, size=initial.shape)
 
@@ -55,6 +69,14 @@ def fast_metropolis_hastings_log_space(size: int,
                                        log_pdf: F[[np.ndarray], np.ndarray],
                                        initial: np.ndarray,
                                        energy: float = 1.0):
+    """
+
+    :param size: number of samples
+    :param log_pdf: log pdf
+    :param initial: initial points
+    :param energy: energy of estimate
+    :return: samples
+    """
     batch = initial.shape[0]
     jump = lambda: np.random.normal(0, energy, size=initial.shape)
 
@@ -121,6 +143,14 @@ def metropolis(size: int,
                pdf: F[[np.ndarray], np.ndarray],
                proposal: RandomVariable,
                M: float) -> List[np.ndarray]:
+    """
+
+    :param size: number of samples
+    :param pdf: pdf to sample from
+    :param proposal: proposal distribution
+    :param M: normalization constant
+    :return: array of samples
+    """
     samples = []
     while len(samples) < size:
         remainder = size - len(samples)

@@ -5,14 +5,21 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class Categorical(Distribution):
+    """Categorical Distribution"""
     probabilities = "probabilities"
 
     @classmethod
-    def med(cls, probabilities: np.ndarray = None, dim: int = None) -> RandomVariable:
+    def med(cls, probabilities: np.ndarray = None, categories: int = None) -> RandomVariable:
+        """
+
+        :param probabilities: probability of categories
+        :param categories: number of categories
+        :return: RandomVariable
+        """
         if probabilities is None:
             _sample = Categorical.sample
             _p = Categorical.p
-            shape = dim
+            shape = categories
         else:
             def _sample(size: int = 1): return Categorical.sample(probabilities, size)
             def _p(x): return Categorical.p(x, probabilities)
@@ -24,12 +31,24 @@ class Categorical(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(probabilities: np.ndarray, size: int = 1) -> np.ndarray:
+        """
+
+        :param probabilities: probability of categories
+        :param size: number of samples
+        :return: array of samples
+        """
         return Categorical.one_hot(
             np.random.choice(np.arange(probabilities.size), p=probabilities, size=size),
             size=probabilities.size)
 
     @staticmethod
     def p(x: np.ndarray, probabilities: np.ndarray) -> np.ndarray:
+        """
+
+        :param x: samples
+        :param probabilities: probability of categories
+        :return: densities
+        """
         if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 2: x = np.argmax(x, axis=1)
         return probabilities[x]

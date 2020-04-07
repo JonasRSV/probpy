@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from probpy.distributions import normal
 from probpy.density import UCKD, RCKD, URBK
-from probpy.sampling import fast_metropolis_hastings, fast_almost_mcmc_parameter_posterior_estimation
+from probpy.sampling import fast_metropolis_hastings, ga_posterior_estimation
 
 
 def distribution(x):
@@ -74,14 +74,14 @@ class VisualDensityTest(unittest.TestCase):
 
         log_priors = [lambda x: np.log(normal.p(x, mu=0.0, sigma=10.0))]
 
-        samples, densities = fast_almost_mcmc_parameter_posterior_estimation(50000,
-                                                                             log_distribution,
-                                                                             log_priors,
-                                                                             initial=np.random.rand(1, 10) * 10,
-                                                                             energies=np.repeat(1.0, 10))
+        samples, densities = ga_posterior_estimation(50000,
+                                                     log_distribution,
+                                                     log_priors,
+                                                     initial=np.random.rand(1, 10) * 10,
+                                                     energies=np.repeat(1.0, 10))
         print("making samples", time.time() - timestamp)
 
-        density = URBK(variance=5.0, error=0.01, verbose=True)
+        density = URBK(variance=0.5, use_cl=True, verbose=True)
         timestamp = time.time()
         density.fit(samples, densities)
         print("fitting samples", time.time() - timestamp)
@@ -92,7 +92,10 @@ class VisualDensityTest(unittest.TestCase):
         x = np.linspace(lb, ub, n)
         timestamp = time.time()
         y = density.p(x)
+        y = (y / y.sum()) * (n / (ub - lb))
         print("predicting samples", time.time() - timestamp)
+        print("y", y)
+        print("y.sum", y.sum())
 
         print(y.shape)
         plt.figure(figsize=(20, 10))

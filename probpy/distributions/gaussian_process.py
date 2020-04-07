@@ -7,6 +7,7 @@ from probpy.distributions import multivariate_normal
 
 
 class GaussianProcess(Distribution):
+    """Gaussian Process"""
     x = "x"
     mu = "mu"
     sigma = "sigma"
@@ -22,6 +23,15 @@ class GaussianProcess(Distribution):
             sigma: Callable[[np.ndarray, np.ndarray], np.float] = None,
             X: np.ndarray = None,
             Y: np.ndarray = None) -> RandomVariable:
+        """
+
+        :param x: non-observed samples
+        :param mu: mean function
+        :param sigma: variance function
+        :param X: observed samples
+        :param Y: observed values
+        :return: RandomVariable
+        """
 
         params = [x, mu, sigma, X, Y]
         none = [i for i, param in enumerate(params) if param is None]
@@ -84,13 +94,22 @@ class GaussianProcess(Distribution):
         return off_diagonal
 
     @staticmethod
-    @numba.jit(nopython=False, forceobj=True)
     def sample(x: np.ndarray,
                mu: Callable[[np.ndarray], np.float],
                sigma: Callable[[np.ndarray, np.ndarray], np.float],
                X: np.ndarray,
                Y: np.ndarray,
                size: int = 1) -> np.ndarray:
+        """
+
+        :param x: non-observed samples
+        :param mu: mean function
+        :param sigma: variance function
+        :param X: observed samples
+        :param Y: observed values
+        :param size: number of samples
+        :return: array of samples
+        """
 
         x_mu_vec, x_covariance_mat = GaussianProcess._build_parameters(mu, sigma, x)
         X_mu_vec, X_covariance_mat = GaussianProcess._build_parameters(mu, sigma, X)
@@ -105,13 +124,22 @@ class GaussianProcess(Distribution):
         return multivariate_normal.sample(posterior_mu, posterior_sigma, size=size)
 
     @staticmethod
-    @numba.jit(nopython=False, forceobj=True)
     def p(y: np.ndarray,
           x: np.ndarray,
           mu: Callable[[np.ndarray], np.float],
           sigma: Callable[[np.ndarray, np.ndarray], np.float],
           X: np.ndarray,
           Y: np.ndarray) -> np.ndarray:
+        """
+
+        :param y: non-observed values
+        :param x: non-observed samples
+        :param mu: mean function
+        :param sigma: variance function
+        :param X: observed samples
+        :param Y: observed values
+        :return: densities
+        """
         if y.ndim == 1: y = y.reshape(-1, 1)
 
         x_mu_vec, x_covariance_mat = GaussianProcess._build_parameters(mu, sigma, x)

@@ -7,6 +7,7 @@ from probpy.distributions import normal, gamma
 
 
 class NormalInverseGamma(Distribution):
+    """Normal Inverse Gamma distribution"""
     mu = "mu"
     lam = "lam"
     a = "a"
@@ -18,6 +19,14 @@ class NormalInverseGamma(Distribution):
             lam: np.float = None,
             a: np.float = None,
             b: np.float = None) -> RandomVariable:
+        """
+
+        :param mu: mean
+        :param lam: precision
+        :param a: shape
+        :param b: rate
+        :return: RandomVariable
+        """
         params = [mu, lam, a, b]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]

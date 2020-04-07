@@ -5,7 +5,7 @@ from probpy.sampling import (metropolis_hastings,
                              fast_metropolis_hastings_log_space,
                              fast_metropolis_hastings,
                              fast_metropolis_hastings_log_space_parameter_posterior_estimation,
-                             fast_almost_mcmc_parameter_posterior_estimation)
+                             ga_posterior_estimation)
 import numpy as np
 
 
@@ -68,7 +68,7 @@ class TestSampling(unittest.TestCase):
 
         def log_prior_sigma(b): return np.log(prior_sigma.p(b))
 
-        points, densities = fast_almost_mcmc_parameter_posterior_estimation(
+        points, densities = ga_posterior_estimation(
             size=20000, log_likelihood=log_likelihood,
             log_priors=[log_prior_mu, log_prior_sigma],
             initial=[prior_mu.sample(size=10), prior_sigma.sample(size=10)],

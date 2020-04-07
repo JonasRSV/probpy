@@ -38,6 +38,14 @@ def predictive_posterior(likelihood: Union[RandomVariable, Callable[[Tuple[np.nd
                          priors: Union[RandomVariable, Tuple[RandomVariable]],
                          data: Tuple[np.ndarray] = None,
                          size: int = 1000) -> Union[RandomVariable, float]:
+    """
+
+    :param likelihood: likelihood distribution / function
+    :param priors: prior / priors
+    :param data: data passed to likelihood of no analytical solution is implemented
+    :param size: number of samples in numerical estimate
+    :return: RandomVariable or probability
+    """
     likelihood, priors, data, size = _standardize_arguments(likelihood, priors, data, size)
 
     rv = conjugate.attempt(likelihood, priors)

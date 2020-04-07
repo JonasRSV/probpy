@@ -84,11 +84,18 @@ implemented = {
     points: points_mode,
     dirichlet: dirichlet_mode,
     categorical: categorical_mode,
-    normal_inverse_gamma: normal_inverse_gamma_mode
+    normal_inverse_gamma: normal_inverse_gamma_mode,
+    generic: points_mode
 }
 
 
 def mode(rv: RandomVariable, **kwargs):
+    """
+
+    :param rv: random variable to find mode for
+    :param kwargs: arguments to find method
+    :return:
+    """
     if rv.cls in implemented:
         return implemented[rv.cls](rv, **kwargs)
 

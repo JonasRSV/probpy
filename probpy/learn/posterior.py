@@ -1,8 +1,8 @@
-from probpy.core import RandomVariable, Distribution
+from probpy.core import RandomVariable
 import numpy as np
 from typing import Callable
-from .classic_mcmc import classic_mcmc
-from .almost_mcmc import almost_mcmc
+from .mcmc import mcmc
+from .ga import ga
 from . import conjugate
 
 from typing import Union, Tuple
@@ -10,43 +10,42 @@ from typing import Union, Tuple
 
 def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
                            likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-                           priors: Union[RandomVariable, Tuple[RandomVariable]],
-                           samples: int,
-                           mixing: int,
-                           energies: Tuple[float],
-                           batch: int,
-                           match_moments_for: Union[Tuple[Distribution], Distribution],
-                           normalize: bool):
+                           priors: Union[RandomVariable, Tuple[RandomVariable]]):
     if type(priors) == RandomVariable: priors = (priors,)
     if type(data) != tuple: data = (data,)
-    if type(energies) == float: energies = [energies for _ in range(len(priors))]
-    if match_moments_for is not None and type(match_moments_for) != tuple: match_moments_for = (match_moments_for,)
 
-    return data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
+    return data, likelihood, priors
 
 
 def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
                         likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                         priors: Union[RandomVariable, Tuple[RandomVariable]],
-                        samples: int = 1000,
-                        mixing: int = 100,
-                        energies: Tuple[float] = 0.5,
-                        batch=5,
-                        match_moments_for: Union[Tuple[Distribution], Distribution] = None,
-                        normalize: bool = True,
-                        classical_mcmc: bool = True) -> RandomVariable:
-    data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize = _standardize_arguments(
-        data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
+                        mode='ga',
+                        **kwargs) -> RandomVariable:
+    """
+    Estimate the posterior distribution of some likelihood and priors. This function uses conjugate priors, mcmc or ga.
+    If a likelihood is given conjugate priors then the mode argument will be ignored and a conjugate update will be done, because
+    it is much faster.
+
+    :param data: data for likelihood
+    :param likelihood: likelihood function / distribution
+    :param priors: prior or list of priors
+    :param mode: mcmc or ga
+    :param kwargs: arguments passed to mcmc / ga
+    :return: RandomVariable
+    """
+    data, likelihood, priors, = _standardize_arguments(
+        data, likelihood, priors,
     )
 
     rv = conjugate.attempt(data, likelihood, priors)
     if rv is not None: return rv
 
-    if classical_mcmc:
-        return classic_mcmc(
-            data, likelihood, priors, samples, mixing, energies, batch, match_moments_for, normalize
+    if mode == "ga":
+        return ga(
+            data, likelihood, priors, **kwargs
         )
     else:
-        return almost_mcmc(
-            data, likelihood, priors, samples, mixing, energies, batch, normalize
+        return mcmc(
+            data, likelihood, priors, **kwargs
         )

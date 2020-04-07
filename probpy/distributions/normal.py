@@ -5,11 +5,19 @@ from probpy.core import Distribution, RandomVariable, Parameter
 
 
 class MultiVariateNormal(Distribution):
+    """Multivariate Normal Distribution"""
     mu = "mu"
     sigma = "sigma"
 
     @classmethod
     def med(cls, mu: np.ndarray = None, sigma: np.ndarray = None, k=None) -> RandomVariable:
+        """
+
+        :param mu: mean
+        :param sigma: variance
+        :param k: dimensions (optional)
+        :return: RandomVariable
+        """
         if mu is None and sigma is None:
             _sample = MultiVariateNormal.sample
             _p = MultiVariateNormal.p
@@ -37,6 +45,13 @@ class MultiVariateNormal(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(mu: np.ndarray, sigma: np.ndarray, size: int = 1) -> np.ndarray:
+        """
+
+        :param mu: mean
+        :param sigma: variance
+        :param size: number of samples
+        :return: array of samples
+        """
         return np.random.multivariate_normal(mu, sigma, size=size)
 
     @staticmethod
@@ -58,11 +73,17 @@ class MultiVariateNormal(Distribution):
 
 
 class Normal(Distribution):
+    """Standard Normal Distribution"""
     mu = "mu"
     sigma = "sigma"
 
     @classmethod
     def med(cls, mu: np.float = None, sigma: np.float = None) -> RandomVariable:
+        """
+        :param mu: mean
+        :param sigma: variance
+        :return: RandomVariable
+        """
         if mu is not None: mu = np.array(mu)
         if sigma is not None: sigma = np.array(sigma)
 
@@ -89,11 +110,23 @@ class Normal(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(mu: np.float, sigma: np.float, size: int = 1) -> np.ndarray:
+        """
+        :param mu: mean
+        :param sigma: variance
+        :param size: number of samples
+        :return: array of samples
+        """
         return np.random.normal(mu, np.sqrt(sigma), size=size)
 
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
+        """
+        :param x: samples
+        :param mu: mean
+        :param sigma: variance
+        :return: densities
+        """
         if type(mu) != np.ndarray: mu = np.array(mu)
         if type(sigma) != np.ndarray: sigma = np.array(sigma)
         if mu.ndim == 1: mu = mu[:, None]

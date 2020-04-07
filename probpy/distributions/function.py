@@ -7,6 +7,8 @@ from probpy.distributions import multivariate_uniform
 
 
 class Function(Distribution):
+    """Distribution from function"""
+
     @classmethod
     def med(cls, density,
             lower_bound: np.ndarray,
@@ -16,6 +18,18 @@ class Function(Distribution):
             error: float = 1e-1,
             batch: int = 25,
             verbose: bool = False) -> RandomVariable:
+        """
+
+        :param density: function to act as density
+        :param lower_bound: lower bound of density
+        :param upper_bound: upper bound of density
+        :param points: points to estimate density
+        :param variance: variance of kernel
+        :param error: tolerance of normalization constant error
+        :param batch: particles in each mcmc step
+        :param verbose: print error will estimating partition
+        :return: RandomVariable
+        """
 
         lower_bound, upper_bound = np.array(lower_bound), np.array(upper_bound)
         initial = multivariate_uniform.sample(lower_bound, upper_bound, size=batch)

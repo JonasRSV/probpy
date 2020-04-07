@@ -1,0 +1,268 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Density &#8212; probpy 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Inference" href="inference.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="inference.html" title="Inference"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="density">
+<h1>Density<a class="headerlink" href="#density" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="probpy.density.nonparametric_convolution.UCKD">
+<em class="property">class </em><code class="descclassname">probpy.density.nonparametric_convolution.</code><code class="descname">UCKD</code><span class="sig-paren">(</span><em>variance: float = 2.0</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#UCKD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.UCKD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Un-normalised Convolution Kernel Density</p>
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.UCKD.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>variance: float = 2.0</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#UCKD.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.UCKD.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>variance</strong> – variance of kernel</li>
+<li><strong>_</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.UCKD.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#UCKD.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.UCKD.fit" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>particles</strong> – particles to use for estimate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.UCKD.p">
+<code class="descname">p</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#UCKD.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.UCKD.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>particles</strong> – densities to estimtae</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">densities</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="probpy.density.nonparametric_convolution.RCKD">
+<em class="property">class </em><code class="descclassname">probpy.density.nonparametric_convolution.</code><code class="descname">RCKD</code><span class="sig-paren">(</span><em>variance: float = 2.0</em>, <em>sampling_sz: int = 100</em>, <em>error: float = 0.1</em>, <em>verbose: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#RCKD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.RCKD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renormalized Convolution Kernel Density</p>
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.RCKD.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>variance: float = 2.0</em>, <em>sampling_sz: int = 100</em>, <em>error: float = 0.1</em>, <em>verbose: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#RCKD.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.RCKD.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>variance</strong> – variance of kernel</li>
+<li><strong>sampling_sz</strong> – sampling size in normalization integral</li>
+<li><strong>error</strong> – error metric for normalization constant</li>
+<li><strong>verbose</strong> – print progress of estimating normalization constant</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.RCKD.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#RCKD.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.RCKD.fit" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>particles</strong> – particles to use for estimate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.nonparametric_convolution.RCKD.p">
+<code class="descname">p</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/nonparametric_convolution.html#RCKD.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.nonparametric_convolution.RCKD.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>particles</strong> – estimate density of particles</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">densities</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="probpy.density.radial_basis.URBK">
+<em class="property">class </em><code class="descclassname">probpy.density.radial_basis.</code><code class="descname">URBK</code><span class="sig-paren">(</span><em>variance: float = 0.5</em>, <em>bases: int = 5</em>, <em>cl_iterations: int = 10</em>, <em>use_cl: bool = False</em>, <em>learning_rate: float = 1.0</em>, <em>verbose: bool = False</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="probpy.density.radial_basis.URBK.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>variance: float = 0.5</em>, <em>bases: int = 5</em>, <em>cl_iterations: int = 10</em>, <em>use_cl: bool = False</em>, <em>learning_rate: float = 1.0</em>, <em>verbose: bool = False</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>variance</strong> – variance in rbf kernel</li>
+<li><strong>bases</strong> – number of rbf bases</li>
+<li><strong>cl_iterations</strong> – competitive learning iterations</li>
+<li><strong>use_cl</strong> – use competitive learning to place bases</li>
+<li><strong>learning_rate</strong> – learning rate of cl</li>
+<li><strong>verbose</strong> – print cl error</li>
+<li><strong>_</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.radial_basis.URBK.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em>, <em>densities: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK.fit" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>particles</strong> – particles to estimate density</li>
+<li><strong>densities</strong> – unnormalized density of particles</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="probpy.density.radial_basis.URBK.p">
+<code class="descname">p</code><span class="sig-paren">(</span><em>particles: numpy.ndarray</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK.p"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK.p" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>particles</strong> – particles to estimate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">densities</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inference.html"
+                        title="previous chapter">Inference</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="inference.html" title="Inference"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">probpy 0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jonas Valfridsson.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

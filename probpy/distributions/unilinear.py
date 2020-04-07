@@ -7,12 +7,20 @@ from probpy.distributions import normal
 
 
 class UniLinear(Distribution):
+    """Linear with one target distribution"""
     x = "x"
     variables = "variables"
     sigma = "sigma"
 
     @classmethod
     def med(cls, x: np.ndarray = None, variables: np.ndarray = None, sigma: np.float = None) -> RandomVariable:
+        """
+
+        :param x: input
+        :param variables: weights
+        :param sigma: variance of estimates
+        :return: RandomVariable
+        """
         params = [x, variables, sigma]
         none = [i for i, param in enumerate(params) if param is None]
         not_none = [i for i, param in enumerate(params) if param is not None]
@@ -42,8 +50,8 @@ class UniLinear(Distribution):
     @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def sample(x: np.ndarray, variables: np.ndarray, sigma: np.float, size: int = 1) -> Tuple[np.ndarray, np.ndarray]:
-        if x.ndim == 1:
-            x = x[:, None]
+        if x.ndim == 0: x = x.reshape(1, 1)
+        if x.ndim == 1: x = x.reshape(-1, 1)
         return x @ variables[:-1] + variables[-1] + normal.sample(mu=0, sigma=sigma, size=x.shape[0])
 
     @staticmethod
@@ -51,7 +59,6 @@ class UniLinear(Distribution):
     def p(y: Tuple[np.ndarray, np.ndarray], x: np.ndarray, variables: np.ndarray, sigma: np.float) -> np.ndarray:
         if x.ndim == 0: x = x.reshape(1, 1)
         if x.ndim == 1: x = x.reshape(-1, 1)
-        #print(y.shape, x.shape, variables.shape, sigma.shape)
 
         # broadcasting over mu + data
         if variables.ndim == 2:
