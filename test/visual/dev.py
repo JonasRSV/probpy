@@ -21,55 +21,42 @@ class MyTestCase(unittest.TestCase):
                                                 domain=(lower_bound, upper_bound),
                                                 proposal=proposal)
 
-
     def test_something(self):
         def sigmoid(x):
             return (1 / (1 + np.exp(-x)))
 
-        def predict(w, x):
-            return x[:, 0] * w[0] + x[:, 1] * w[1] + x[:, 2] * w[2] + w[3]
+        def logit(x):
+            return np.log(x / (1 - x))
 
-        w = [-3, 3, 5, -3]  # True underlying model
+        student_skill = logit(0.7)
 
-        x = np.random.rand(100, 3)
-        y = sigmoid(predict(w, x) + pp.normal.sample(mu=0.0, sigma=1.0, size=100).reshape(-1))
+        items = logit(np.array([0.4, 0.6, 0.8, 0.7]))  # difficulties
 
-        # For this we need custom likelihood since there is no conjugate prior
+        def likelihood(obs, item, skill):
+            result = []
+            for _skill in skill:
+                result.append(pp.normal.p(obs - sigmoid(_skill - item), mu=0.0, sigma=0.5))
 
-        def likelihood(y, x, w):
-            return pp.normal.p((y - sigmoid(x @ w[:, :-1, None] + w[:, None, None, -1]).squeeze(axis=2)),
-                               mu=0.0, sigma=1.0)
+            return np.array(result)
 
-        prior = pp.multivariate_normal.med(mu=np.zeros(4), sigma=np.eye(4) * 10)
+        samples = 100
+        obs, its = [], []
+        for i in range(samples):  # 100 samples
+            item = items[np.random.randint(0, items.size)]
+            outcome = (np.random.rand() < sigmoid(student_skill - item)).astype(np.float)
 
-        for i in range(5):
-            data = (y, x)
+            obs.append(outcome)
+            its.append(item)
 
-            prior = pp.parameter_posterior(data, likelihood=likelihood,
-                                           priors=prior,
-                                           batch=500,
-                                           samples=50000,
-                                           mixing=1000,
-                                           energies=0.2,
-                                           mode="ga",
-                                           use_cl=True,  # Set this to false to make much faster
-                                           learning_rate=2.0,
-                                           cl_iterations=10,
-                                           verbose=True)
+        prior_skill = pp.normal.med(mu=0.0, sigma=10)
 
-            modes = pp.mode(prior)  # modes are sorted in order first is largest
+        for i in range(samples):
+            prior_skill = pp.parameter_posterior((obs[i], its[i]), likelihood=likelihood, priors=prior_skill,
+                                                 mode="mcmc", match_moments_for=pp.normal,
+                                                 samples=5000, mixing=1000, batch=5)
+            modes = sigmoid(np.array(pp.mode(prior_skill)))
 
-            print("Number of modes", len(modes))
-            for mode in modes:
-                print(mode)
-
-            w_approx = modes[0]
-
-            print("Parameter Estimate", w_approx)
-
-            print("Prior MSE", np.square(y - sigmoid(predict(w_approx, x))).mean(),
-                  "True MSE", np.square(y - sigmoid(predict(w, x))).mean())
-            print()
+            print(modes)
 
 
 if __name__ == '__main__':

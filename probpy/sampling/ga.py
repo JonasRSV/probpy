@@ -36,8 +36,9 @@ def ga_posterior_estimation(
     for i, e in zip(initial, energies): jumpers.append(lambda i=i, e=e: np.random.normal(0, e, size=i.shape))
 
     def _probability(x: Tuple[np.ndarray]):
-        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0)
-        data_log_probability = log_likelihood(*x)
+        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0).flatten()
+        data_log_probability = log_likelihood(*x).flatten()
+
         return prior_log_probability + data_log_probability
 
     samples = initial
@@ -50,7 +51,7 @@ def ga_posterior_estimation(
             for i in range(n)
         ]
 
-        density = _probability(samples).flatten()
+        density = _probability(samples)
 
         probability = _renormalize_log(density)
 

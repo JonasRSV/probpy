@@ -22,8 +22,13 @@ def log_probabilities(data: Union[np.ndarray, Tuple[np.ndarray]],
                       likelihood: Callable[[Tuple[np.ndarray]], np.ndarray],
                       priors: Tuple[RandomVariable]):
     def _log_likelihood(*args):
-        return np.nan_to_num(np.log(likelihood(*data, *args)).sum(axis=1), copy=False, nan=-1e6,
-                             neginf=-1e6, posinf=-1e6)
+        ll = np.log(likelihood(*data, *args))
+
+        if ll.ndim == 2:
+            ll = ll.sum(axis=1)
+
+        return np.nan_to_num(ll, copy=False, nan=-1e6,
+                          neginf=-1e6, posinf=-1e6)
 
     log_priors = []
     for prior in priors:

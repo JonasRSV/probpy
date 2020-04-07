@@ -112,8 +112,8 @@ def fast_metropolis_hastings_log_space_parameter_posterior_estimation(
     for i, e in zip(initial, energies): jumpers.append(lambda i=i, e=e: np.random.normal(0, e, size=i.shape))
 
     def _probability(x: Tuple[np.ndarray]):
-        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0)
-        data_log_probability = log_likelihood(*x)
+        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0).flatten()
+        data_log_probability = log_likelihood(*x).flatten()
         return prior_log_probability + data_log_probability
 
     p = initial
@@ -125,7 +125,7 @@ def fast_metropolis_hastings_log_space_parameter_posterior_estimation(
         ]
 
         accept_rate = np.minimum(_probability(samples) - _probability(p), 0.0)
-        accept_rate = accept_rate.flatten()
+        accept_rate = accept_rate
 
         accepted = accept_rate >= np.log(np.random.rand(batch))
         rejected = False == accepted
