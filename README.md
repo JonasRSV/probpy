@@ -1,6 +1,8 @@
 Probpy (PP) 
 ---
 
+[Documentation](https://jonasrsv.github.io/probpy)
+
 A Library for bayesian inference
 
 - [Introduction](#introduction)
@@ -10,7 +12,7 @@ Introduction
 
 The fundamental building block is the RandomVariable
 
-Random Variables can be created from any [distribution](#distributions) using the "med" function. "med" is Swedish for with. All random variables has a sampling function and a pdf/pmf function.
+Random Variables can be created from any [distribution](https://jonasrsv.github.io/probpy/build/html/distributions.html) using the "med" function. "med" is Swedish for with. All random variables has a sampling function and a pdf/pmf function.
 ```python
 import probpy as pp
 
