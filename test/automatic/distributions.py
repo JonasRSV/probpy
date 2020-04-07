@@ -128,7 +128,7 @@ class TestDistributions(unittest.TestCase):
              (
                  np.linspace(0, 1, 100),
                  np.ones(2),
-                 0.5
+                 2.0
              ),
              (
                  unilinear.x,
