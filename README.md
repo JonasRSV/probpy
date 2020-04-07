@@ -1,11 +1,26 @@
-Probpy (PP) 
+![Probpy](images/logo.png)
 ---
 
 [Documentation](https://jonasrsv.github.io/probpy)
 
-A Library for bayesian inference
+A Probability Library 
 
-- [Introduction](#introduction)
+Try it out
+---
+
+With docker installed run the command and browse the notebooks
+
+```bash
+sh demo_env.sh
+```
+
+Installation
+---
+
+TODO
+```bash
+...
+```
 
 Introduction
 ---
