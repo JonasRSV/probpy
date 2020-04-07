@@ -35,11 +35,11 @@ class MyTestCase(unittest.TestCase):
         def likelihood(obs, item, skill):
             result = []
             for _skill in skill:
-                result.append(pp.normal.p(obs - sigmoid(_skill - item), mu=0.0, sigma=0.5))
+                result.append(pp.normal.p(obs - sigmoid(_skill - item), mu=0.0, sigma=0.6))
 
             return np.array(result)
 
-        samples = 100
+        samples = 30
         obs, its = [], []
         for i in range(samples):  # 100 samples
             item = items[np.random.randint(0, items.size)]
@@ -48,13 +48,20 @@ class MyTestCase(unittest.TestCase):
             obs.append(outcome)
             its.append(item)
 
-        prior_skill = pp.normal.med(mu=0.0, sigma=10)
+        prior_skill = pp.normal.med(mu=2.0, sigma=10)
 
-        for i in range(samples):
-            prior_skill = pp.parameter_posterior((obs[i], its[i]), likelihood=likelihood, priors=prior_skill,
-                                                 mode="mcmc", match_moments_for=pp.normal,
-                                                 samples=5000, mixing=1000, batch=5)
+        for i in range(10):
+            prior_skill = pp.parameter_posterior((obs, its), likelihood=likelihood, priors=prior_skill,
+                                                 mode="ga", samples=50000, mixing=0, batch=1000,
+                                                 energies=5.0,
+                                                 bases=1,
+                                                 variance=6,
+                                                 use_cl=True)
+                                                 #verbose=True)
+
+            print("p 0.7", prior_skill.p(logit(0.7)))
             modes = sigmoid(np.array(pp.mode(prior_skill)))
+            print("p mode", prior_skill.p(logit(modes[0])))
 
             print(modes)
 

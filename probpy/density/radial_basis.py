@@ -85,5 +85,7 @@ class URBK(Density):
         :param particles: particles to estimate
         :return: densities
         """
+        particles = np.array(particles)
+        if particles.ndim == 0: particles = particles.reshape(1, 1)
         if particles.ndim == 1: particles = particles.reshape(-1, 1)
         return self.kernel(particles, self.bases, self.variance) @ self.lsq_coeff

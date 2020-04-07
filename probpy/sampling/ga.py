@@ -44,6 +44,7 @@ def ga_posterior_estimation(
     samples = initial
     points = [[] for _ in range(n)]
     densities = []
+
     indexes = np.arange(0, batch)
     while len(points[0]) < size:
         samples = [
