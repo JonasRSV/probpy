@@ -70,7 +70,7 @@ def search(data: Tuple[np.ndarray],
            density: Density = None,
            **ubrk_args):
     """
-    Don't call this function directly, always use parameter_posterior with mode="ga"
+    Don't call this function directly, always use parameter_posterior with mode="search"
 
     :param volume: volume of elements
     :param data: data passed to likelihood
