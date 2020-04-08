@@ -50,8 +50,13 @@ class Categorical(Distribution):
         :return: densities
         """
         if type(x) != np.ndarray: x = np.array(x)
+        if type(probabilities) != np.ndarray: probabilities = np.array(probabilities)
         if x.ndim == 2: x = np.argmax(x, axis=1)
-        return probabilities[x]
+
+        if probabilities.ndim == 2: result = probabilities[:, x]
+        else: result = probabilities[x]
+
+        return result
 
     @staticmethod
     @numba.jit(nopython=True, forceobj=False)

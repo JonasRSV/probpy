@@ -46,6 +46,11 @@ class Uniform(Distribution):
     @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(a) != np.ndarray: a = np.array(a)
+        if type(b) != np.ndarray: b = np.array(b)
+
+        if a.ndim != 0 or b.ndim != 0:
+            raise Exception("Broadcasting on uniform not supported at the moment")
         return ((a < x) & (x < b)).astype(np.float) / (b - a)
 
 
@@ -94,5 +99,11 @@ class MultiVariateUniform(Distribution):
     @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(a) != np.ndarray: a = np.array(a)
+        if type(b) != np.ndarray: b = np.array(b)
+
+        if a.ndim != 1 or b.ndim != 1:
+            raise Exception("Broadcasting on uniform not supported at the moment")
+
         if x.ndim == 1: x = x.reshape(-1, a.size)
         return ((a < x) & (x < b)).all(axis=1).astype(np.float) / np.product(b - a)

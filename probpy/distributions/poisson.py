@@ -41,6 +41,11 @@ class Poisson(Distribution):
     @staticmethod
     def p(x: np.ndarray, lam: np.float32) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(lam) != np.ndarray: lam = np.array(lam)
+
+        if lam.ndim != 0:
+            raise Exception("Broadcasting on poisson not supported at the moment")
+
         if x.ndim == 0: x = x.reshape(-1)
         return (np.float_power(lam, x) * np.exp(-lam)) / Poisson._factorial(x)
 

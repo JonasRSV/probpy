@@ -50,6 +50,11 @@ class Gamma(Distribution):
         return np.random.gamma(a, 1 / b, size=size)
 
     @staticmethod
+    def _p(x: np.ndarray, a: np.float, b: np.float):
+        normalizing_constant = np.float_power(b, a) / gamma(a)
+        return np.float_power(x, a - 1) * np.exp(-b * x) * normalizing_constant
+
+    @staticmethod
     def p(x: np.ndarray, a: np.float, b: np.float) -> np.ndarray:
         """
 
@@ -59,6 +64,32 @@ class Gamma(Distribution):
         :return: densities
         """
         if type(x) != np.ndarray: x = np.array(x)
-        normalizing_constant = np.float_power(b, a) / gamma(a)
-        return np.float_power(x, a - 1) * np.exp(-b * x) * normalizing_constant
+        if type(a) != np.ndarray: a = np.array(a)
+        if type(b) != np.ndarray: b = np.array(b)
+
+        #print(x.shape, a.shape, b.shape)
+
+        if a.ndim == 1 or b.ndim == 1:  # broadcast
+            a = a.reshape(-1)
+            b = b.reshape(-1)
+
+            if a.size == 1:
+                a = np.repeat(a, b.size)
+            elif b.size == 1:
+                b = np.repeat(b, a.size)
+            elif a.size == b.size:
+                pass
+            else:
+                raise Exception(f"Broadcasting beta with shapes {a.shape} {b.shape} does not work")
+
+            result = []
+            for i in range(a.size):
+                result.append(
+                    Gamma._p(x, a[i], b[i])
+                )
+        else:
+            result = Gamma._p(x, a, b)
+
+        return np.array(result)
+
 

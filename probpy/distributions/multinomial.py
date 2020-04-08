@@ -23,16 +23,28 @@ class Multinomial(Distribution):
             _p = Multinomial.p
             shape = outcomes
         elif n is None:
-            def _sample(n: np.ndarray, size: int = 1): return Multinomial.sample(n, probabilities, size)
-            def _p(x: np.ndarray, n: np.ndarray): return Multinomial.p(x, n, probabilities)
+            def _sample(n: np.ndarray, size: int = 1):
+                return Multinomial.sample(n, probabilities, size)
+
+            def _p(x: np.ndarray, n: np.ndarray):
+                return Multinomial.p(x, n, probabilities)
+
             shape = probabilities.size
         elif probabilities is None:
-            def _sample(probabilities: np.ndarray, size: int = 1): return Multinomial.sample(n, probabilities, size)
-            def _p(x: np.ndarray, probabilities: np.ndarray): return Multinomial.p(x, n, probabilities)
+            def _sample(probabilities: np.ndarray, size: int = 1):
+                return Multinomial.sample(n, probabilities, size)
+
+            def _p(x: np.ndarray, probabilities: np.ndarray):
+                return Multinomial.p(x, n, probabilities)
+
             shape = None
         else:
-            def _sample(size: int = 1): return Multinomial.sample(n, probabilities, size)
-            def _p(x: np.ndarray): return Multinomial.p(x, n, probabilities)
+            def _sample(size: int = 1):
+                return Multinomial.sample(n, probabilities, size)
+
+            def _p(x: np.ndarray):
+                return Multinomial.p(x, n, probabilities)
+
             shape = probabilities.size
 
         parameters = {
@@ -65,8 +77,12 @@ class Multinomial(Distribution):
     @staticmethod
     def p(x: np.ndarray, n: int, probabilities: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(n) != np.ndarray: n = np.array(n, dtype=np.int)
+        if type(probabilities) != np.ndarray: probabilities = np.array(probabilities)
+        if n.ndim != 0 or probabilities.ndim != 1:
+            raise Exception("Broadcasting on multinomial not supported at the moment")
+
         if x.ndim == 1: x = x.reshape(1, -1)
 
         constants = np.array([Multinomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.prod(np.float_power(probabilities, x), axis=1)
-

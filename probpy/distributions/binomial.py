@@ -71,6 +71,11 @@ class Binomial(Distribution):
         :return: array of samples
         """
         if type(x) != np.ndarray: x = np.array(x)
+        if type(n) != np.ndarray: n = np.array(n, dtype=np.int)
+        if type(probability) != np.ndarray: probability = np.array(probability)
+        if n.ndim != 0 or probability.ndim != 0:
+            raise Exception("Broadcasting on binomial not supported at the moment")
+
         if x.ndim == 0: x = x.reshape(-1)
         constants = np.array([Binomial._combinations_high_n(n, _x) for _x in x])
         return constants * np.float_power(probability, x) * np.float_power(1 - probability, n - x)

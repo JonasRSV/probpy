@@ -49,7 +49,10 @@ class Dirichlet(Distribution):
         """
         # TODO: find out if there is a more numerically stable implementation
         if type(x) != np.ndarray: x = np.array(x)
+        if type(alpha) != np.ndarray: alpha = np.array(x)
         if x.ndim == 1: x = x.reshape(1, -1)
+
+        if alpha.ndim == 2: raise Exception("Broadcasting on dirichlet not supported at the moment")
 
         normalizing_constant = np.prod(gamma(alpha)) / gamma(alpha.sum())
         return np.float_power(x, alpha - 1).prod(axis=1) / normalizing_constant

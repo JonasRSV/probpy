@@ -56,6 +56,13 @@ class Hypergeometric(Distribution):
     @staticmethod
     def p(x: np.ndarray, N: np.int, K: np.int, n: np.int) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(N) != np.ndarray: N = np.array(N, dtype=np.int)
+        if type(K) != np.ndarray: K = np.array(K, dtype=np.int)
+        if type(n) != np.ndarray: n = np.array(n, dtype=np.int)
+
+        if N.ndim != 0 or K.ndim != 0 or n.ndim != 0:
+            raise Exception("Broadcasting on hypergeometric not supported at the moment")
+
         if x.ndim == 0: x = x.reshape(-1)
         K_choose_x = np.array([Binomial._combinations_high_n(K, _x) for _x in x])
         NK_choose_nx = np.array([Binomial._combinations_high_n(N - K, n - _x) for _x in x])

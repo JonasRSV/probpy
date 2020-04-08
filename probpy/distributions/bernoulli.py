@@ -19,8 +19,11 @@ class Bernoulli(Distribution):
             _sample = Bernoulli.sample
             _p = Bernoulli.p
         else:
-            def _sample(size: int = 1): return Bernoulli.sample(probability, size)
-            def _p(x): return Bernoulli.p(x, probability)
+            def _sample(size: int = 1):
+                return Bernoulli.sample(probability, size)
+
+            def _p(x):
+                return Bernoulli.p(x, probability)
 
         parameters = {Bernoulli.probability: Parameter(shape=(), value=probability)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
@@ -44,8 +47,14 @@ class Bernoulli(Distribution):
         :return: array of samples
         """
         if type(x) != np.ndarray: x = np.array(x)
-        res = np.zeros_like(x)
-        res[x != 1.0] = 1 - probability
-        res[x == 1.0] = probability
-        return res
+        if type(probability) != np.ndarray: probability = np.array(probability)
+        if probability.ndim == 1:  # broadcasting
+            result = np.zeros((probability.size, x.size))
+            result[:, x != 1.0] = (1 - probability).reshape(-1, 1)
+            result[:, x == 1.0] = probability.reshape(-1, 1)
+        else:
+            result = np.zeros_like(x)
+            result[x != 1.0] = 1 - probability
+            result[x == 1.0] = probability
 
+        return result

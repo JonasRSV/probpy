@@ -66,7 +66,16 @@ class NormalInverseGamma(Distribution):
     @staticmethod
     def p(x: np.ndarray, mu: np.float, lam: np.float, a: np.float, b: np.float) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
+        if type(mu) != np.ndarray: mu = np.array(mu)
+        if type(lam) != np.ndarray: lam = np.array(lam)
+        if type(a) != np.ndarray: a = np.array(a)
+        if type(b) != np.ndarray: b = np.array(b)
+
+        if mu.ndim != 0 or lam.ndim != 0 or a.ndim != 0 or b.ndim != 0:
+            raise Exception("Broadcasting on normal inverse gamma not supported at the moment")
+
         if x.ndim == 1: x = x.reshape(1, 2)
+
         lam_norm = np.sqrt(lam) / np.sqrt(2 * np.pi * x[:, 1])
         beta_norm = np.float_power(b, a) / _gamma(a)
         sigma_norm = np.float_power(x[:, 1], - (a + 1))
