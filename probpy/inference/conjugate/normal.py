@@ -1,7 +1,7 @@
 from probpy.core import RandomVariable
 from typing import Tuple
 from probpy.distributions import normal, multivariate_normal
-from probpy.learn.conjugate.identification import _check_no_none_parameters, _check_only_none_is
+from probpy.inference.conjugate.identification import _check_no_none_parameters, _check_only_none_is
 
 
 class NormalNormal_MuPrior1D:

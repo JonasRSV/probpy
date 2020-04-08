@@ -164,27 +164,28 @@
 
 <dl class="class">
 <dt id="probpy.density.radial_basis.URBK">
-<em class="property">class </em><code class="descclassname">probpy.density.radial_basis.</code><code class="descname">URBK</code><span class="sig-paren">(</span><em>variance: float = 0.5</em>, <em>bases: int = 5</em>, <em>cl_iterations: int = 10</em>, <em>use_cl: bool = False</em>, <em>learning_rate: float = 1.0</em>, <em>verbose: bool = False</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">probpy.density.radial_basis.</code><code class="descname">URBK</code><span class="sig-paren">(</span><em>variance: float = 1.0</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="probpy.density.radial_basis.URBK.__init__">
-<code class="descname">__init__</code><span class="sig-paren">(</span><em>variance: float = 0.5</em>, <em>bases: int = 5</em>, <em>cl_iterations: int = 10</em>, <em>use_cl: bool = False</em>, <em>learning_rate: float = 1.0</em>, <em>verbose: bool = False</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK.__init__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>variance: float = 1.0</em>, <em>**_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/density/radial_basis.html#URBK.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.density.radial_basis.URBK.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>variance</strong> – variance in rbf kernel</li>
-<li><strong>bases</strong> – number of rbf bases</li>
-<li><strong>cl_iterations</strong> – competitive learning iterations</li>
-<li><strong>use_cl</strong> – use competitive learning to place bases</li>
-<li><strong>learning_rate</strong> – learning rate of cl</li>
-<li><strong>verbose</strong> – print cl error</li>
 <li><strong>_</strong> – </li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="probpy.density.radial_basis.URBK.epsilon">
+<code class="descname">epsilon</code><em class="property"> = 0.01</em><a class="headerlink" href="#probpy.density.radial_basis.URBK.epsilon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Un-normalised Radial-Basis Kernel</p>
 </dd></dl>
 
 <dl class="method">

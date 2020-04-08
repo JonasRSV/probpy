@@ -2,18 +2,19 @@ from probpy.core import RandomVariable, Density
 import numpy as np
 from typing import Callable, Tuple, Union
 from .mcmc import log_probabilities
-from probpy.sampling import (ga_posterior_estimation)
+from probpy.search import (search_posterior_estimation)
 from probpy.distributions import generic
 from probpy.density import URBK
+import time
 
 
-def _sample_posterior(data: Tuple[np.ndarray],
+def _search_posterior(data: Tuple[np.ndarray],
                       likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
                       priors: Tuple[RandomVariable],
                       samples: int,
-                      mixing: int,
                       energies: Tuple[float],
-                      batch: int):
+                      batch: int,
+                      volume: float):
     likelihood = likelihood if type(likelihood) != RandomVariable else likelihood.p
 
     log_likelihood, log_priors = log_probabilities(data, likelihood, priors)
@@ -23,17 +24,13 @@ def _sample_posterior(data: Tuple[np.ndarray],
         for prior in priors
     ]
 
-    samples, densities = ga_posterior_estimation(
+    return search_posterior_estimation(
         size=samples,
         log_likelihood=log_likelihood,
         log_priors=log_priors,
         initial=initial,
-        energies=energies)
-
-    samples = samples[mixing:]
-    densities = densities[mixing:]
-
-    return samples, densities
+        energies=energies,
+        volume=volume)
 
 
 def _standardize_arguments(_: Union[np.ndarray, Tuple[np.ndarray]],
@@ -45,7 +42,7 @@ def _standardize_arguments(_: Union[np.ndarray, Tuple[np.ndarray]],
     return energies
 
 
-def _generic_from_density_samples_densities(density: Density, samples: np.ndarray, densities: np.ndarray):
+def _generic_from_density_samples_densities(density: Density, samples: np.ndarray, densities: np.ndarray, volume: float):
     densities = densities / densities.sum()
 
     density.fit(samples, densities)
@@ -56,29 +53,30 @@ def _generic_from_density_samples_densities(density: Density, samples: np.ndarra
     indexes = np.arange(0, densities.size)
 
     def _sample(size: int = 1):
-        return samples[np.random.choice(indexes, size=size, p=densities)]
+        s = samples[np.random.choice(indexes, size=size, p=densities)]
+        return s + np.random.normal(0, 1 / volume, size=s.shape)
 
     return generic.med(sampling=_sample, probability=_p)
 
 
-def ga(data: Tuple[np.ndarray],
-       likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-       priors: Union[RandomVariable, Tuple[RandomVariable]],
-       samples: int = 1000,
-       mixing: int = 100,
-       energies: Tuple[float] = 0.5,
-       batch=5,
-       normalize: bool = False,
-       density: Density = None,
-       **ubrk_args):
+def search(data: Tuple[np.ndarray],
+           likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
+           priors: Union[RandomVariable, Tuple[RandomVariable]],
+           samples: int = 1000,
+           energies: Tuple[float] = 0.5,
+           batch=5,
+           volume=10.0,
+           normalize: bool = False,
+           density: Density = None,
+           **ubrk_args):
     """
     Don't call this function directly, always use parameter_posterior with mode="ga"
 
+    :param volume: volume of elements
     :param data: data passed to likelihood
     :param likelihood: likelihood function
     :param priors: prior / priors
-    :param samples: samples in ga estimate
-    :param mixing: number of initial samples to ignore
+    :param samples: samples in search estimate
     :param energies: energies in exploration
     :param batch: number of samples run concurrently
     :param normalize: normalize posterior
@@ -87,12 +85,12 @@ def ga(data: Tuple[np.ndarray],
     :return: RandomVariable
     """
     energies = _standardize_arguments(data, likelihood, priors, energies)
-    samples, densities = _sample_posterior(data, likelihood, priors, samples, mixing, energies, batch)
+    samples, densities = _search_posterior(data, likelihood, priors, samples, energies, batch, volume)
 
     if density is None:
         if normalize:
-            raise NotImplementedError("ga cannot normalize atm")
+            raise NotImplementedError("search cannot normalize atm")
         else:
             density = URBK(**ubrk_args)
 
-    return _generic_from_density_samples_densities(density, samples, densities)
+    return _generic_from_density_samples_densities(density, samples, densities, volume)

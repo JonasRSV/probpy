@@ -2,6 +2,7 @@ import unittest
 import probpy as pp
 import numpy as np
 import random
+import time
 
 
 class MyTestCase(unittest.TestCase):
@@ -48,22 +49,21 @@ class MyTestCase(unittest.TestCase):
             obs.append(outcome)
             its.append(item)
 
-        prior_skill = pp.normal.med(mu=2.0, sigma=10)
+        prior_skill = pp.normal.med(mu=0.0, sigma=10)
 
-        for i in range(10):
-            prior_skill = pp.parameter_posterior((obs, its), likelihood=likelihood, priors=prior_skill,
-                                                 mode="ga", samples=50000, mixing=0, batch=1000,
-                                                 energies=5.0,
-                                                 bases=1,
-                                                 variance=6,
-                                                 use_cl=True)
-                                                 #verbose=True)
+        for i in range(samples):
 
-            print("p 0.7", prior_skill.p(logit(0.7)))
-            modes = sigmoid(np.array(pp.mode(prior_skill)))
-            print("p mode", prior_skill.p(logit(modes[0])))
+            prior_skill = pp.parameter_posterior((obs[i], its[i]),
+                                                 likelihood=likelihood, priors=prior_skill,
+                                                 mode="search",
+                                                 samples=500, batch=10,
+                                                 volume=100,
+                                                 variance=2.0)
 
-            print(modes)
+            modes = sigmoid(pp.mode(prior_skill))
+
+            print("obs", obs[i], "its", sigmoid(its[i]), "modes", modes)
+            print()
 
 
 if __name__ == '__main__':

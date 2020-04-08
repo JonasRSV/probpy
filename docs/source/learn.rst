@@ -22,5 +22,5 @@ Example:
     :members:
 
 
-.. automodule:: probpy.learn.ga
+.. automodule:: probpy.learn.search
     :members:

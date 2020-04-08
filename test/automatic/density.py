@@ -3,7 +3,8 @@ import time
 import numpy as np
 from probpy.distributions import normal
 from probpy.density import UCKD, RCKD, URBK
-from probpy.sampling import fast_metropolis_hastings, ga_posterior_estimation
+from probpy.sampling import fast_metropolis_hastings
+from probpy.search import search_posterior_estimation
 
 
 def distribution(x):
@@ -55,11 +56,12 @@ class AutomaticDensityTest(unittest.TestCase):
     def test_running_urbk(self):
         log_priors = [lambda x: np.log(normal.p(x, mu=0.0, sigma=10.0))]
 
-        samples, densities = ga_posterior_estimation(50000,
-                                                     log_distribution,
-                                                     log_priors,
-                                                     initial=np.random.rand(1, 10) * 10,
-                                                     energies=np.repeat(1.0, 10))
+        samples, densities = search_posterior_estimation(500,
+                                                         log_distribution,
+                                                         log_priors,
+                                                         initial=np.random.rand(1, 10) * 10,
+                                                         energies=np.repeat(1.0, 10),
+                                                         volume=10)
 
         density = URBK(variance=5.0, error=0.01, verbose=True)
         density.fit(samples, densities)

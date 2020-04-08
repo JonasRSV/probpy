@@ -27,7 +27,7 @@ class TestIntegration(unittest.TestCase):
                                              domain=(lower_bound, upper_bound),
                                              proposal=multivariate_normal.med(mu=np.zeros(2),
                                                                               sigma=np.eye(2) * 2))
-        self.assertAlmostEqual(result, -32, delta=2.0)
+        self.assertAlmostEqual(result, -32, delta=3.0)
 
     def test_posterior_predictive_integral(self):
         def _run_test(priors=None, likelihood=None, correct=None):

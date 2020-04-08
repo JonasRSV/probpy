@@ -6,11 +6,13 @@ import numpy as np
 def _reshape_samples(samples: List[np.ndarray]):  # cannot import from learn because of ciruclar deps
     result = []
     for sample in samples:
+        sample = np.array(sample)
         if sample.ndim == 1:
             result.append(sample.reshape(-1, 1))
         else:
             result.append(sample)
-    return result
+
+    return np.concatenate(result, axis=1)
 
 
 def _renormalize_log(log_probs: np.ndarray):
@@ -20,12 +22,29 @@ def _renormalize_log(log_probs: np.ndarray):
     return probability / probability.sum()
 
 
-def ga_posterior_estimation(
+def hash_samples(samples, volume):
+    samples = np.round(_reshape_samples(samples) * volume)
+
+    return [hash(sample.tostring()) for sample in samples]
+
+
+def search_posterior_estimation(
         size: int,
         log_likelihood: F[[Tuple[np.ndarray]], np.ndarray],
         log_priors: Tuple[F[[np.ndarray], np.ndarray]],
         initial: Tuple[np.ndarray],
-        energies: Tuple[float]):
+        energies: Tuple[float],
+        volume: float):
+    """
+
+    :param size: number of points to include in search
+    :param log_likelihood: log likelihoods
+    :param log_priors: logpriors
+    :param initial: initial points of search
+    :param energies: variance of search jumps
+    :param volume: volume of a point in search
+    :return: samples and densities
+    """
     if len(log_priors) != len(initial): raise Exception(f"log_priors: {len(log_priors)} != initial: {len(initial)}")
     batch = initial[0].shape[0]
 
@@ -42,11 +61,12 @@ def ga_posterior_estimation(
         return prior_log_probability + data_log_probability
 
     samples = initial
-    points = [[] for _ in range(n)]
-    densities = []
-
+    observations = set()
     indexes = np.arange(0, batch)
-    while len(points[0]) < size:
+    results = [[] for _ in range(n)]
+    densities = []
+    j = 0
+    while len(observations) < size:
         samples = [
             samples[i] + jumpers[i]()
             for i in range(n)
@@ -54,19 +74,34 @@ def ga_posterior_estimation(
 
         density = _probability(samples)
 
+        hashes = hash_samples(samples, volume)
+
+        accept, reject = [], []
+        for i, hash in enumerate(hashes):
+            if hash in observations:
+                reject.append(i)
+            else:
+                accept.append(i)
+                observations.add(hash)
+
+        accept, reject = np.array(accept, dtype=np.int), np.array(reject, dtype=np.int)
+
+        density[reject] = -1e100
         probability = _renormalize_log(density)
 
-        accepted = np.random.choice(indexes, size=batch, p=probability)
-        unique_accepted = np.unique(accepted)
+        survivors = np.random.choice(indexes, size=batch, p=probability)
 
         for i in range(n):
-            points[i].extend(samples[i][unique_accepted])
+            results[i].extend(samples[i][accept])
 
-        densities.extend(density[unique_accepted])
+        densities.extend(density[accept])
 
-        samples = [samples[i][accepted] for i in range(n)]
+        if j % 10 == 0:
+            samples = [samples[i][survivors] for i in range(n)]
+
+        j += 1
 
     densities = np.array(densities)
     densities = _renormalize_log(densities)
 
-    return np.concatenate(_reshape_samples([np.array(point) for point in points]), axis=1), densities
+    return _reshape_samples(results), densities

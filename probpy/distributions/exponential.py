@@ -44,8 +44,16 @@ class Exponential(Distribution):
         :return: densities
         """
         if type(x) != np.ndarray: x = np.array(x)
-        result = np.zeros_like(x)
+        if type(lam) != np.ndarray: lam = np.array(lam)
         lg_0 = x >= 0
-        result[lg_0] = lam * np.exp(-lam * x[lg_0])
+        if lam.ndim == 1: # broadcasting
+            lam = lam.reshape(-1, 1)
+            result = np.zeros((lam.size, x[lg_0].size))
+
+            result[:, lg_0] = lam * np.exp(-lam * x[lg_0])
+        else:
+            result = np.zeros_like(x)
+            result[lg_0] = lam * np.exp(-lam * x[lg_0])
+
         return result
 

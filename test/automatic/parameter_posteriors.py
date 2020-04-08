@@ -1,5 +1,4 @@
 import unittest
-from probpy.density import URBK
 from probpy.distributions import (normal,
                                   multivariate_normal,
                                   exponential,
@@ -295,13 +294,10 @@ class PosteriorTest(unittest.TestCase):
         for test in tests:
             _run_test(**test)
 
-    def test_ga(self):
-
-        density = URBK(use_cl=False)
+    def test_search(self):
 
         def _run_test(priors=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=5000,
-                                            density=density)
+            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=1000)
 
             if correct is not None:
                 pass  # TODO

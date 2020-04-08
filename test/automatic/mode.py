@@ -50,7 +50,7 @@ class TestModes(unittest.TestCase):
         ]
 
         for test in tests:
-            self.assertTrue(test["correct"](pp.mode(test["distribution"])))
+            self.assertTrue(test["correct"](pp.mode(test["distribution"], n=10)))
 
 
 if __name__ == '__main__':
