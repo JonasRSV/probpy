@@ -23,16 +23,28 @@ class MultiVariateNormal(Distribution):
             _p = MultiVariateNormal.p
             shape = k
         elif mu is None:
-            def _sample(mu: np.ndarray, size: int = 1): return MultiVariateNormal.sample(mu, sigma, size)
-            def _p(x: np.ndarray, mu: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
+            def _sample(mu: np.ndarray, size: int = 1):
+                return MultiVariateNormal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray, mu: np.ndarray):
+                return MultiVariateNormal.p(x, mu, sigma)
+
             shape = sigma.shape[0]
         elif sigma is None:
-            def _sample(sigma: np.ndarray, size: int = 1): return MultiVariateNormal.sample(mu, sigma, size)
-            def _p(x: np.ndarray, sigma: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
+            def _sample(sigma: np.ndarray, size: int = 1):
+                return MultiVariateNormal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray, sigma: np.ndarray):
+                return MultiVariateNormal.p(x, mu, sigma)
+
             shape = mu.size
         else:
-            def _sample(size: int = 1): return MultiVariateNormal.sample(mu, sigma, size)
-            def _p(x: np.ndarray): return MultiVariateNormal.p(x, mu, sigma)
+            def _sample(size: int = 1):
+                return MultiVariateNormal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray):
+                return MultiVariateNormal.p(x, mu, sigma)
+
             shape = mu.size
 
         parameters = {
@@ -55,6 +67,19 @@ class MultiVariateNormal(Distribution):
         return np.random.multivariate_normal(mu, sigma, size=size)
 
     @staticmethod
+    @numba.jit(nopython=True,
+               forceobj=False,
+               fastmath=True,
+               parallel=True,
+               error_model="numpy")
+    def fast_non_broadcast_parameter_multivariate_normal(x: np.ndarray,
+                                                         mu: np.ndarray,
+                                                         sigma: np.ndarray,
+                                                         normalizing_constant: np.ndarray):
+        quadratic_form = (((x - mu) @ np.linalg.inv(sigma)) * (x - mu)).sum(axis=1)
+        return np.exp(-1 / 2 * quadratic_form) * normalizing_constant
+
+    @staticmethod
     @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
@@ -67,9 +92,8 @@ class MultiVariateNormal(Distribution):
         if mu.ndim == 3:
             quadratic_form = ((x - mu) @ np.linalg.inv(sigma) * (x - mu)).sum(axis=2)
             return np.exp(-1 / 2 * quadratic_form) * normalizing_constant
-        else: # broadcasting data
-            quadratic_form = (((x - mu) @ np.linalg.inv(sigma)) * (x - mu)).sum(axis=1)
-            return np.exp(-1 / 2 * quadratic_form) * normalizing_constant
+        else:  # broadcasting data
+            return MultiVariateNormal.fast_non_broadcast_parameter_multivariate_normal(x, mu, sigma, normalizing_constant) # 3x faster than normal numpy code
 
 
 class Normal(Distribution):
@@ -91,14 +115,23 @@ class Normal(Distribution):
             _sample = Normal.sample
             _p = Normal.p
         elif mu is None:
-            def _sample(mu: np.float, size: int = 1): return Normal.sample(mu, sigma, size)
-            def _p(x: np.ndarray, mu: np.float): return Normal.p(x, mu, sigma)
+            def _sample(mu: np.float, size: int = 1):
+                return Normal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray, mu: np.float):
+                return Normal.p(x, mu, sigma)
         elif sigma is None:
-            def _sample(sigma: np.float, size: int = 1): return Normal.sample(mu, sigma, size)
-            def _p(x: np.ndarray, sigma: np.float): return Normal.p(x, mu, sigma)
+            def _sample(sigma: np.float, size: int = 1):
+                return Normal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray, sigma: np.float):
+                return Normal.p(x, mu, sigma)
         else:
-            def _sample(size: int = 1): return Normal.sample(mu, sigma, size)
-            def _p(x: np.ndarray): return Normal.p(x, mu, sigma)
+            def _sample(size: int = 1):
+                return Normal.sample(mu, sigma, size)
+
+            def _p(x: np.ndarray):
+                return Normal.p(x, mu, sigma)
 
         parameters = {
             Normal.mu: Parameter((), mu),
@@ -119,7 +152,6 @@ class Normal(Distribution):
         return np.random.normal(mu, np.sqrt(sigma), size=size)
 
     @staticmethod
-    @numba.jit(nopython=False, forceobj=True)
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
         """
         :param x: samples
@@ -134,5 +166,3 @@ class Normal(Distribution):
 
         normalizing_constant = np.sqrt(2 * np.pi * sigma)
         return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant
-
-

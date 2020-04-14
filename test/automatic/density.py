@@ -63,7 +63,7 @@ class AutomaticDensityTest(unittest.TestCase):
                                                          energies=np.repeat(1.0, 10),
                                                          volume=10)
 
-        density = URBK(variance=5.0, error=0.01, verbose=True)
+        density = URBK(variance=5.0, verbose=True)
         density.fit(samples, densities)
 
         lb, ub = -6, 6

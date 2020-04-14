@@ -26,15 +26,11 @@ def categorical_mode(rv: RandomVariable, **_): return np.eye(rv.probabilities.si
 def normal_inverse_gamma_mode(rv: RandomVariable, **_): return np.array([rv.mu, rv.b / (rv.a + 3 / 2)])
 
 
-def euclidean(i, j):
-    return np.sqrt(np.square(i - j).sum())
-
-
-def points_mode(rv: RandomVariable, samples=100, n=10, distance=euclidean):
+def points_mode(rv: RandomVariable, samples=100, n=10):
     samples = rv.sample(size=samples)
     probabilities = rv.p(samples)
 
-    return mode_from_points(samples, probabilities, n=n, distance=distance)[0]
+    return mode_from_points(samples, probabilities, n=n)[0]
 
 
 implemented = {

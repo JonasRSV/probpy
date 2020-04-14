@@ -1,21 +1,12 @@
 import numpy as np
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Tuple, Union
 from probpy.sampling import (
     fast_metropolis_hastings_log_space_parameter_posterior_estimation)
 from . import moment_matching
 from probpy.distributions import generic
 from probpy.density import UCKD, RCKD
 from probpy.core import RandomVariable, Distribution, Density
-
-
-def _reshape_samples(samples: List[np.ndarray]):
-    result = []
-    for sample in samples:
-        if sample.ndim == 1:
-            result.append(sample.reshape(-1, 1))
-        else:
-            result.append(sample)
-    return result
+from probpy.array_utils import _reshape_samples
 
 
 def log_probabilities(data: Union[np.ndarray, Tuple[np.ndarray]],

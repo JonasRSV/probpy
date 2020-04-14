@@ -1,18 +1,7 @@
-from typing import Callable as F, List
+from typing import Callable as F
 from typing import Tuple
 import numpy as np
-
-
-def _reshape_samples(samples: List[np.ndarray]):  # cannot import from learn because of ciruclar deps
-    result = []
-    for sample in samples:
-        sample = np.array(sample)
-        if sample.ndim == 1:
-            result.append(sample.reshape(-1, 1))
-        else:
-            result.append(sample)
-
-    return np.concatenate(result, axis=1)
+from probpy.array_utils import _reshape_samples
 
 
 def _renormalize_log(log_probs: np.ndarray):

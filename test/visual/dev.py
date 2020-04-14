@@ -3,67 +3,44 @@ import probpy as pp
 import numpy as np
 import random
 import time
+import os
 
 
 class MyTestCase(unittest.TestCase):
     def test_something_else(self):
-        import probpy as pp
-        import numpy as np
+        diag_mean = np.array([-1, 1])
+        samples = np.concatenate([
+            pp.multivariate_normal.sample(mu=np.ones(2) * -3, sigma=np.eye(2), size=2000),
+            pp.multivariate_normal.sample(mu=np.ones(2) * 3, sigma=np.eye(2), size=2000),
+            pp.multivariate_normal.sample(mu=np.ones(2) * 0, sigma=np.eye(2), size=2000),
+            pp.multivariate_normal.sample(mu=diag_mean * -3, sigma=np.eye(2), size=2000),
+            pp.multivariate_normal.sample(mu=diag_mean * 3, sigma=np.eye(2), size=2000),
+        ])
 
-        f = lambda x: -np.square(x[:, 0]) + np.square(x[:, 1])
+        timestamp = time.time()
+        rv = pp.points.med(points=samples)
+        print("Training points", time.time() - timestamp)
 
-        lower_bound = np.array([0, 0])
-        upper_bound = np.array([4, 2])
+        timestamp = time.time()
+        probabilities = rv.p(samples)
+        print("Probabilities ", time.time() - timestamp)
 
-        proposal = pp.multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2) * 2)
+        modes = pp.algorithms.mode_from_points(
+            samples=samples[:100],
+            probabilities=probabilities[:100],
+            n=100
+        )
 
-        result = pp.uniform_importance_sampling(size=100000,
-                                                function=f,
-                                                domain=(lower_bound, upper_bound),
-                                                proposal=proposal)
+        timestamp = time.time()
+        modes = pp.algorithms.mode_from_points(
+            samples=samples,
+            probabilities=probabilities,
+            n=100
+        )
+        print("Modes ", time.time() - timestamp)
 
-    def test_something(self):
-        def sigmoid(x):
-            return (1 / (1 + np.exp(-x)))
+        print(modes)
 
-        def logit(x):
-            return np.log(x / (1 - x))
-
-        student_skill = logit(0.7)
-
-        items = logit(np.array([0.4, 0.6, 0.8, 0.7]))  # difficulties
-
-        def likelihood(obs, item, skill):
-            result = []
-            for _skill in skill:
-                result.append(pp.normal.p(obs - sigmoid(_skill - item), mu=0.0, sigma=0.6))
-
-            return np.array(result)
-
-        samples = 30
-        obs, its = [], []
-        for i in range(samples):  # 100 samples
-            item = items[np.random.randint(0, items.size)]
-            outcome = (np.random.rand() < sigmoid(student_skill - item)).astype(np.float)
-
-            obs.append(outcome)
-            its.append(item)
-
-        prior_skill = pp.normal.med(mu=0.0, sigma=10)
-
-        for i in range(samples):
-
-            prior_skill = pp.parameter_posterior((obs[i], its[i]),
-                                                 likelihood=likelihood, priors=prior_skill,
-                                                 mode="search",
-                                                 samples=500, batch=10,
-                                                 volume=100,
-                                                 variance=2.0)
-
-            modes = sigmoid(pp.mode(prior_skill))
-
-            print("obs", obs[i], "its", sigmoid(its[i]), "modes", modes)
-            print()
 
 
 if __name__ == '__main__':

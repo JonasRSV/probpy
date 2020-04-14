@@ -1,6 +1,7 @@
 from probpy.core import Density
 import numpy as np
 from probpy.algorithms import mode_from_points
+import numba
 
 
 class URBK(Density):
