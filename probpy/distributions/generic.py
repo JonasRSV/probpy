@@ -46,5 +46,5 @@ class Generic(Distribution):
         if fast_p is not None:
             return fast_p
         else:
-            raise Exception("generic function did not have a numba probability")
+            raise Exception("this generic distribution does not have a numba probability implemented yet")
 

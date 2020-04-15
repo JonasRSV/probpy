@@ -17,6 +17,7 @@ from probpy.distributions import (normal,
                                   unilinear,
                                   multivariate_uniform)
 from probpy.learn import parameter_posterior
+import probpy as pp
 import numba
 import numpy as np
 
@@ -373,7 +374,7 @@ class PosteriorTest(unittest.TestCase):
                 "correct": None
             },
             {
-                "prior": exponential.med(lam=0.6, ),
+                "prior": exponential.med(lam=0.6),
                 "likelihood": normal.med(sigma=1.0),
                 "data": normal.sample(mu=3.0, sigma=2.0, size=200),
                 "match": normal,
@@ -400,12 +401,14 @@ class PosteriorTest(unittest.TestCase):
 
     def test_search(self):
 
-        def _run_test(priors=None, likelihood=None, data=None, correct=None):
-            posterior = parameter_posterior(data, likelihood=likelihood, priors=priors, samples=100,
-                                            batch=5, energies=0.3, mode="search")
+        def _run_test(prior=None, likelihood=None, data=None, correct=None):
+            posterior = parameter_posterior(data, likelihood=likelihood, prior=prior, samples=20,
+                                            batch=5, energy=0.3, mode="search")
 
             if correct is not None:
                 pass  # TODO
+
+            print(posterior.cls, pp.mode(posterior))
 
         mu_prior = np.zeros(2)
         sigma_prior = np.eye(2)
@@ -423,106 +426,107 @@ class PosteriorTest(unittest.TestCase):
         logistic_x = np.linspace(-5, 5, 50).reshape(-1, 1)
         logistic_y = (logistic_x > 0).astype(np.float).flatten()
 
+        @numba.jit(nopython=True)
         def sigmoid(x):
             return 1 / (1 + np.exp(-x))
 
+        fast_n = normal.fast_p
+
         def _custom_likelihood(y, x, w):
-            return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
-                            mu=0.0, sigma=0.5)
+            return fast_n(y - sigmoid(x * w[0] + w[1]), mu=0.0, sigma=0.5)[0]
 
         tests = (
             {
-                "priors": exponential.med(lam=1.0),
+                "prior": exponential.med(lam=1.0),
                 "likelihood": normal.med(sigma=2.0),
                 "data": normal.sample(mu=3.0, sigma=2.0, size=30),
                 "correct": None
             },
             {
-                "priors": (normal.med(mu=3.0, sigma=2.0), exponential.med(lam=1.0)),
-                "likelihood": normal.med(),
-                "data": normal.sample(mu=5.0, sigma=2.0, size=30),
+                "prior": exponential.med(lam=1.0),
+                "likelihood": normal.med(mu=1.0),
+                "data": normal.sample(mu=1.0, sigma=2.0, size=30),
                 "correct": None
             },
             {
-                "priors": multivariate_uniform.med(a=a, b=b),
+                "prior": multivariate_uniform.med(a=a, b=b),
                 "likelihood": multivariate_normal.med(sigma=sigma_prior),
                 "data": multivariate_normal.sample(mu=mu_prior, sigma=sigma_prior, size=30),
                 "correct": None
             },
             {
-                "priors": (multivariate_normal.med(mu=mu_prior, sigma=sigma_prior), exponential.med(lam=1.0)),
-                "likelihood": unilinear.med(),
+                "prior": multivariate_uniform.med(a=a, b=b),
+                "likelihood": unilinear.med(sigma=1.0),
                 "data": (y, x),
                 "correct": None
             },
             {
-                "priors": multivariate_normal.med(mu=mu_prior, sigma=sigma_prior),
+                "prior": multivariate_normal.med(mu=mu_prior, sigma=sigma_prior),
                 "likelihood": _custom_likelihood,
                 "data": (logistic_y, logistic_x),
                 "correct": None
             },
             {
-                "priors": exp_prior,
+                "prior": exp_prior,
                 "likelihood": exponential.med(),
                 "data": exp_prior.sample(size=50),
                 "correct": None
-            }
-            ,
+            },
             {
-                "priors": exp_prior,
+                "prior": exp_prior,
                 "likelihood": normal.med(sigma=1.0),
                 "data": norm_prior.sample(size=50),
                 "correct": None
             },
-            {
-                "priors": gam_prior,
-                "likelihood": bernoulli.med(),
-                "data": bernoulli.sample(probability=0.6, size=30),
-                "correct": None
-            },
-            {
-                "priors": gam_prior,
-                "likelihood": bernoulli.med(),
-                "data": bernoulli.sample(probability=0.6, size=30),
-                "correct": None
-            },
-            {
-                "priors": (exp_prior, exp_prior),
-                "likelihood": beta.med(),
-                "data": beta_prior.sample(size=30),
-                "correct": None
-            },
-            # {
-            #    "priors": (exp_prior, exp_prior),
-            #    "likelihood": binomial.med(),
-            #    "data": binomial.sample(n=3, probability=0.5, size=30),
+            #{
+            #    "priors": gam_prior,
+            #    "likelihood": bernoulli.med(),
+            #    "data": bernoulli.sample(probability=0.6, size=30),
             #    "correct": None
-            # }
-            {
-                "priors": multivariate_uniform.med(a=np.zeros(3), b=np.ones(3)),
-                "likelihood": categorical.med(),
-                "data": categorical.med(probabilities=np.ones(3) / 3).sample(size=30),
-                "correct": None
-            },
-            # {
+            #},
+            #{
+            #    "priors": gam_prior,
+            #    "likelihood": bernoulli.med(),
+            #    "data": bernoulli.sample(probability=0.6, size=30),
+            #    "correct": None
+            #},
+            #{
+            #    "priors": (exp_prior, exp_prior),
+            #    "likelihood": beta.med(),
+            #    "data": beta_prior.sample(size=30),
+            #    "correct": None
+            #},
+            ## {
+            ##    "priors": (exp_prior, exp_prior),
+            ##    "likelihood": binomial.med(),
+            ##    "data": binomial.sample(n=3, probability=0.5, size=30),
+            ##    "correct": None
+            ## }
+            #{
             #    "priors": multivariate_uniform.med(a=np.zeros(3), b=np.ones(3)),
+            #    "likelihood": categorical.med(),
+            #    "data": categorical.med(probabilities=np.ones(3) / 3).sample(size=30),
+            #    "correct": None
+            #},
+            ## {
+            ##    "priors": multivariate_uniform.med(a=np.zeros(3), b=np.ones(3)),
             #    "likelihood": dirichlet.med(),
             #    "data": dirichlet.med(alpha=np.ones(3)).sample(size=30),
             #    "correct": None
             # }
-            {
-                "priors": (exp_prior, exp_prior),
-                "likelihood": gamma.med(),
-                "data": gamma.med(a=1.0, b=1.0).sample(size=30),
-                "correct": None
-            },
-            {
-                "priors": gam_prior,
-                "likelihood": geometric.med(),
-                "data": geometric.sample(probability=0.1, size=30),
-                "correct": None
-            },
-            # {
+            #{
+            #    "priors": (exp_prior, exp_prior),
+            #    "likelihood": gamma.med(),
+            #    "data": gamma.med(a=1.0, b=1.0).sample(size=30),
+            #    "correct": None
+            #},
+            #{
+            #    "priors": gam_prior,
+            #    "likelihood": geometric.med(),
+            #    "data": geometric.sample(probability=0.1, size=30),
+            #    "correct": None
+            #},
+            ## {
             #    "priors": (exp_prior, exp_prior, exp_prior),
             #    "likelihood": hypergeometric.med(),
             #    "data": hypergeometric.sample(N=6, K=3, n=2, size=30),

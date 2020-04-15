@@ -37,10 +37,27 @@ class URBK(Density):
         :param densities: unnormalized density of particles
         :return:
         """
-        if particles.ndim == 1: self.particles = self.particles.reshape(-1, 1)
+        if particles.ndim == 1: particles = particles.reshape(-1, 1)
         densities = densities / densities.sum()
         self.particles = particles
         self._place_bases(particles, densities)
+
+    def get_fast_p(self):
+        bases = np.array(self.bases)
+        lsq_coeff = np.array(self.lsq_coeff)
+        n_bases = len(bases)
+        variance = self.variance
+
+        @numba.jit(nopython=True, fastmath=True, forceobj=False)
+        def fast_p(particles: np.ndarray):
+            result = np.zeros(len(particles))
+            for j in range(result.size):
+                for i in range(n_bases):
+                    result[j] += lsq_coeff[i] * np.exp(-(1 / variance) * np.square(bases[i] - particles[j]).sum())
+
+            return result
+
+        return fast_p
 
     def p(self, particles: np.ndarray):
         """

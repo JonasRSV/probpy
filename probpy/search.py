@@ -1,7 +1,5 @@
 from typing import Callable as F
-from typing import Tuple
 import numpy as np
-from probpy.array_utils import _reshape_samples
 
 
 def _renormalize_log(log_probs: np.ndarray):
@@ -11,59 +9,43 @@ def _renormalize_log(log_probs: np.ndarray):
     return probability / probability.sum()
 
 
-def hash_samples(samples, volume):
-    samples = np.round(_reshape_samples(samples) * volume)
-
-    return [hash(sample.tostring()) for sample in samples]
+def hash_samples(samples):
+    return [hash(sample.tostring()) for sample in np.round(samples)]
 
 
 def search_posterior_estimation(
         size: int,
-        log_likelihood: F[[Tuple[np.ndarray]], np.ndarray],
-        log_priors: Tuple[F[[np.ndarray], np.ndarray]],
-        initial: Tuple[np.ndarray],
-        energies: Tuple[float],
+        log_likelihood: F[[np.ndarray], np.ndarray],
+        log_prior: F[[np.ndarray], np.ndarray],
+        initial: np.ndarray,
+        energy: float,
         volume: float):
     """
 
     :param size: number of points to include in search
     :param log_likelihood: log likelihoods
-    :param log_priors: logpriors
+    :param log_prior: log prior
     :param initial: initial points of search
-    :param energies: variance of search jumps
+    :param energy: variance of search jumps
     :param volume: volume of a point in search
     :return: samples and densities
     """
-    if len(log_priors) != len(initial): raise Exception(f"log_priors: {len(log_priors)} != initial: {len(initial)}")
-    batch = initial[0].shape[0]
+    batch = initial.shape[0]
+    jump = lambda: np.random.normal(0, energy, size=initial.shape)
 
-    for i in initial:
-        if i.shape[0] != batch: raise Exception(f"batch mismatch {batch} != {i.shape[0]}")
+    def _probability(x: np.ndarray):
+        log_prior_probability = np.nan_to_num(log_prior(x).flatten(), nan=-15000, posinf=-15000, neginf=-15000)
+        log_likelihood_probability = np.nan_to_num(log_likelihood(x).flatten(), nan=-15000, posinf=-15000, neginf=-15000)
 
-    jumpers, n = [], len(initial)
-    for i, e in zip(initial, energies): jumpers.append(lambda i=i, e=e: np.random.normal(0, e, size=i.shape))
+        return log_prior_probability + log_likelihood_probability
 
-    def _probability(x: Tuple[np.ndarray]):
-        prior_log_probability = np.sum([log_priors[i](x[i]) for i in range(n)], axis=0).flatten()
-        data_log_probability = log_likelihood(*x).flatten()
-
-        return prior_log_probability + data_log_probability
-
-    samples = initial
-    observations = set()
-    indexes = np.arange(0, batch)
-    results = [[] for _ in range(n)]
-    densities = []
-    j = 0
-    while len(observations) < size:
-        samples = [
-            samples[i] + jumpers[i]()
-            for i in range(n)
-        ]
+    p = initial
+    results, densities, observations, indexes = [], [], set(), np.arange(0, batch)
+    while len(results) < size:
+        samples = p + jump()
 
         density = _probability(samples)
-
-        hashes = hash_samples(samples, volume)
+        hashes = hash_samples(samples * volume)
 
         accept, reject = [], []
         for i, hash in enumerate(hashes):
@@ -76,21 +58,16 @@ def search_posterior_estimation(
         accept, reject = np.array(accept, dtype=np.int), np.array(reject, dtype=np.int)
 
         density[reject] = -1e100
-        probability = _renormalize_log(density)
 
-        survivors = np.random.choice(indexes, size=batch, p=probability)
+        accept_rate = np.minimum(density - _probability(p), 0.0)
+        survivors = accept_rate >= np.log(np.random.rand(batch))
 
-        for i in range(n):
-            results[i].extend(samples[i][accept])
-
+        results.extend(samples[accept])
         densities.extend(density[accept])
 
-        if j % 10 == 0:
-            samples = [samples[i][survivors] for i in range(n)]
-
-        j += 1
+        p[survivors] = samples[survivors]
 
     densities = np.array(densities)
     densities = _renormalize_log(densities)
 
-    return _reshape_samples(results), densities
+    return np.array(results), densities

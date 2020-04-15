@@ -117,7 +117,6 @@ def fast_metropolis_hastings_log_space_parameter_posterior_estimation(
         samples = p + jump()
 
         accept_rate = np.minimum(_probability(samples) - _probability(p), 0.0)
-        accept_rate = accept_rate
 
         accepted = accept_rate >= np.log(np.random.rand(batch))
         rejected = False == accepted

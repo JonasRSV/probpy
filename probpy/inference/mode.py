@@ -30,6 +30,8 @@ def points_mode(rv: RandomVariable, samples=100, n=10):
     samples = rv.sample(size=samples)
     probabilities = rv.p(samples)
 
+    if samples.ndim == 1: samples = samples.reshape(-1, 1)
+
     return mode_from_points(samples, probabilities, n=n)[0]
 
 

@@ -65,7 +65,6 @@ class MyTestCase(unittest.TestCase):
         print("large loop", np.array(large_loop))
 
     def test_something_else_stuff(self):
-
         @numba.jit(nopython=True, fastmath=True, forceobj=False)
         def sigmoid(x):
             return (1 / (1 + np.exp(-x)))
@@ -78,29 +77,31 @@ class MyTestCase(unittest.TestCase):
         def predict(w, x):
             return x[:, 0] * w[0] + x[:, 1] * w[1] + x[:, 2] * w[2] + w[3]
 
+
         w = [-3, 3, 5, -3]  # True underlying model
 
         x = np.random.rand(100, 3)
         y = sigmoid(predict(w, x) + pp.normal.sample(mu=0.0, sigma=1.0, size=100).reshape(-1))
 
-        # For this we need custom likelihood since there is no conjugate prior
-
-        prior = pp.multivariate_normal.med(mu=np.zeros(4), sigma=np.eye(4) * 5)
+        prior = pp.multivariate_normal.med(mu=np.zeros(4), sigma=np.eye(4) * 10)
 
         for i in range(5):
             data = (y, x)
 
             prior = pp.parameter_posterior(data, likelihood=likelihood,
                                            prior=prior,
-                                           batch=5,
-                                           samples=20000,
-                                           mixing=18000,
-                                           energy=0.3,
-                                           mode="mcmc", normalize=False)
+                                           batch=50,
+                                           samples=1000,
+                                           energy=0.25,
+                                           mode="search",
+                                           volume=1000)
 
             modes = pp.mode(prior)  # modes are sorted in order first is largest
 
             print("Number of modes", len(modes))
+            for mode in modes:
+                print(mode)
+
             w_approx = modes[0]
 
             print("Parameter Estimate", w_approx)
@@ -108,6 +109,7 @@ class MyTestCase(unittest.TestCase):
             print("Prior MSE", np.square(y - sigmoid(predict(w_approx, x))).mean(),
                   "True MSE", np.square(y - sigmoid(predict(w, x))).mean())
             print()
+
 
 if __name__ == '__main__':
     unittest.main()

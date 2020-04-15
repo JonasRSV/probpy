@@ -1,31 +1,33 @@
 import unittest
 import probpy as pp
 import numpy as np
+import numba
 from probpy.search import search_posterior_estimation
+from probpy.distributions import normal, exponential, jit
+from probpy.learn.posterior.common import jit_log_probabilities
 
 
 class TestSearch(unittest.TestCase):
     def test_parameter_posterior_search(self):
-        prior_mu = pp.normal.med(mu=0.5, sigma=1.0)
-        prior_sigma = pp.exponential.med(lam=1.0)
-        likelihood = pp.normal.med()
+        prior_rv = normal.med(mu=0.5, sigma=1.0)
+        n = normal.fast_p
 
-        data = pp.normal.sample(mu=3.0, sigma=1.0, size=100)
+        prior = jit.jit_probability(prior_rv)
 
-        def log_likelihood(*args):
-            ll = np.log(likelihood.p(data, *args)).sum(axis=1)
-            return np.nan_to_num(ll, copy=False, nan=-10000.0)
+        @numba.jit(fastmath=True, nopython=True, forceobj=False)
+        def likelihood(y, w):
+            return n(y - w, mu=0.0, sigma=1.0)
 
-        def log_prior_mu(b): return np.log(prior_mu.p(b))
+        data = normal.sample(mu=3.0, sigma=1.0, size=100)
 
-        def log_prior_sigma(b): return np.log(prior_sigma.p(b))
+        log_likelihood, log_prior = jit_log_probabilities((data,), likelihood, prior)
 
         points, densities = search_posterior_estimation(
             size=1000, log_likelihood=log_likelihood,
-            log_priors=[log_prior_mu, log_prior_sigma],
-            initial=[prior_mu.sample(size=10), prior_sigma.sample(size=10)],
-            energies=(0.1, 0.1),
-            volume=100
+            log_prior=log_prior,
+            initial=prior_rv.sample(size=10),
+            energy=0.1,
+            volume=1000
         )
 
         self.assertTrue(True)
