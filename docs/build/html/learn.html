@@ -65,9 +65,9 @@
 <span class="n">prior</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">parameter_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="o">=</span><span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="o">=</span><span class="n">prior</span><span class="p">)</span>
 </pre></div>
 </div>
-<span class="target" id="module-probpy.learn.posterior"></span><dl class="function">
-<dt id="probpy.learn.posterior.parameter_posterior">
-<code class="descclassname">probpy.learn.posterior.</code><code class="descname">parameter_posterior</code><span class="sig-paren">(</span><em>data: typing.Union[numpy.ndarray, typing.Tuple[numpy.ndarray]], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], mode='mcmc', **kwargs</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/learn/posterior.html#parameter_posterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.parameter_posterior" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-probpy.learn.posterior.posterior"></span><dl class="function">
+<dt id="probpy.learn.posterior.posterior.parameter_posterior">
+<code class="descclassname">probpy.learn.posterior.posterior.</code><code class="descname">parameter_posterior</code><span class="sig-paren">(</span><em>data: typing.Union[numpy.ndarray, typing.Tuple[numpy.ndarray]], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], prior: probpy.core.RandomVariable, mode='mcmc', **kwargs</em><span class="sig-paren">)</span> &#x2192; probpy.core.RandomVariable<a class="reference internal" href="_modules/probpy/learn/posterior/posterior.html#parameter_posterior"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.posterior.parameter_posterior" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the posterior distribution of some likelihood and priors. This function uses conjugate priors, mcmc or ga.
 If a likelihood is given conjugate priors then the mode argument will be ignored and a conjugate update will be done, because
 it is much faster.</p>
@@ -91,9 +91,9 @@ it is much faster.</p>
 </table>
 </dd></dl>
 
-<span class="target" id="module-probpy.learn.mcmc"></span><dl class="function">
-<dt id="probpy.learn.mcmc.mcmc">
-<code class="descclassname">probpy.learn.mcmc.</code><code class="descname">mcmc</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, mixing: int = 100, energies: typing.Tuple[float] = 0.5, batch=5, match_moments_for: typing.Union[typing.Tuple[probpy.core.Distribution], probpy.core.Distribution] = None, normalize: bool = True, density: probpy.core.Density = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/mcmc.html#mcmc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.mcmc.mcmc" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-probpy.learn.posterior.mcmc"></span><dl class="function">
+<dt id="probpy.learn.posterior.mcmc.mcmc">
+<code class="descclassname">probpy.learn.posterior.mcmc.</code><code class="descname">mcmc</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], prior: probpy.core.RandomVariable, samples: int = 1000, mixing: int = 0, energy: float = 0.5, batch: int = 5, match_moments_for: probpy.core.Distribution = None, normalize: bool = True, density: probpy.core.Density = None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/posterior/mcmc.html#mcmc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.mcmc.mcmc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Don’t call this function directly, always use parameter_posterior with mode=”mcmc”</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -102,10 +102,10 @@ it is much faster.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>data</strong> – data passed to likelihood</li>
 <li><strong>likelihood</strong> – likelihood function / distribution</li>
-<li><strong>priors</strong> – prior / priors</li>
+<li><strong>prior</strong> – prior distribution</li>
 <li><strong>samples</strong> – number of mcmc samples to generate</li>
 <li><strong>mixing</strong> – number of initial samples to ignore</li>
-<li><strong>energies</strong> – energies in exploration (variance in normal distribution)</li>
+<li><strong>energy</strong> – variance in exploration</li>
 <li><strong>batch</strong> – number of particles to run concurrently</li>
 <li><strong>match_moments_for</strong> – distributions to force posterior into using moment matching</li>
 <li><strong>normalize</strong> – normalize the resulting density</li>
@@ -120,9 +120,9 @@ it is much faster.</p>
 </table>
 </dd></dl>
 
-<span class="target" id="module-probpy.learn.search"></span><dl class="function">
-<dt id="probpy.learn.search.search">
-<code class="descclassname">probpy.learn.search.</code><code class="descname">search</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, energies: typing.Tuple[float] = 0.5, batch=5, volume=10.0, normalize: bool = False, density: probpy.core.Density = None, **ubrk_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/search.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.search.search" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-probpy.learn.posterior.search"></span><dl class="function">
+<dt id="probpy.learn.posterior.search.search">
+<code class="descclassname">probpy.learn.posterior.search.</code><code class="descname">search</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, energies: typing.Tuple[float] = 0.5, batch=5, volume=10.0, normalize: bool = False, density: probpy.core.Density = None, **ubrk_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/posterior/search.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.search.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Don’t call this function directly, always use parameter_posterior with mode=”search”</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

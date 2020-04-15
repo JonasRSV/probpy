@@ -4,6 +4,18 @@ import numba
 from probpy.core import Distribution, RandomVariable, Parameter
 
 
+@numba.jit(nopython=True,
+           forceobj=False,
+           fastmath=True,
+           error_model="numpy")
+def normal_power(x: np.ndarray, n: np.int):
+    pow = 1.0
+    for _ in range(n):
+        pow = pow * x
+    return pow
+
+
+
 class MultiVariateNormal(Distribution):
     """Multivariate Normal Distribution"""
     mu = "mu"
@@ -66,17 +78,22 @@ class MultiVariateNormal(Distribution):
         """
         return np.random.multivariate_normal(mu, sigma, size=size)
 
+
     @staticmethod
     @numba.jit(nopython=True,
                forceobj=False,
                fastmath=True,
-               parallel=True,
                error_model="numpy")
-    def fast_non_broadcast_parameter_multivariate_normal(x: np.ndarray,
-                                                         mu: np.ndarray,
-                                                         sigma: np.ndarray,
-                                                         normalizing_constant: np.ndarray):
-        quadratic_form = (((x - mu) @ np.linalg.inv(sigma)) * (x - mu)).sum(axis=1)
+    def fast_p(x: np.ndarray,
+               mu: np.ndarray,
+               sigma: np.ndarray):
+
+        pi_term = 1 / normal_power(np.sqrt(2 * np.pi), len(mu))
+        det_term = 1 / np.sqrt(np.linalg.det(sigma))
+        normalizing_constant = pi_term * det_term
+
+        if x.ndim == 2: quadratic_form = (((x - mu) @ np.linalg.inv(sigma)) * (x - mu)).sum(axis=1)
+        else: quadratic_form = (((x - mu) @ np.linalg.inv(sigma)) * (x - mu)).sum()
         return np.exp(-1 / 2 * quadratic_form) * normalizing_constant
 
     @staticmethod
@@ -84,16 +101,30 @@ class MultiVariateNormal(Distribution):
     def p(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
         if x.ndim == 1: x = x.reshape(1, -1)
-        # Broadcasting over parameters
-        if mu.ndim == 2: mu = mu[:, None]
 
-        normalizing_constant = np.float_power(2 * np.pi, -mu.shape[-1] / 2) * np.float_power(np.linalg.det(sigma), -0.5)
-        # broadcasting parameters + data
-        if mu.ndim == 3:
-            quadratic_form = ((x - mu) @ np.linalg.inv(sigma) * (x - mu)).sum(axis=2)
-            return np.exp(-1 / 2 * quadratic_form) * normalizing_constant
-        else:  # broadcasting data
-            return MultiVariateNormal.fast_non_broadcast_parameter_multivariate_normal(x, mu, sigma, normalizing_constant) # 3x faster than normal numpy code
+        return MultiVariateNormal.fast_p(x, mu, sigma)  # 3x faster than normal numpy code
+
+    @staticmethod
+    def jit_probability(rv: RandomVariable):
+        mu = rv.parameters[Normal.mu].value
+        sigma = rv.parameters[Normal.sigma].value
+
+        _fast_p = MultiVariateNormal.fast_p
+        if mu is None and sigma is None:
+            return _fast_p
+        elif mu is None:
+            def fast_p(x: np.ndarray, mu: np.float):
+                return _fast_p(x, mu, sigma)
+        elif sigma is None:
+            def fast_p(x: np.ndarray, sigma: np.float):
+                return _fast_p(x, mu, sigma)
+        else:
+            def fast_p(x: np.ndarray):
+                return _fast_p(x, mu, sigma)
+
+        fast_p = numba.jit(nopython=True, forceobj=False, fastmath=True)(fast_p)
+
+        return fast_p
 
 
 class Normal(Distribution):
@@ -152,6 +183,12 @@ class Normal(Distribution):
         return np.random.normal(mu, np.sqrt(sigma), size=size)
 
     @staticmethod
+    @numba.jit(fastmath=True, nopython=True, forceobj=False)
+    def fast_p(x: np.ndarray, mu: np.float, sigma: np.float):
+        normalizing_constant = np.sqrt(2 * np.pi * sigma)
+        return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant
+
+    @staticmethod
     def p(x: np.ndarray, mu: np.float, sigma: np.float) -> np.ndarray:
         """
         :param x: samples
@@ -161,8 +198,28 @@ class Normal(Distribution):
         """
         if type(mu) != np.ndarray: mu = np.array(mu)
         if type(sigma) != np.ndarray: sigma = np.array(sigma)
-        if mu.ndim == 1: mu = mu[:, None]
-        if sigma.ndim == 1: sigma = sigma[:, None]
 
         normalizing_constant = np.sqrt(2 * np.pi * sigma)
         return np.exp((-1 / 2) * np.square(x - mu) / sigma) / normalizing_constant
+
+    @staticmethod
+    def jit_probability(rv: RandomVariable):
+        mu = rv.parameters[Normal.mu].value
+        sigma = rv.parameters[Normal.sigma].value
+
+        _fast_p = Normal.fast_p
+        if mu is None and sigma is None:
+            return _fast_p
+        elif mu is None:
+            def fast_p(x: np.ndarray, mu: np.float):
+                return _fast_p(x, mu, sigma)
+        elif sigma is None:
+            def fast_p(x: np.ndarray, sigma: np.float):
+                return _fast_p(x, mu, sigma)
+        else:
+            def fast_p(x: np.ndarray):
+                return _fast_p(x, mu, sigma)
+
+        fast_p = numba.jit(nopython=True, forceobj=False, fastmath=True)(fast_p)
+
+        return fast_p

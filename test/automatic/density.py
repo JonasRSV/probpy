@@ -36,7 +36,7 @@ class AutomaticDensityTest(unittest.TestCase):
 
     def test_running_rckd(self):
         timestamp = time.time()
-        samples = fast_metropolis_hastings(50000, distribution, initial=np.random.rand(50, 1), energy=1.0)
+        samples = fast_metropolis_hastings(10000, distribution, initial=np.random.rand(50, 1), energy=1.0)
         print("making samples", time.time() - timestamp)
 
         density = RCKD(variance=5.0, error=0.001, verbose=True)
@@ -48,10 +48,15 @@ class AutomaticDensityTest(unittest.TestCase):
         n = 2000
 
         x = np.linspace(lb, ub, n)
+        print("x", len(x))
         y = density.p(x)
 
         delta = (n / (ub - lb))
-        self.assertAlmostEqual(y.sum() / delta, 1, delta=0.1)
+        self.assertAlmostEqual(y.sum() / delta, 1, delta=0.5)
+
+        fast_p = density.get_fast_p()
+
+        fast_p(x)  # is slower than normal p.. but numba need numba functions
 
     def test_running_urbk(self):
         log_priors = [lambda x: np.log(normal.p(x, mu=0.0, sigma=10.0))]

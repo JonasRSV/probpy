@@ -324,7 +324,7 @@ class VisualPosteriorTest(unittest.TestCase):
         likelihood = normal.med(sigma=2.0)
 
         data = normal.sample(mu=3.0, sigma=2.0, size=100)
-        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, samples=2000)
+        posterior = parameter_posterior(data, likelihood=likelihood, priors=prior, samples=10000)
 
         x = np.linspace(0.0, 6, 100)
         y_prior = prior.p(x)
@@ -407,42 +407,6 @@ class VisualPosteriorTest(unittest.TestCase):
 
         print(posterior.sample(size=3000).mean(axis=0))
 
-    def test_custom_logistic_regression(self):
-        def sigmoid(x):
-            return 1 / (1 + np.exp(-x))
-
-        def likelihood(y, x, w):
-            return normal.p((y - sigmoid(x @ w[:, None, :-1] + w[:, None, None, -1]).squeeze(axis=2)),
-                            mu=0.0, sigma=0.1)
-
-        x = np.linspace(-5, 5, 50).reshape(-1, 1)
-        y = (x > 0).astype(np.float).flatten()
-
-        posterior = parameter_posterior((y, x),
-                                        likelihood=likelihood,
-                                        priors=multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)),
-                                        batch=5,
-                                        samples=10000)
-
-        mean = posterior.sample(size=3000).mean(axis=0)
-
-        print("accuracy", (y == np.round(sigmoid(x @ mean[:-1] + mean[-1]))).sum() / y.size)
-
-        i = np.linspace(-2, 5, 100)
-        j = np.linspace(-4, 4, 100)
-        I, J = np.meshgrid(i, j)
-        K = np.concatenate([I.reshape(-1, 1), J.reshape(-1, 1)], axis=1)
-        K = posterior.p(K).reshape(100, 100)
-
-        plt.figure(figsize=(10, 6))
-        plt.title("Parameter distribution", fontsize=18)
-        plt.contourf(I, J, K)
-        plt.tight_layout()
-        plt.xticks(fontsize=16)
-        plt.yticks(fontsize=16)
-        plt.savefig("../../images/custom_logistic_regression_example.png", bbox_inches="tight")
-        plt.show()
-
     def test_normal_with_exponential_prior_mcmc_moment_matching(self):
         prior = exponential.med(lam=0.6)
         likelihood = normal.med(sigma=1.0)
@@ -450,7 +414,7 @@ class VisualPosteriorTest(unittest.TestCase):
         data = normal.sample(mu=3.0, sigma=2.0, size=200)
         posterior = parameter_posterior(data,
                                         likelihood=likelihood,
-                                        priors=prior,
+                                        prior=prior,
                                         samples=10000,
                                         batch=25,
                                         match_moments_for=normal)

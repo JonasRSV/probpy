@@ -14,13 +14,13 @@ Example:
 
     prior = pp.parameter_posterior(data, likelihood=likelihood, priors=prior)
 
-.. automodule:: probpy.learn.posterior
+.. automodule:: probpy.learn.posterior.posterior
     :members:
 
 
-.. automodule:: probpy.learn.mcmc
+.. automodule:: probpy.learn.posterior.mcmc
     :members:
 
 
-.. automodule:: probpy.learn.search
+.. automodule:: probpy.learn.posterior.search
     :members:

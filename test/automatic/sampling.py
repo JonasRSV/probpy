@@ -1,11 +1,13 @@
 import unittest
-from probpy.distributions import normal, exponential
+from probpy.distributions import normal, exponential, jit
+from probpy.learn.posterior.common import jit_log_probabilities
 from probpy.sampling import (metropolis_hastings,
                              metropolis,
                              fast_metropolis_hastings_log_space,
                              fast_metropolis_hastings,
                              fast_metropolis_hastings_log_space_parameter_posterior_estimation)
 import numpy as np
+import numba
 
 
 class TestSampling(unittest.TestCase):
@@ -27,31 +29,27 @@ class TestSampling(unittest.TestCase):
                 self.assertAlmostEqual(i, j, delta=0.5)
 
     def test_parameter_posterior_mcmc(self):
-        prior_mu = normal.med(mu=0.5, sigma=1.0)
-        prior_sigma = exponential.med(lam=1.0)
-        likelihood = normal.med()
+        prior_rv = normal.med(mu=0.5, sigma=1.0)
+        n = normal.fast_p
+
+        prior = jit.jit_probability(prior_rv)
+
+        @numba.jit(fastmath=True, nopython=True, forceobj=False)
+        def likelihood(y, w):
+            return n(y - w, mu=0.0, sigma=1.0)
 
         data = normal.sample(mu=3.0, sigma=1.0, size=100)
 
-        def log_likelihood(*args):
-            ll = np.log(likelihood.p(data, *args)).sum(axis=1)
-            return np.nan_to_num(ll, copy=False, nan=-10000.0)
-
-        def log_prior_mu(b): return np.log(prior_mu.p(b))
-
-        def log_prior_sigma(b): return np.log(prior_sigma.p(b))
+        log_likelihood, log_prior = jit_log_probabilities((data,), likelihood, prior)
 
         result = fast_metropolis_hastings_log_space_parameter_posterior_estimation(
-            size=20000, log_likelihood=log_likelihood,
-            log_priors=[log_prior_mu, log_prior_sigma],
-            initial=[prior_mu.sample(size=10), prior_sigma.sample(size=10)],
-            energies=(0.1, 0.1)
+            size=2000, log_likelihood=log_likelihood,
+            log_prior=log_prior,
+            initial=prior_rv.sample(size=10),
+            energy=0.1
         )
 
-        correct = [3.0, 1.0]
-        for res, corr in zip(result, correct):
-            self.assertAlmostEqual(res.mean(), corr, delta=0.5)
-
+        self.assertAlmostEqual(result.mean(), 3.0, delta=1.0)
 
     def test_metropolis(self):
         pdf = lambda x: normal.p(x, 0, 1) + normal.p(x, 6, 3) + normal.p(x, -6, 0.5)

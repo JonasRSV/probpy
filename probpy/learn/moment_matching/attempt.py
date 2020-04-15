@@ -22,26 +22,8 @@ moment_matchers = {
 }
 
 
-def attempt(samples: List[np.ndarray], match_for: Tuple[Distribution]):
-    if match_for is not None:
-        if len(match_for) == 1:
-            matcher = match_for[0]
-
-            if matcher in moment_matchers:
-                samples = np.concatenate(samples, axis=1)
-                return moment_matchers[matcher](samples)
-
-            raise Exception(f"no matcher implemented for {matcher.__name__}")
-
-        if len(samples) == len(match_for):
-            matches = []
-            for sample, match in zip(samples, match_for):
-                if match in moment_matchers:
-                    matches.append(moment_matchers[match](sample))
-                else:
-                    raise Exception(f"no matcher implemented for {match.__name__}")
-
-            return matches
-
+def attempt(samples: np.ndarray, match_for: Distribution):
+    if match_for in moment_matchers:
+        return moment_matchers[match_for](samples)
     return None
 

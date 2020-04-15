@@ -48,13 +48,8 @@ class Bernoulli(Distribution):
         """
         if type(x) != np.ndarray: x = np.array(x)
         if type(probability) != np.ndarray: probability = np.array(probability)
-        if probability.ndim == 1:  # broadcasting
-            result = np.zeros((probability.size, x.size))
-            result[:, x != 1.0] = (1 - probability).reshape(-1, 1)
-            result[:, x == 1.0] = probability.reshape(-1, 1)
-        else:
-            result = np.zeros_like(x)
-            result[x != 1.0] = 1 - probability
-            result[x == 1.0] = probability
+        result = np.zeros_like(x)
+        result[x != 1.0] = 1 - probability
+        result[x == 1.0] = probability
 
         return result

@@ -1,1 +1,1 @@
-from .posterior import parameter_posterior
+from .posterior.posterior import parameter_posterior

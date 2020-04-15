@@ -1,10 +1,98 @@
 import unittest
 import numpy as np
 from probpy.distributions import *
+from probpy.distributions import jit
 import itertools
 
 
 class TestDistributions(unittest.TestCase):
+
+    def test_fast_p(self):
+        multi_mu = np.zeros(2)
+        multi_sigma = np.eye(2)
+        tests = [
+            {
+                "data": unilinear.sample(x=np.linspace(0, 1, 10).reshape(-1, 1), variables=np.ones(2), sigma=0.1, size=100),
+                "fast_p": lambda y: unilinear.fast_p(y, x=np.linspace(0, 1, 10).reshape(-1, 1), variables=np.ones(2), sigma=0.1)
+            },
+            {
+                "data": normal.sample(mu=0.0, sigma=1.0, size=100),
+                "fast_p": lambda x: normal.fast_p(x, 0.0, 1.0)
+            },
+            {
+                "data": exponential.sample(lam=1.0, size=100),
+                "fast_p": lambda x: exponential.fast_p(x, 1.0)
+            },
+            {
+                "data": multivariate_normal.sample(mu=multi_mu, sigma=multi_sigma, size=100),
+                "fast_p": lambda x: multivariate_normal.fast_p(x, multi_mu, multi_sigma)
+            },
+            {
+                "data": uniform.sample(a=0.0, b=1.0, size=100),
+                "fast_p": lambda x: uniform.fast_p(x, 0.0, 1.0)
+            },
+            {
+                "data": multivariate_uniform.sample(a=np.zeros(2), b=np.ones(2), size=100),
+                "fast_p": lambda x: multivariate_uniform.fast_p(x, np.zeros(2), np.ones(2))
+            }
+        ]
+
+        for test in tests:
+            test["fast_p"](test["data"])
+
+    def test_jit_probability(self):
+        def _execute_test(distribution = None, parameters = None, names = None):
+            for test_case in itertools.product([0, 1], repeat=len(parameters)):
+                kwargs, args = {}, []
+                for i, pick in enumerate(test_case):
+                    if pick == 1:
+                        kwargs[names[i]] = parameters[i]
+                    else:
+                        args.append(parameters[i])
+
+                rv = distribution.med(**kwargs)
+                samples = rv.sample(*args, size=10)
+
+                fast_p = jit.jit_probability(rv)
+                fast_p(samples, *args)
+
+        tests = [
+            {
+                "distribution": unilinear,
+                "parameters": (np.linspace(0, 1, 10).reshape(-1, 1), np.ones(2), 0.1),
+                "names": (unilinear.x, unilinear.variables, unilinear.sigma)
+            },
+            {
+                "distribution": normal,
+                "parameters": (2.0, 1.0),
+                "names": (normal.mu, normal.sigma)
+            },
+            {
+                "distribution": exponential,
+                "parameters": (1.0, ),
+                "names": (exponential.lam, )
+            },
+            {
+                "distribution": multivariate_normal,
+                "parameters": (np.ones(2), np.eye(2)),
+                "names": (multivariate_normal.mu, multivariate_normal.sigma)
+            },
+            {
+                "distribution": uniform,
+                "parameters": (0.0, 1.0),
+                "names": (uniform.a, uniform.b)
+            },
+            {
+                "distribution": multivariate_uniform,
+                "parameters": (np.zeros(2), np.ones(2)),
+                "names": (multivariate_uniform.a, multivariate_uniform.b)
+
+            }
+
+        ]
+
+        for test in tests:
+            _execute_test(**test)
 
     def test_first_two_moments(self):
 
@@ -124,17 +212,17 @@ class TestDistributions(unittest.TestCase):
                  gaussian_process.X,
                  gaussian_process.Y
              ))
-#            (unilinear,
-             #(
-             #    np.linspace(0, 1, 20),
-             #    np.ones(2),
-             #    2.0
-             #),
-             #(
-             #    unilinear.x,
-             #    unilinear.variables,
-             #    unilinear.sigma
-             #))
+            #            (unilinear,
+            # (
+            #    np.linspace(0, 1, 20),
+            #    np.ones(2),
+            #    2.0
+            # ),
+            # (
+            #    unilinear.x,
+            #    unilinear.variables,
+            #    unilinear.sigma
+            # ))
         ]
 
         for distribution, parameters, names in tests:
@@ -241,13 +329,15 @@ class TestDistributions(unittest.TestCase):
 
                 if c is not None:
                     res = result.shape == c
-                    if hasattr(res, "__iter__"): self.assertTrue(all(res))
-                    else: self.assertTrue(res)
+                    if hasattr(res, "__iter__"):
+                        self.assertTrue(all(res))
+                    else:
+                        self.assertTrue(res)
 
         tests = [
             {
                 "f": [lambda: normal.med(mu=0.0, sigma=1.0).sample(), lambda: normal.med(mu=0.0, sigma=1.0).sample(10)],
-                "correct": [(1,), (10, )]
+                "correct": [(1,), (10,)]
             },
             {
                 "f": [lambda: multivariate_normal.med(mu=np.zeros(2), sigma=np.eye(2)).sample(),
@@ -257,7 +347,7 @@ class TestDistributions(unittest.TestCase):
             {
                 "f": [lambda: uniform.med(a=0.0, b=1.0).sample(),
                       lambda: uniform.med(a=0.0, b=1.0).sample(10)],
-                "correct": [(1,), (10, )]
+                "correct": [(1,), (10,)]
             },
             {
                 "f": [lambda: multivariate_uniform.med(a=np.zeros(2), b=np.ones(2)).sample(),
@@ -267,7 +357,7 @@ class TestDistributions(unittest.TestCase):
             {
                 "f": [lambda: bernoulli.med(probability=0.8).sample(),
                       lambda: bernoulli.med(probability=0.8).sample(10)],
-                "correct": [(1,), (10, )]
+                "correct": [(1,), (10,)]
             },
             {
                 "f": [lambda: categorical.med(probabilities=np.ones(3) / 3).sample(),

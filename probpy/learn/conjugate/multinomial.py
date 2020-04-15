@@ -9,18 +9,17 @@ class MultinomialDirichlet_PPrior:
     """Conjugate prior for multinomial likelihood with unknown probability"""
 
     @staticmethod
-    def is_conjugate(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
-        if priors[0].cls is dirichlet \
-                and _check_no_none_parameters(priors[0]) \
+    def is_conjugate(likelihood: RandomVariable, prior: RandomVariable):
+        if prior.cls is dirichlet \
+                and _check_no_none_parameters(prior) \
                 and _check_only_none_is(likelihood, [multinomial.probabilities]):
             return True
         return False
 
     @staticmethod
-    def posterior(data: np.ndarray, _: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
+    def posterior(data: np.ndarray, _: RandomVariable, prior: RandomVariable) -> RandomVariable:
         data = data[0]
         data = np.array(data)
-        prior = priors[0]
 
         prior_alpha = prior.parameters[dirichlet.alpha].value
 

@@ -1,11 +1,10 @@
 from probpy.core import RandomVariable, Density
 import numpy as np
 from typing import Callable, Tuple, Union
-from .mcmc import log_probabilities
+from probpy.learn.posterior.common import jit_log_probabilities
 from probpy.search import (search_posterior_estimation)
 from probpy.distributions import generic
 from probpy.density import URBK
-import time
 
 
 def _search_posterior(data: Tuple[np.ndarray],
@@ -17,7 +16,7 @@ def _search_posterior(data: Tuple[np.ndarray],
                       volume: float):
     likelihood = likelihood if type(likelihood) != RandomVariable else likelihood.p
 
-    log_likelihood, log_priors = log_probabilities(data, likelihood, priors)
+    log_likelihood, log_priors = jit_log_probabilities(data, likelihood, priors)
 
     initial = [
         prior.sample(size=batch)

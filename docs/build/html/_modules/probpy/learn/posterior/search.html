@@ -1,0 +1,185 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>probpy.learn.posterior.search &#8212; probpy 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">probpy 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../posterior.html" accesskey="U">probpy.learn.posterior</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for probpy.learn.posterior.search</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">probpy.core</span> <span class="k">import</span> <span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Density</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">probpy.learn.posterior.common</span> <span class="k">import</span> <span class="n">jit_log_probabilities</span>
+<span class="kn">from</span> <span class="nn">probpy.search</span> <span class="k">import</span> <span class="p">(</span><span class="n">search_posterior_estimation</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">probpy.distributions</span> <span class="k">import</span> <span class="n">generic</span>
+<span class="kn">from</span> <span class="nn">probpy.density</span> <span class="k">import</span> <span class="n">URBK</span>
+
+
+<span class="k">def</span> <span class="nf">_search_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+                      <span class="n">likelihood</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+                      <span class="n">priors</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">],</span>
+                      <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                      <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+                      <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                      <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">likelihood</span><span class="p">)</span> <span class="o">!=</span> <span class="n">RandomVariable</span> <span class="k">else</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">p</span>
+
+    <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">log_priors</span> <span class="o">=</span> <span class="n">jit_log_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">)</span>
+
+    <span class="n">initial</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">prior</span> <span class="ow">in</span> <span class="n">priors</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">search_posterior_estimation</span><span class="p">(</span>
+        <span class="n">size</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+        <span class="n">log_likelihood</span><span class="o">=</span><span class="n">log_likelihood</span><span class="p">,</span>
+        <span class="n">log_priors</span><span class="o">=</span><span class="n">log_priors</span><span class="p">,</span>
+        <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span>
+        <span class="n">energies</span><span class="o">=</span><span class="n">energies</span><span class="p">,</span>
+        <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_standardize_arguments</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+                           <span class="n">__</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+                           <span class="n">priors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">]],</span>
+                           <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span> <span class="n">energies</span> <span class="o">=</span> <span class="p">[</span><span class="n">energies</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">priors</span><span class="p">))]</span>
+
+    <span class="k">return</span> <span class="n">energies</span>
+
+
+<span class="k">def</span> <span class="nf">_generic_from_density_samples_densities</span><span class="p">(</span><span class="n">density</span><span class="p">:</span> <span class="n">Density</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">densities</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="n">densities</span> <span class="o">=</span> <span class="n">densities</span> <span class="o">/</span> <span class="n">densities</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">density</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">densities</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_p</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">density</span><span class="o">.</span><span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">densities</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_sample</span><span class="p">(</span><span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">indexes</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">densities</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">s</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">volume</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">generic</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">sampling</span><span class="o">=</span><span class="n">_sample</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="n">_p</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="search"><a class="viewcode-back" href="../../../../learn.html#probpy.learn.posterior.search.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
+           <span class="n">likelihood</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
+           <span class="n">priors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">]],</span>
+           <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+           <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+           <span class="n">batch</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+           <span class="n">volume</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+           <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+           <span class="n">density</span><span class="p">:</span> <span class="n">Density</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+           <span class="o">**</span><span class="n">ubrk_args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Don&#39;t call this function directly, always use parameter_posterior with mode=&quot;search&quot;</span>
+
+<span class="sd">    :param volume: volume of elements</span>
+<span class="sd">    :param data: data passed to likelihood</span>
+<span class="sd">    :param likelihood: likelihood function</span>
+<span class="sd">    :param priors: prior / priors</span>
+<span class="sd">    :param samples: samples in search estimate</span>
+<span class="sd">    :param energies: energies in exploration</span>
+<span class="sd">    :param batch: number of samples run concurrently</span>
+<span class="sd">    :param normalize: normalize posterior</span>
+<span class="sd">    :param density: density estimator</span>
+<span class="sd">    :param ubrk_args: arguments to ubrk (default density estimator)</span>
+<span class="sd">    :return: RandomVariable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">energies</span> <span class="o">=</span> <span class="n">_standardize_arguments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">energies</span><span class="p">)</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">densities</span> <span class="o">=</span> <span class="n">_search_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;search cannot normalize atm&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">density</span> <span class="o">=</span> <span class="n">URBK</span><span class="p">(</span><span class="o">**</span><span class="n">ubrk_args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_generic_from_density_samples_densities</span><span class="p">(</span><span class="n">density</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">densities</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">probpy 0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../posterior.html" >probpy.learn.posterior</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jonas Valfridsson.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+    </div>
+  </body>
+</html>

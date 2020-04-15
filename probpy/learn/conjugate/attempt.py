@@ -63,7 +63,7 @@ conjugates = {
 def attempt(
         data: Union[Tuple[np.ndarray]],
         likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-        priors: Union[RandomVariable, Tuple[RandomVariable]]
+        prior: RandomVariable
 ) -> RandomVariable:
     if type(likelihood) == RandomVariable:
         candidates = []
@@ -71,7 +71,7 @@ def attempt(
             candidates = conjugates[likelihood.cls]
 
         for conjugate in candidates:
-            if len(priors) == 1 and conjugate.is_conjugate(likelihood, priors):
-                return conjugate.posterior(data, likelihood, priors)
+            if conjugate.is_conjugate(likelihood, prior):
+                return conjugate.posterior(data, likelihood, prior)
 
     return None

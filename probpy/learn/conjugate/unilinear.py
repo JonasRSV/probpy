@@ -9,17 +9,15 @@ class UniLinearMultivariateNormal_VariablePrior:
     """Conjugate prior for univariate normal likelihood with unknown mean"""
 
     @staticmethod
-    def is_conjugate(likelihood: RandomVariable, priors: Tuple[RandomVariable]):
-        if priors[0].cls is multivariate_normal \
-                and _check_no_none_parameters(priors[0]) \
+    def is_conjugate(likelihood: RandomVariable, prior: RandomVariable):
+        if prior.cls is multivariate_normal \
+                and _check_no_none_parameters(prior) \
                 and _check_only_none_is(likelihood, [unilinear.variables, unilinear.x]):
             return True
         return False
 
     @staticmethod
-    def posterior(data: np.ndarray, likelihood: RandomVariable, priors: Tuple[RandomVariable]) -> RandomVariable:
-        prior = priors[0]
-
+    def posterior(data: np.ndarray, likelihood: RandomVariable, prior: RandomVariable) -> RandomVariable:
         y, x = data
         y, x = np.array(y), np.array(x)
 

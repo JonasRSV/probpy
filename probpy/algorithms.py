@@ -3,12 +3,12 @@ import heapq
 import numba
 
 
-@numba.jit(nopython=True, fastmath=True, parallel=False, forceobj=False)
+@numba.jit(nopython=True, fastmath=True, forceobj=False)
 def euclidean(i, j):
     return np.sqrt(np.square(i - j).sum())
 
 
-@numba.jit(nopython=True, fastmath=True, parallel=True, forceobj=False)
+@numba.jit(nopython=True, fastmath=True, forceobj=False)
 def _closest_n(x: np.ndarray, probabilities: np.ndarray, samples: np.ndarray, n: int):
     heap = [(np.float(i), np.int(i)) for i in range(0)]
     for i in range(probabilities.size):
@@ -20,7 +20,7 @@ def _closest_n(x: np.ndarray, probabilities: np.ndarray, samples: np.ndarray, n:
     return [j[1] for j in heap]
 
 
-@numba.jit(nopython=True, fastmath=True, parallel=True, forceobj=False)
+@numba.jit(nopython=True, fastmath=True, forceobj=False)
 def _mode_climb(current: np.int,
                 cache: np.ndarray,
                 probabilities: np.ndarray,

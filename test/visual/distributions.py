@@ -124,6 +124,8 @@ class VisualTestDistributions(unittest.TestCase):
         I = np.concatenate([X, Y], axis=1)
         P = multivariate_uniform.p(I, a, b)
 
+        print("P", P)
+
         P = P.reshape(points, points)
         X = X.reshape(points, points)
         Y = Y.reshape(points, points)

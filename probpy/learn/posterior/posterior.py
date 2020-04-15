@@ -1,25 +1,23 @@
 from probpy.core import RandomVariable
 import numpy as np
 from typing import Callable
-from .mcmc import mcmc
-from .search import search
-from . import conjugate
+from probpy.learn.posterior.mcmc import mcmc
+from probpy.learn.posterior.search import search
+from probpy.learn import conjugate
 
 from typing import Union, Tuple
 
 
 def _standardize_arguments(data: Union[np.ndarray, Tuple[np.ndarray]],
-                           likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-                           priors: Union[RandomVariable, Tuple[RandomVariable]]):
-    if type(priors) == RandomVariable: priors = (priors,)
+                           likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]]):
     if type(data) != tuple: data = (data,)
 
-    return data, likelihood, priors
+    return data, likelihood
 
 
 def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
                         likelihood: Union[RandomVariable, Callable[[Tuple[np.ndarray]], np.ndarray]],
-                        priors: Union[RandomVariable, Tuple[RandomVariable]],
+                        prior: RandomVariable,
                         mode='mcmc',
                         **kwargs) -> RandomVariable:
     """
@@ -34,18 +32,18 @@ def parameter_posterior(data: Union[np.ndarray, Tuple[np.ndarray]],
     :param kwargs: arguments passed to mcmc / ga
     :return: RandomVariable
     """
-    data, likelihood, priors, = _standardize_arguments(
-        data, likelihood, priors,
+    data, likelihood = _standardize_arguments(
+        data, likelihood
     )
 
-    rv = conjugate.attempt(data, likelihood, priors)
+    rv = conjugate.attempt(data, likelihood, prior)
     if rv is not None: return rv
 
     if mode == "search":
         return search(
-            data, likelihood, priors, **kwargs
+            data, likelihood, prior, **kwargs
         )
     else:
         return mcmc(
-            data, likelihood, priors, **kwargs
+            data, likelihood, prior, **kwargs
         )

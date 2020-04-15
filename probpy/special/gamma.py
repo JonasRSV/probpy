@@ -3,6 +3,7 @@ import numba
 
 
 # Taken from https://sv.wikipedia.org/wiki/Gammafunktionen
+
 class Gamma:
     g = 7
     C = [0.99999999999980993, 676.5203681218851, -1259.1392167224028,

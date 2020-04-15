@@ -2,6 +2,7 @@ from probpy.core import Density
 import numpy as np
 from probpy.integration import uniform_importance_sampling
 from probpy.distributions import multivariate_uniform
+import numba
 
 
 class UCKD(Density):
@@ -28,6 +29,22 @@ class UCKD(Density):
         """
         self.particles = particles
         if particles.ndim == 1: self.particles = self.particles.reshape(-1, 1)
+
+    def get_fast_p(self):
+        memory_particles = self.particles
+        n_memory_particles = len(memory_particles)
+        variance = self.variance
+
+        @numba.jit(nopython=True, fastmath=True, forceobj=False)
+        def fast_p(particles: np.ndarray):
+            result = np.zeros(len(particles))
+            for j in range(result.size):
+                for i in range(n_memory_particles):
+                    result[j] += np.exp(-(1 / variance) * np.square(memory_particles[i] - particles[j]).sum())
+
+            return result
+
+        return fast_p
 
     def p(self, particles: np.ndarray):
         """
@@ -96,6 +113,23 @@ class RCKD(Density):
         self.particles = particles
         self.partition, error = self._importance_sampling(particles)
         return error
+
+    def get_fast_p(self):
+        memory_particles = self.particles
+        n_memory_particles = len(memory_particles)
+        variance = self.variance
+        partition = self.partition
+
+        @numba.jit(nopython=True, fastmath=True, forceobj=False)
+        def fast_p(particles: np.ndarray):
+            result = np.zeros(len(particles))
+            for j in range(result.size):
+                for i in range(n_memory_particles):
+                    result[j] += np.exp(-(1 / variance) * np.square(memory_particles[i] - particles[j]).sum())
+
+            return result / partition
+
+        return fast_p
 
     def p(self, particles: np.ndarray):
         """

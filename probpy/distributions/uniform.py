@@ -44,14 +44,40 @@ class Uniform(Distribution):
         return np.array(a + np.random.rand(size) * (b - a))
 
     @staticmethod
+    @numba.jit(nopython=True, forceobj=False)
+    def fast_p(x: np.ndarray, a: np.float, b: np.float):
+        return ((a < x) & (x < b)) / (b - a)
+
+    @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
         if type(a) != np.ndarray: a = np.array(a)
         if type(b) != np.ndarray: b = np.array(b)
 
-        if a.ndim != 0 or b.ndim != 0:
-            raise Exception("Broadcasting on uniform not supported at the moment")
-        return ((a < x) & (x < b)).astype(np.float) / (b - a)
+        return Uniform.fast_p(x, a, b)
+
+    @staticmethod
+    def jit_probability(rv: RandomVariable):
+        a = rv.parameters[Uniform.a].value
+        b = rv.parameters[Uniform.b].value
+
+        _fast_p = Uniform.fast_p
+        if a is None and b is None:
+            return _fast_p
+        elif a is None:
+            def fast_p(x: np.ndarray, a: np.float):
+                return _fast_p(x, a, b)
+        elif b is None:
+            def fast_p(x: np.ndarray, b: np.float):
+                return _fast_p(x, a, b)
+        else:
+            def fast_p(x: np.ndarray):
+                return _fast_p(x, a, b)
+
+        fast_p = numba.jit(nopython=True, forceobj=False, fastmath=True)(fast_p)
+
+        return fast_p
+
 
 
 class MultiVariateUniform(Distribution):
@@ -97,13 +123,42 @@ class MultiVariateUniform(Distribution):
         return a + np.random.rand(size, a.size) * (b - a)
 
     @staticmethod
+    @numba.jit(nopython=True, fastmath=True, forceobj=False)
+    def fast_p(x: np.ndarray, a: np.ndarray, b: np.ndarray):
+
+        indicator_matrix = ((a < x) & (x < b))
+        indicator_vector = np.array([np.all(indicator_matrix[i]) for i in range(len(x))])
+        probability = 1 / np.prod(b - a)
+
+        return indicator_vector * probability
+
+    @staticmethod
     def p(x: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         if type(x) != np.ndarray: x = np.array(x)
         if type(a) != np.ndarray: a = np.array(a)
         if type(b) != np.ndarray: b = np.array(b)
-
-        if a.ndim != 1 or b.ndim != 1:
-            raise Exception("Broadcasting on uniform not supported at the moment")
-
         if x.ndim == 1: x = x.reshape(-1, a.size)
-        return ((a < x) & (x < b)).all(axis=1).astype(np.float) / np.product(b - a)
+
+        return MultiVariateUniform.fast_p(x, a, b)
+
+    @staticmethod
+    def jit_probability(rv: RandomVariable):
+        a = rv.parameters[Uniform.a].value
+        b = rv.parameters[Uniform.b].value
+
+        _fast_p = MultiVariateUniform.fast_p
+        if a is None and b is None:
+            return _fast_p
+        elif a is None:
+            def fast_p(x: np.ndarray, a: np.float):
+                return _fast_p(x, a, b)
+        elif b is None:
+            def fast_p(x: np.ndarray, b: np.float):
+                return _fast_p(x, a, b)
+        else:
+            def fast_p(x: np.ndarray):
+                return _fast_p(x, a, b)
+
+        fast_p = numba.jit(nopython=True, forceobj=False, fastmath=True)(fast_p)
+
+        return fast_p

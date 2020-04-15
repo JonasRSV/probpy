@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 
 from probpy.core import Distribution, RandomVariable, Parameter
 
@@ -19,8 +20,11 @@ class Exponential(Distribution):
             _sample = Exponential.sample
             _p = Exponential.p
         else:
-            def _sample(size: int = 1): return Exponential.sample(lam, size)
-            def _p(x): return Exponential.p(x, lam)
+            def _sample(size: int = 1):
+                return Exponential.sample(lam, size)
+
+            def _p(x):
+                return Exponential.p(x, lam)
 
         parameters = {Exponential.lam: Parameter(shape=(), value=lam)}
         return RandomVariable(_sample, _p, shape=(), parameters=parameters, cls=cls)
@@ -36,6 +40,11 @@ class Exponential(Distribution):
         return np.random.exponential(1 / lam, size=size)
 
     @staticmethod
+    @numba.jit(fastmath=True, forceobj=False, nopython=True)
+    def fast_p(x: np.ndarray, lam: np.float):
+        return lam * np.exp(-lam * np.maximum(x, 0.0))
+
+    @staticmethod
     def p(x: np.ndarray, lam: np.float) -> np.ndarray:
         """
 
@@ -46,14 +55,22 @@ class Exponential(Distribution):
         if type(x) != np.ndarray: x = np.array(x)
         if type(lam) != np.ndarray: lam = np.array(lam)
         lg_0 = x >= 0
-        if lam.ndim == 1: # broadcasting
-            lam = lam.reshape(-1, 1)
-            result = np.zeros((lam.size, x[lg_0].size))
-
-            result[:, lg_0] = lam * np.exp(-lam * x[lg_0])
-        else:
-            result = np.zeros_like(x)
-            result[lg_0] = lam * np.exp(-lam * x[lg_0])
+        result = np.zeros_like(x)
+        result[lg_0] = lam * np.exp(-lam * x[lg_0])
 
         return result
 
+    @staticmethod
+    def jit_probability(rv: RandomVariable):
+        lam = rv.parameters[Exponential.lam].value
+
+        _fast_p = Exponential.fast_p
+        if lam is None:
+            return _fast_p
+        else:
+            def fast_p(x: np.ndarray):
+                return _fast_p(x, lam)
+
+        fast_p = numba.jit(nopython=True, forceobj=False, fastmath=True)(fast_p)
+
+        return fast_p
