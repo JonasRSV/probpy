@@ -65,51 +65,48 @@ class MyTestCase(unittest.TestCase):
         print("large loop", np.array(large_loop))
 
     def test_something_else_stuff(self):
+
         @numba.jit(nopython=True, fastmath=True, forceobj=False)
         def sigmoid(x):
             return (1 / (1 + np.exp(-x)))
 
-        fast_p = pp.normal.fast_p  # Need to assign here first since numba does not support jitting methods of classes
+        def logit(x):
+            return np.log(x / (1 - x))
 
-        def likelihood(y, x, w):
-            return fast_p(y - sigmoid(np.sum(x * w[:-1]) + w[-1]), mu=0.0, sigma=1.0)
+        student_skill = logit(0.7)
 
-        def predict(w, x):
-            return x[:, 0] * w[0] + x[:, 1] * w[1] + x[:, 2] * w[2] + w[3]
+        items = logit(np.array([0.4, 0.6, 0.8, 0.7]))  # difficulties
+
+        fast_p = pp.normal.fast_p
+
+        def likelihood(obs, item, skill):  # IRT likelihood
+            return fast_p(obs - sigmoid(skill - item), mu=0.0, sigma=0.6)
+
+        ## IRT samples
+        samples = 100
+        obs, its = [], []
+        for i in range(samples):
+            item = items[np.random.randint(0, items.size)]
+            outcome = float(np.random.rand() < sigmoid(student_skill - item))
+
+            obs.append(outcome)
+            its.append(item)
 
 
-        w = [-3, 3, 5, -3]  # True underlying model
+        prior_skill = pp.normal.med(mu=0.0, sigma=10)
 
-        x = np.random.rand(100, 3)
-        y = sigmoid(predict(w, x) + pp.normal.sample(mu=0.0, sigma=1.0, size=100).reshape(-1))
+        for i in range(samples)[:30]:
+            print("obs i", obs[i], "its i", its[i])
+            prior_skill = pp.parameter_posterior((obs[i], its[i]),
+                                                 likelihood=likelihood, prior=prior_skill,
+                                                 mode="search",
+                                                 samples=300, batch=5,
+                                                 volume=100, energy=0.1,
+                                                 variance=2.0)
 
-        prior = pp.multivariate_normal.med(mu=np.zeros(4), sigma=np.eye(4) * 10)
+            mode = sigmoid(pp.mode(prior_skill)[0])
 
-        for i in range(5):
-            data = (y, x)
-
-            prior = pp.parameter_posterior(data, likelihood=likelihood,
-                                           prior=prior,
-                                           batch=50,
-                                           samples=1000,
-                                           energy=0.25,
-                                           mode="search",
-                                           volume=1000)
-
-            modes = pp.mode(prior)  # modes are sorted in order first is largest
-
-            print("Number of modes", len(modes))
-            for mode in modes:
-                print(mode)
-
-            w_approx = modes[0]
-
-            print("Parameter Estimate", w_approx)
-
-            print("Prior MSE", np.square(y - sigmoid(predict(w_approx, x))).mean(),
-                  "True MSE", np.square(y - sigmoid(predict(w, x))).mean())
-            print()
-
+            print("observation", obs[i], "item", sigmoid(its[i]), "mode", mode)
 
 if __name__ == '__main__':
     unittest.main()

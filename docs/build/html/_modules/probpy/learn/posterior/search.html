@@ -50,7 +50,7 @@
 <span></span><span class="kn">from</span> <span class="nn">probpy.core</span> <span class="k">import</span> <span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Density</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span> <span class="nn">probpy.learn.posterior.common</span> <span class="k">import</span> <span class="n">jit_log_probabilities</span>
+<span class="kn">from</span> <span class="nn">probpy.learn.posterior.common</span> <span class="k">import</span> <span class="n">jit_log_probabilities</span><span class="p">,</span> <span class="n">jitted_likelihood</span><span class="p">,</span> <span class="n">jitted_prior</span>
 <span class="kn">from</span> <span class="nn">probpy.search</span> <span class="k">import</span> <span class="p">(</span><span class="n">search_posterior_estimation</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">probpy.distributions</span> <span class="k">import</span> <span class="n">generic</span>
 <span class="kn">from</span> <span class="nn">probpy.density</span> <span class="k">import</span> <span class="n">URBK</span>
@@ -58,41 +58,28 @@
 
 <span class="k">def</span> <span class="nf">_search_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
                       <span class="n">likelihood</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
-                      <span class="n">priors</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">],</span>
+                      <span class="n">prior</span><span class="p">:</span> <span class="n">RandomVariable</span><span class="p">,</span>
                       <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                      <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+                      <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                       <span class="n">batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                       <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-    <span class="n">likelihood</span> <span class="o">=</span> <span class="n">likelihood</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">likelihood</span><span class="p">)</span> <span class="o">!=</span> <span class="n">RandomVariable</span> <span class="k">else</span> <span class="n">likelihood</span><span class="o">.</span><span class="n">p</span>
+    <span class="n">fast_ll</span> <span class="o">=</span> <span class="n">jitted_likelihood</span><span class="p">(</span><span class="n">likelihood</span><span class="p">)</span>
+    <span class="n">fast_p</span> <span class="o">=</span> <span class="n">jitted_prior</span><span class="p">(</span><span class="n">prior</span><span class="p">)</span>
+    <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">log_prior</span> <span class="o">=</span> <span class="n">jit_log_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fast_ll</span><span class="p">,</span> <span class="n">fast_p</span><span class="p">)</span>
 
-    <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">log_priors</span> <span class="o">=</span> <span class="n">jit_log_probabilities</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">)</span>
-
-    <span class="n">initial</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">batch</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">prior</span> <span class="ow">in</span> <span class="n">priors</span>
-    <span class="p">]</span>
+    <span class="n">initial</span> <span class="o">=</span> <span class="n">prior</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">batch</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">search_posterior_estimation</span><span class="p">(</span>
         <span class="n">size</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
         <span class="n">log_likelihood</span><span class="o">=</span><span class="n">log_likelihood</span><span class="p">,</span>
-        <span class="n">log_priors</span><span class="o">=</span><span class="n">log_priors</span><span class="p">,</span>
+        <span class="n">log_prior</span><span class="o">=</span><span class="n">log_prior</span><span class="p">,</span>
         <span class="n">initial</span><span class="o">=</span><span class="n">initial</span><span class="p">,</span>
-        <span class="n">energies</span><span class="o">=</span><span class="n">energies</span><span class="p">,</span>
+        <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
         <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_standardize_arguments</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
-                           <span class="n">__</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
-                           <span class="n">priors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">]],</span>
-                           <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span> <span class="n">energies</span> <span class="o">=</span> <span class="p">[</span><span class="n">energies</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">priors</span><span class="p">))]</span>
-
-    <span class="k">return</span> <span class="n">energies</span>
 
 
 <span class="k">def</span> <span class="nf">_generic_from_density_samples_densities</span><span class="p">(</span><span class="n">density</span><span class="p">:</span> <span class="n">Density</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">densities</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
     <span class="n">densities</span> <span class="o">=</span> <span class="n">densities</span> <span class="o">/</span> <span class="n">densities</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-
     <span class="n">density</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">densities</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_p</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -104,14 +91,14 @@
         <span class="n">s</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">indexes</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">densities</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">s</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">volume</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">generic</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">sampling</span><span class="o">=</span><span class="n">_sample</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="n">_p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">generic</span><span class="o">.</span><span class="n">med</span><span class="p">(</span><span class="n">sampling</span><span class="o">=</span><span class="n">_sample</span><span class="p">,</span> <span class="n">probability</span><span class="o">=</span><span class="n">_p</span><span class="p">,</span> <span class="n">fast_p</span><span class="o">=</span><span class="n">density</span><span class="o">.</span><span class="n">get_fast_p</span><span class="p">())</span>
 
 
 <div class="viewcode-block" id="search"><a class="viewcode-back" href="../../../../learn.html#probpy.learn.posterior.search.search">[docs]</a><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
            <span class="n">likelihood</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]],</span>
-           <span class="n">priors</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RandomVariable</span><span class="p">]],</span>
+           <span class="n">prior</span><span class="p">:</span> <span class="n">RandomVariable</span><span class="p">,</span>
            <span class="n">samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
-           <span class="n">energies</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+           <span class="n">energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
            <span class="n">batch</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
            <span class="n">volume</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
            <span class="n">normalize</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -123,17 +110,17 @@
 <span class="sd">    :param volume: volume of elements</span>
 <span class="sd">    :param data: data passed to likelihood</span>
 <span class="sd">    :param likelihood: likelihood function</span>
-<span class="sd">    :param priors: prior / priors</span>
+<span class="sd">    :param prior: prior / priors</span>
 <span class="sd">    :param samples: samples in search estimate</span>
-<span class="sd">    :param energies: energies in exploration</span>
+<span class="sd">    :param energy: energies in exploration</span>
 <span class="sd">    :param batch: number of samples run concurrently</span>
 <span class="sd">    :param normalize: normalize posterior</span>
 <span class="sd">    :param density: density estimator</span>
 <span class="sd">    :param ubrk_args: arguments to ubrk (default density estimator)</span>
 <span class="sd">    :return: RandomVariable</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">energies</span> <span class="o">=</span> <span class="n">_standardize_arguments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">energies</span><span class="p">)</span>
-    <span class="n">samples</span><span class="p">,</span> <span class="n">densities</span> <span class="o">=</span> <span class="n">_search_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">energies</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span>
+
+    <span class="n">samples</span><span class="p">,</span> <span class="n">densities</span> <span class="o">=</span> <span class="n">_search_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">likelihood</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">energy</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">density</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>

@@ -122,7 +122,7 @@ it is much faster.</p>
 
 <span class="target" id="module-probpy.learn.posterior.search"></span><dl class="function">
 <dt id="probpy.learn.posterior.search.search">
-<code class="descclassname">probpy.learn.posterior.search.</code><code class="descname">search</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], priors: typing.Union[probpy.core.RandomVariable, typing.Tuple[probpy.core.RandomVariable]], samples: int = 1000, energies: typing.Tuple[float] = 0.5, batch=5, volume=10.0, normalize: bool = False, density: probpy.core.Density = None, **ubrk_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/posterior/search.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.search.search" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">probpy.learn.posterior.search.</code><code class="descname">search</code><span class="sig-paren">(</span><em>data: typing.Tuple[numpy.ndarray], likelihood: typing.Union[probpy.core.RandomVariable, typing.Callable[[typing.Tuple[numpy.ndarray]], numpy.ndarray]], prior: probpy.core.RandomVariable, samples: int = 1000, energy: float = 0.5, batch=5, volume=10.0, normalize: bool = False, density: probpy.core.Density = None, **ubrk_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/probpy/learn/posterior/search.html#search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#probpy.learn.posterior.search.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Don’t call this function directly, always use parameter_posterior with mode=”search”</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -132,9 +132,9 @@ it is much faster.</p>
 <li><strong>volume</strong> – volume of elements</li>
 <li><strong>data</strong> – data passed to likelihood</li>
 <li><strong>likelihood</strong> – likelihood function</li>
-<li><strong>priors</strong> – prior / priors</li>
+<li><strong>prior</strong> – prior / priors</li>
 <li><strong>samples</strong> – samples in search estimate</li>
-<li><strong>energies</strong> – energies in exploration</li>
+<li><strong>energy</strong> – energies in exploration</li>
 <li><strong>batch</strong> – number of samples run concurrently</li>
 <li><strong>normalize</strong> – normalize posterior</li>
 <li><strong>density</strong> – density estimator</li>
